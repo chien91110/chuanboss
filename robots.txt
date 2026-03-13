@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://chuanboss.vercel.app/sitemap.xml
