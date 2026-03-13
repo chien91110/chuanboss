@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川收 ChuanPOS｜台中在地小店專屬點餐系統</title>
+<meta name="description" content="專為台中小型咖啡廳、手作甜點店、選物店設計的點餐收款系統。一次買斷、到府安裝、簡單好用。基本版 $4,800 起。">
+<meta name="keywords" content="點餐系統,POS系統,台中,咖啡廳,甜點店,收銀系統,熱感應印表機,小店">
+<meta property="og:title" content="川收 ChuanPOS｜台中在地小店專屬點餐系統">
+<meta property="og:description" content="專為小店設計，一次買斷不收月租。基本版 $4,800 起，到府安裝教學。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;700&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #ffffff;
+  --gray-50: #f8f8f6;
+  --gray-100: #f0efec;
+  --gray-200: #e2e0da;
+  --gray-400: #9c9890;
+  --gray-600: #5a5750;
+  --gray-800: #2a2825;
+  --accent: #c17f3e;
+  --accent-light: #e8c99a;
+  --accent-dark: #8a5520;
+  --green: #3d7a5c;
+  --red: #c0392b;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  color: var(--black);
+  background: var(--white);
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%; height: 64px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gray-200);
+}
+.nav-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; letter-spacing: -0.5px;
+  color: var(--black);
+}
+.nav-logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a {
+  font-size: 13px; font-weight: 500; color: var(--gray-600);
+  text-decoration: none; letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--black); }
+.nav-cta {
+  background: var(--black); color: var(--white);
+  padding: 9px 20px; border-radius: 100px;
+  font-size: 13px; font-weight: 500; text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.nav-cta:hover { background: var(--accent); transform: translateY(-1px); }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 100px 5% 60px;
+  gap: 60px;
+  background: var(--white);
+  position: relative; overflow: hidden;
+}
+#hero::before {
+  content: '';
+  position: absolute; top: -200px; right: -100px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(193,127,62,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gray-100); border: 1px solid var(--gray-200);
+  padding: 6px 14px; border-radius: 100px;
+  font-size: 12px; font-weight: 500; color: var(--gray-600);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.hero-tag::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--green); border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(42px, 5vw, 72px);
+  line-height: 1.1; letter-spacing: -2px;
+  color: var(--black); margin-bottom: 8px;
+}
+.hero-title em {
+  font-style: italic; color: var(--accent);
+}
+.hero-subtitle {
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 300; color: var(--gray-600);
+  line-height: 1.6; margin-bottom: 36px;
+  max-width: 480px;
+}
+.hero-subtitle strong { color: var(--black); font-weight: 500; }
+.hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--black); color: var(--white);
+  padding: 14px 28px; border-radius: 100px;
+  font-size: 15px; font-weight: 500; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+}
+.btn-primary:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(193,127,62,0.3); }
+.btn-secondary {
+  color: var(--black); font-size: 14px; font-weight: 500;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  border-bottom: 1.5px solid var(--black);
+  padding-bottom: 2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-secondary:hover { color: var(--accent); border-color: var(--accent); }
+.hero-stats {
+  display: flex; gap: 32px; margin-top: 48px;
+  padding-top: 32px; border-top: 1px solid var(--gray-200);
+}
+.stat-item { }
+.stat-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px; color: var(--black); display: block;
+}
+.stat-label { font-size: 12px; color: var(--gray-400); letter-spacing: 0.5px; }
+
+/* POS 展示區 */
+.hero-visual {
+  position: relative;
+  display: flex; justify-content: center; align-items: center;
+}
+.pos-mockup {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06);
+  width: 100%; max-width: 520px;
+  animation: float 4s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.mockup-bar {
+  background: var(--black); padding: 12px 20px;
+  display: flex; gap: 8px; align-items: center;
+}
+.mockup-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.mockup-title {
+  color: rgba(255,255,255,0.6); font-size: 12px;
+  font-family: 'Space Mono', monospace;
+  margin-left: auto;
+}
+.mockup-tabs {
+  display: flex; background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+.mockup-tab {
+  flex: 1; padding: 12px; text-align: center;
+  font-size: 12px; font-weight: 500; color: var(--gray-400);
+  cursor: pointer;
+}
+.mockup-tab.active {
+  color: var(--black); background: var(--white);
+  border-bottom: 2px solid var(--accent);
+}
+.mockup-body { padding: 16px; background: var(--gray-50); }
+.mockup-cats {
+  display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.mockup-cat {
+  padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 500;
+  background: var(--white); border: 1.5px solid var(--gray-200); color: var(--gray-600);
+  cursor: pointer;
+}
+.mockup-cat.active {
+  background: var(--black); border-color: var(--black); color: var(--white);
+}
+.mockup-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.mockup-item {
+  background: var(--white); border-radius: 10px;
+  padding: 12px; border: 1.5px solid var(--gray-200);
+  cursor: pointer; transition: all 0.15s;
+}
+.mockup-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+.mockup-item-name { font-size: 10px; font-weight: 500; color: var(--black); margin-bottom: 4px; line-height: 1.3; }
+.mockup-item-price { font-size: 13px; font-weight: 700; color: var(--accent); }
+.mockup-item-tags { display: flex; gap: 3px; margin-top: 5px; flex-wrap: wrap; }
+.mockup-item-tag {
+  font-size: 9px; padding: 1px 5px; border-radius: 3px;
+  background: var(--gray-100); color: var(--gray-600);
+}
+
+/* ── PAIN POINTS ── */
+#pain {
+  padding: 100px 5%;
+  background: var(--black); color: var(--white);
+}
+.section-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 1.15; letter-spacing: -1.5px;
+  margin-bottom: 60px;
+}
+.pain-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px;
+}
+.pain-item {
+  padding: 32px; border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.3s, border-color 0.3s;
+}
+.pain-item:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(193,127,62,0.3);
+}
+.pain-icon { font-size: 32px; margin-bottom: 16px; display: block; }
+.pain-q {
+  font-size: 16px; font-weight: 500; margin-bottom: 10px;
+  color: var(--white);
+}
+.pain-a { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+.pain-a strong { color: var(--accent-light); }
+
+/* ── PLANS ── */
+#plans {
+  padding: 100px 5%;
+  background: var(--gray-50);
+}
+.plans-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-end; margin-bottom: 48px;
+  flex-wrap: wrap; gap: 16px;
+}
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px; align-items: start;
+}
+.plan-card {
+  background: var(--white); border-radius: 20px;
+  border: 1.5px solid var(--gray-200);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.1);
+}
+.plan-card.featured {
+  border-color: var(--black); border-width: 2px;
+  position: relative;
+}
+.plan-badge {
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--black); color: var(--white);
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  padding: 4px 16px; border-radius: 0 0 10px 10px;
+  white-space: nowrap;
+}
+.plan-header { padding: 28px 24px 20px; }
+.plan-name {
+  font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--gray-400);
+  margin-bottom: 10px;
+}
+.plan-price {
+  font-family: 'DM Serif Display', serif;
+  font-size: 40px; letter-spacing: -1px; color: var(--black);
+  line-height: 1;
+}
+.plan-price span { font-size: 16px; color: var(--gray-400); font-family: 'Noto Sans TC'; letter-spacing: 0; }
+.plan-desc { font-size: 13px; color: var(--gray-600); margin-top: 10px; line-height: 1.5; }
+.plan-divider { height: 1px; background: var(--gray-200); margin: 0 24px; }
+.plan-features { padding: 20px 24px 28px; }
+.plan-feature {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--gray-600);
+  margin-bottom: 10px; line-height: 1.4;
+}
+.plan-feature .check { color: var(--green); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.plan-feature .dash { color: var(--gray-300); font-size: 14px; flex-shrink: 0; }
+.plan-feature.highlight { color: var(--black); font-weight: 500; }
+.plan-cta {
+  display: block; margin: 0 24px 24px;
+  padding: 12px; border-radius: 10px;
+  text-align: center; text-decoration: none;
+  font-size: 14px; font-weight: 600;
+  background: var(--gray-100); color: var(--black);
+  transition: all 0.2s;
+}
+.plan-cta:hover { background: var(--gray-200); }
+.plan-card.featured .plan-cta {
+  background: var(--black); color: var(--white);
+}
+.plan-card.featured .plan-cta:hover { background: var(--accent); }
+.plan-card.custom .plan-header { background: var(--black); }
+.plan-card.custom .plan-name { color: rgba(255,255,255,0.5); }
+.plan-card.custom .plan-price { color: var(--white); }
+.plan-card.custom .plan-desc { color: rgba(255,255,255,0.5); }
+.plan-card.custom .plan-cta { background: var(--accent); color: var(--white); }
+.plan-card.custom .plan-cta:hover { background: var(--accent-dark); }
+
+/* ── INDUSTRIES ── */
+#industries {
+  padding: 100px 5%;
+  background: var(--white);
+}
+.industries-tabs {
+  display: flex; gap: 8px; margin-bottom: 40px; flex-wrap: wrap;
+}
+.ind-tab {
+  padding: 8px 18px; border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  border: 1.5px solid var(--gray-200); background: var(--white);
+  color: var(--gray-600); cursor: pointer; transition: all 0.2s;
+}
+.ind-tab.active, .ind-tab:hover {
+  background: var(--black); border-color: var(--black);
+  color: var(--white);
+}
+.industry-content { display: none; }
+.industry-content.active { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.industry-info {}
+.industry-badge {
+  display: inline-block;
+  padding: 4px 12px; border-radius: 100px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 16px;
+}
+.badge-advanced { background: rgba(61,122,92,0.1); color: var(--green); }
+.badge-premium { background: rgba(193,127,62,0.1); color: var(--accent-dark); }
+.badge-basic { background: var(--gray-100); color: var(--gray-600); }
+.industry-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 3vw, 42px); letter-spacing: -1px;
+  line-height: 1.15; margin-bottom: 16px;
+}
+.industry-desc {
+  font-size: 15px; color: var(--gray-600); line-height: 1.7;
+  margin-bottom: 24px;
+}
+.industry-features { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.industry-features li {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; color: var(--gray-800);
+}
+.industry-features li::before {
+  content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0;
+}
+.industry-demo {
+  background: var(--gray-50); border-radius: 20px;
+  border: 1.5px solid var(--gray-200);
+  overflow: hidden;
+}
+.demo-header {
+  background: var(--black); padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.demo-dots { display: flex; gap: 6px; }
+.demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+.demo-title { font-family: 'Space Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); margin-left: auto; }
+.demo-body { padding: 16px; }
+.demo-cats { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.demo-cat {
+  padding: 4px 10px; border-radius: 100px; font-size: 10px; font-weight: 500;
+  background: var(--white); border: 1px solid var(--gray-200); color: var(--gray-600);
+}
+.demo-cat.active { background: var(--black); border-color: var(--black); color: var(--white); }
+.demo-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.demo-item {
+  background: var(--white); border-radius: 10px; padding: 10px;
+  border: 1px solid var(--gray-200);
+}
+.demo-item-img {
+  width: 100%; height: 60px; border-radius: 6px;
+  object-fit: cover; margin-bottom: 8px;
+  background: var(--gray-200);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.demo-item-name { font-size: 10px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
+.demo-item-price { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+/* ── COMPARE ── */
+#compare {
+  padding: 100px 5%;
+  background: var(--gray-50);
+}
+.compare-table {
+  width: 100%; border-collapse: collapse; margin-top: 40px;
+  background: var(--white); border-radius: 16px; overflow: hidden;
+  border: 1.5px solid var(--gray-200);
+}
+.compare-table th {
+  padding: 16px 20px; text-align: center;
+  font-size: 13px; font-weight: 700;
+  background: var(--black); color: var(--white);
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+.compare-table th:first-child { text-align: left; }
+.compare-table th.us { background: var(--accent); }
+.compare-table td {
+  padding: 14px 20px; font-size: 13px; color: var(--gray-600);
+  border-bottom: 1px solid var(--gray-100);
+  border-right: 1px solid var(--gray-100);
+  text-align: center;
+}
+.compare-table td:first-child { text-align: left; font-weight: 500; color: var(--black); }
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table td.us { background: rgba(193,127,62,0.04); color: var(--black); font-weight: 600; }
+.compare-yes { color: var(--green); font-weight: 700; }
+.compare-no { color: var(--gray-300); }
+.compare-partial { color: var(--accent); font-weight: 600; }
+
+/* ── FAQ ── */
+#faq {
+  padding: 100px 5%;
+  background: var(--white);
+}
+.faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
+.faq-item {
+  border: 1.5px solid var(--gray-200); border-radius: 16px;
+  overflow: hidden; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.faq-item:hover { border-color: var(--black); }
+.faq-item.open { border-color: var(--black); }
+.faq-q {
+  padding: 20px 24px; font-size: 14px; font-weight: 600;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.faq-icon {
+  width: 24px; height: 24px; flex-shrink: 0;
+  background: var(--gray-100); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: transform 0.2s, background 0.2s;
+}
+.faq-item.open .faq-icon { transform: rotate(45deg); background: var(--black); color: var(--white); }
+.faq-a {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s;
+  font-size: 13px; color: var(--gray-600); line-height: 1.7;
+  padding: 0 24px;
+}
+.faq-item.open .faq-a { max-height: 200px; padding: 0 24px 20px; }
+
+/* ── CTA ── */
+#cta {
+  padding: 100px 5%;
+  background: var(--black); color: var(--white);
+  text-align: center;
+}
+#cta .section-title { color: var(--white); margin-bottom: 16px; }
+#cta .section-title em { color: var(--accent); font-style: italic; }
+.cta-desc { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 40px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.cta-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.btn-line {
+  background: #00B900; color: var(--white);
+  padding: 14px 32px; border-radius: 100px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 10px;
+  transition: all 0.2s;
+}
+.btn-line:hover { background: #009900; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,185,0,0.3); }
+.btn-outline {
+  background: transparent; color: var(--white);
+  padding: 14px 32px; border-radius: 100px;
+  font-size: 15px; font-weight: 500; text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  transition: all 0.2s;
+}
+.btn-outline:hover { border-color: var(--white); background: rgba(255,255,255,0.05); }
+.cta-note {
+  margin-top: 24px; font-size: 12px; color: rgba(255,255,255,0.3);
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 32px 5%;
+  background: var(--black);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+}
+.footer-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px; color: var(--white);
+}
+.footer-logo span { color: var(--accent); }
+.footer-note { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+/* ── ANIMATIONS ── */
+.fade-in {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  #hero { grid-template-columns: 1fr; padding-top: 80px; }
+  .hero-visual { display: none; }
+  .pain-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .plans-grid { grid-template-columns: 1fr 1fr; }
+  .industry-content.active { grid-template-columns: 1fr; }
+  .industry-demo { display: block; }
+  .faq-grid { grid-template-columns: 1fr; }
+  .compare-table { font-size: 12px; }
+  .nav-links { display: none; }
+  #features > div:last-child { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 600px) {
+  .plans-grid { grid-template-columns: 1fr; }
+  .pain-grid { grid-template-columns: 1fr !important; }
+  .hero-stats { gap: 20px; }
+  /* 字型 fallback */
+  .hero-title { font-family: 'DM Serif Display', Georgia, 'Noto Serif TC', serif; font-size: 36px; letter-spacing: -1px; }
+  .plan-price { font-family: 'DM Serif Display', Georgia, 'Noto Serif TC', serif; }
+  .section-title { font-family: 'DM Serif Display', Georgia, 'Noto Serif TC', serif; }
+  .industry-name { font-family: 'DM Serif Display', Georgia, 'Noto Serif TC', serif; }
+  /* 功能卡片手機單欄 */
+  #features > div:last-child { grid-template-columns: 1fr !important; }
+  #features > div:last-child > div { padding: 22px !important; }
+  /* Demo 區塊 */
+  .industry-demo { margin-top: 24px; }
+  .demo-items { grid-template-columns: repeat(2,1fr); }
+  /* 比較表手機橫向捲動 */
+  #compare { overflow-x: auto; }
+  .compare-table { min-width: 540px; }
+  /* Hero stat 字型 */
+  .stat-num { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">川收 <span>Chuan</span>POS</div>
+  <ul class="nav-links">
+    <li><a href="#plans">方案</a></li>
+    <li><a href="#industries">行業範例</a></li>
+    <li><a href="#compare">比較</a></li>
+    <li><a href="#faq">常見問題</a></li>
+  </ul>
+  <a href="#cta" class="nav-cta">LINE 洽詢 →</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-tag">台中在地服務 · 到府安裝與教學</div>
+    <h1 class="hero-title">
+      小店專屬的<br>
+      <em>POS 店鋪</em><br>營運系統
+    </h1>
+    <p class="hero-subtitle">
+      收款、商品管理、營業統計，<strong>一套系統全部搞定</strong>。<br>
+      不收月租，一次買斷永久使用。<br>
+      適合咖啡廳、甜點店、選物店，以及剛創業的小品牌。
+    </p>
+    <div class="hero-actions">
+      <a href="#cta" class="btn-primary">LINE 免費諮詢 →</a>
+      <a href="#plans" class="btn-secondary">查看方案價格</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">$4,800</span>
+        <span class="stat-label">基本版起</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">$0</span>
+        <span class="stat-label">月租費用</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">買斷</span>
+        <span class="stat-label">永久使用</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="pos-mockup">
+      <div class="mockup-bar">
+        <div class="mockup-dot" style="background:#ff5f57"></div>
+        <div class="mockup-dot" style="background:#febc2e"></div>
+        <div class="mockup-dot" style="background:#28c840"></div>
+        <span class="mockup-title">川收 POS · localhost:3001</span>
+      </div>
+      <div class="mockup-tabs">
+        <div class="mockup-tab active">🏠 內用</div>
+        <div class="mockup-tab">🛍 外帶</div>
+        <div class="mockup-tab">🎁 購買商品</div>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-cats">
+          <div class="mockup-cat active">台灣單品</div>
+          <div class="mockup-cat">黃金60</div>
+          <div class="mockup-cat">精品拿鐵</div>
+          <div class="mockup-cat">其他飲品</div>
+        </div>
+        <div class="mockup-grid">
+          <div class="mockup-item">
+            <div class="mockup-item-name">阿里山 達邦部落 水洗</div>
+            <div class="mockup-item-price">$220</div>
+            <div class="mockup-item-tags">
+              <span class="mockup-item-tag">冰/熱</span>
+              <span class="mockup-item-tag">外帶-$30</span>
+            </div>
+          </div>
+          <div class="mockup-item" style="border-color:var(--accent)">
+            <div class="mockup-item-name">南投 神木村 蜜處理</div>
+            <div class="mockup-item-price">$180</div>
+            <div class="mockup-item-tags">
+              <span class="mockup-item-tag">冰/熱</span>
+              <span class="mockup-item-tag" style="background:rgba(193,127,62,0.1);color:var(--accent)">可升級</span>
+            </div>
+          </div>
+          <div class="mockup-item">
+            <div class="mockup-item-name">嘉義 光華村 黃波旁</div>
+            <div class="mockup-item-price">$230</div>
+            <div class="mockup-item-tags">
+              <span class="mockup-item-tag">冰/熱</span>
+              <span class="mockup-item-tag">外帶-$30</span>
+            </div>
+          </div>
+          <div class="mockup-item">
+            <div class="mockup-item-name">玫瑰鹽拿鐵</div>
+            <div class="mockup-item-price">$190</div>
+            <div class="mockup-item-tags">
+              <span class="mockup-item-tag">冰/熱</span>
+            </div>
+          </div>
+          <div class="mockup-item">
+            <div class="mockup-item-name">台中新社頭欏 水洗</div>
+            <div class="mockup-item-price">$190</div>
+            <div class="mockup-item-tags">
+              <span class="mockup-item-tag">冰/熱</span>
+              <span class="mockup-item-tag">外帶-$30</span>
+            </div>
+          </div>
+          <div class="mockup-item">
+            <div class="mockup-item-name">雲林 草嶺村 SL34</div>
+            <div class="mockup-item-price">$210</div>
+            <div class="mockup-item-tags">
+              <span class="mockup-item-tag">冰/熱</span>
+              <span class="mockup-item-tag">可升級</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN POINTS -->
+<section id="pain">
+  <div class="fade-in">
+    <div class="section-eyebrow">Why ChuanPOS</div>
+    <h2 class="section-title">你還在這樣<br>經營你的店嗎？</h2>
+  </div>
+  <div class="pain-grid">
+    <div class="pain-item fade-in">
+      <span class="pain-icon">📊</span>
+      <div class="pain-q">每天有生意，但月底不知道賺多少？</div>
+      <div class="pain-a">哪個商品最熱賣、哪些最賺錢、每天營業額多少，月底卻很難整理清楚。<strong>川收自動統計每一筆訂單與每日營收</strong>，不用再手動計算。</div>
+    </div>
+    <div class="pain-item fade-in">
+      <span class="pain-icon">📝</span>
+      <div class="pain-q">還在用紙本或 Excel 記帳？</div>
+      <div class="pain-a">手寫單據、Excel 表格，每天花很多時間整理，月底還要再算一次。<strong>有了系統，營業額自動統計完成</strong>，省時又省力。</div>
+    </div>
+    <div class="pain-item fade-in">
+      <span class="pain-icon">💸</span>
+      <div class="pain-q">POS 每個月都在扣錢？</div>
+      <div class="pain-a">很多 POS 系統月租制，每個月 $500、$1,000、甚至 $2,000，一年就要 $6,000–$24,000。<strong>川收一次買斷，不用再付月費。</strong></div>
+    </div>
+    <div class="pain-item fade-in">
+      <span class="pain-icon">😰</span>
+      <div class="pain-q">系統太複雜，員工學不會？</div>
+      <div class="pain-a">很多 POS 功能很多，操作反而更慢。<strong>川收只保留小店最常用的功能</strong>，介面簡單，員工幾分鐘就能上手。</div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section id="plans">
+  <div class="fade-in plans-header">
+    <div>
+      <div class="section-eyebrow">Pricing Plans</div>
+      <h2 class="section-title" style="margin-bottom:0">選擇適合你的方案</h2>
+    </div>
+    <p style="font-size:14px;color:var(--gray-400);max-width:240px;text-align:right">一次買斷，永久使用<br>不收任何月租或年費</p>
+  </div>
+  <div class="plans-grid fade-in">
+
+    <!-- 基本版 -->
+    <div class="plan-card">
+      <div class="plan-header">
+        <div class="plan-name">Basic · 基本版</div>
+        <div class="plan-price">$4,800<span> 元</span></div>
+        <div class="plan-desc">剛起步的小店，快速上線收款</div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="plan-features">
+        <div class="plan-feature"><span class="check">✓</span>商品分類 5 個</div>
+        <div class="plan-feature"><span class="check">✓</span>商品數量 20 個</div>
+        <div class="plan-feature"><span class="check">✓</span>商品規格設定</div>
+        <div class="plan-feature"><span class="check">✓</span>熱感應收據列印</div>
+        <div class="plan-feature"><span class="check">✓</span>自訂日期區間統計</div>
+        <div class="plan-feature"><span class="check">✓</span>Excel 訂單下載</div>
+        <div class="plan-feature"><span class="check">✓</span>提供下載安裝檔＋授權碼</div>
+      </div>
+      <a href="#cta" class="plan-cta">了解更多</a>
+    </div>
+
+    <!-- 進階版 -->
+    <div class="plan-card featured">
+      <div class="plan-badge">⭐ 最多人選擇</div>
+      <div class="plan-header">
+        <div class="plan-name">Advanced · 進階版</div>
+        <div class="plan-price">$8,800<span> 元</span></div>
+        <div class="plan-desc">功能完整，適合大多數小店</div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="plan-features">
+        <div class="plan-feature"><span class="check">✓</span>基本版全功能</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">20 個</strong></div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">100 個</strong></div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品圖片上傳</div>
+        <div class="plan-feature"><span class="check">✓</span>套餐組合設定</div>
+        <div class="plan-feature"><span class="check">✓</span>自訂收款方式</div>
+        <div class="plan-feature"><span class="check">✓</span>感謝語設定</div>
+        <div class="plan-feature"><span class="check">✓</span>每日結帳 / 營業日誌</div>
+        <div class="plan-feature"><span class="check">✓</span>付款方式管理</div>
+        <div class="plan-feature"><span class="check">✓</span>訂單修改 / 刪除</div>
+      </div>
+      <a href="#cta" class="plan-cta">立即諮詢</a>
+    </div>
+
+    <!-- 高級版 -->
+    <div class="plan-card">
+      <div class="plan-header">
+        <div class="plan-name">Premium · 高級版</div>
+        <div class="plan-price">$15,000<span> 元</span></div>
+        <div class="plan-desc">完整功能，適合有規模的店</div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="plan-features">
+        <div class="plan-feature"><span class="check">✓</span>進階版全功能</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">無限</strong></div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">無限</strong></div>
+        <div class="plan-feature"><span class="check">✓</span>桌號點餐</div>
+        <div class="plan-feature"><span class="check">✓</span>收據版面設計</div>
+        <div class="plan-feature"><span class="check">✓</span>多語言感謝語</div>
+        <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
+        <div class="plan-feature"><span class="check">✓</span>每月報表 Email 自動寄送</div>
+        <div class="plan-feature"><span class="check">✓</span>多人帳號</div>
+      </div>
+      <a href="#cta" class="plan-cta">了解更多</a>
+    </div>
+
+    <!-- 客製化 -->
+    <div class="plan-card custom">
+      <div class="plan-header">
+        <div class="plan-name">Custom · 客製化版</div>
+        <div class="plan-price">依需求<span> 報價</span></div>
+        <div class="plan-desc">完全客製化，打造你的專屬系統</div>
+      </div>
+      <div class="plan-divider" style="background:rgba(255,255,255,0.08)"></div>
+      <div class="plan-features">
+        <div class="plan-feature" style="color:rgba(255,255,255,0.7)"><span class="check">✓</span>客製化功能</div>
+        <div class="plan-feature" style="color:rgba(255,255,255,0.7)"><span class="check">✓</span>客製化排版</div>
+      </div>
+      <a href="#cta" class="plan-cta">聯絡洽詢</a>
+    </div>
+
+  </div>
+  <p style="text-align:center;margin-top:24px;font-size:12px;color:var(--gray-400)">
+    ※ 以上為買斷費用，購買後提供下載連結與授權碼，可自行安裝使用。如需到府安裝與教學，可另外加購。熱感應標籤機亦可加購。
+  </p>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="padding:100px 5%;background:var(--white)">
+  <div class="fade-in" style="text-align:center;margin-bottom:60px">
+    <div class="section-eyebrow">Core Features</div>
+    <h2 class="section-title" style="margin-bottom:12px">川收能幫你做到什麼？</h2>
+    <p style="font-size:15px;color:var(--gray-400);max-width:480px;margin:0 auto">用一套系統，搞定店裡每天最重要的事</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:960px;margin:0 auto" class="fade-in">
+    <div style="padding:32px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--gray-50)">
+      <div style="font-size:32px;margin-bottom:14px">💳</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px">快速收款</div>
+      <div style="font-size:14px;color:var(--gray-600);line-height:1.7">輸入商品或點選商品，即可快速建立訂單。支援多種付款方式，方便結帳收款。</div>
+    </div>
+    <div style="padding:32px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--gray-50)">
+      <div style="font-size:32px;margin-bottom:14px">📦</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px">商品管理</div>
+      <div style="font-size:14px;color:var(--gray-600);line-height:1.7">建立商品資料，包含名稱、價格、分類，商品修改也非常方便，隨時調整不費力。</div>
+    </div>
+    <div style="padding:32px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--gray-50)">
+      <div style="font-size:32px;margin-bottom:14px">📈</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px">每日營業統計</div>
+      <div style="font-size:14px;color:var(--gray-600);line-height:1.7">系統自動統計今日營業額、訂單數量、商品銷售排行，每天營運狀況一看就知道。</div>
+    </div>
+    <div style="padding:32px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--gray-50)">
+      <div style="font-size:32px;margin-bottom:14px">🗂</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px">訂單紀錄管理</div>
+      <div style="font-size:14px;color:var(--gray-600);line-height:1.7">所有訂單都會被保存。查詢某天營收、某筆訂單、某個商品銷售，都可以快速找到。</div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRIES -->
+<section id="industries">
+  <div class="fade-in">
+    <div class="section-eyebrow">Industry Examples</div>
+    <h2 class="section-title">適合各種<br>小型店舖</h2>
+  </div>
+  <div class="industries-tabs fade-in">
+    <button class="ind-tab active" onclick="showIndustry('cafe')">☕ 精品咖啡廳</button>
+    <button class="ind-tab" onclick="showIndustry('drink')">🧋 手搖飲料店</button>
+    <button class="ind-tab" onclick="showIndustry('dessert')">🍰 手作甜點店</button>
+    <button class="ind-tab" onclick="showIndustry('aroma')">🕯 香氛選物店</button>
+    <button class="ind-tab" onclick="showIndustry('market')">🎨 文創攤位</button>
+  </div>
+
+  <div id="ind-cafe" class="industry-content active fade-in">
+    <div class="industry-info">
+      <div class="industry-badge badge-premium">推薦 高級版</div>
+      <h3 class="industry-name">精品咖啡廳</h3>
+      <p class="industry-desc">複雜的品項規格、升級套餐、外國客人⋯⋯精品咖啡廳的需求遠比一般飲料店複雜。川收高級版完整支援。</p>
+      <ul class="industry-features">
+        <li>台灣各產區單品咖啡，分類管理無上限</li>
+        <li>冰 / 熱 / 升級套組 彈性設定</li>
+        <li>多語言感謝語，輕鬆接待外國客人</li>
+        <li>桌號點餐，輕鬆管理外帶內用</li>
+        <li>每月報表自動寄信，老闆輕鬆掌握</li>
+      </ul>
+    </div>
+    <div class="industry-demo">
+      <div class="demo-header">
+        <div class="demo-dots">
+          <div class="demo-dot" style="background:#ff5f57"></div>
+          <div class="demo-dot" style="background:#febc2e"></div>
+          <div class="demo-dot" style="background:#28c840"></div>
+        </div>
+        <span class="demo-title">精品咖啡廳 Demo</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-cats">
+          <div class="demo-cat active">台灣單品</div>
+          <div class="demo-cat">黃金60</div>
+          <div class="demo-cat">拿鐵系列</div>
+          <div class="demo-cat">其他飲品</div>
+        </div>
+        <div class="demo-items">
+          <div class="demo-item">
+            <div class="demo-item-img">☕</div>
+            <div class="demo-item-name">阿里山 達邦部落 水洗</div>
+            <div class="demo-item-price">$220</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">☕</div>
+            <div class="demo-item-name">南投 神木村 蜜處理</div>
+            <div class="demo-item-price">$180</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🥛</div>
+            <div class="demo-item-name">玫瑰鹽拿鐵</div>
+            <div class="demo-item-price">$190</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">☕</div>
+            <div class="demo-item-name">嘉義 光華村 日曬</div>
+            <div class="demo-item-price">$230</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ind-drink" class="industry-content fade-in">
+    <div class="industry-info">
+      <div class="industry-badge badge-advanced">推薦 進階版</div>
+      <h3 class="industry-name">手搖飲料店</h3>
+      <p class="industry-desc">快速點餐、多種甜度冰量選項、外帶為主。進階版讓你輕鬆管理每日出杯數與熱銷品項。</p>
+      <ul class="industry-features">
+        <li>甜度 / 冰量規格自由設定</li>
+        <li>外帶快速點餐模式</li>
+        <li>感謝語自訂，增加回客率</li>
+        <li>每日結帳報表，快速對帳</li>
+        <li>多種收款方式管理</li>
+      </ul>
+    </div>
+    <div class="industry-demo">
+      <div class="demo-header">
+        <div class="demo-dots">
+          <div class="demo-dot" style="background:#ff5f57"></div>
+          <div class="demo-dot" style="background:#febc2e"></div>
+          <div class="demo-dot" style="background:#28c840"></div>
+        </div>
+        <span class="demo-title">手搖飲料店 Demo</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-cats">
+          <div class="demo-cat active">台灣茶</div>
+          <div class="demo-cat">奶茶系列</div>
+          <div class="demo-cat">果茶</div>
+        </div>
+        <div class="demo-items">
+          <div class="demo-item">
+            <div class="demo-item-img">🧋</div>
+            <div class="demo-item-name">珍珠奶茶</div>
+            <div class="demo-item-price">$65</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🍵</div>
+            <div class="demo-item-name">四季春茶</div>
+            <div class="demo-item-price">$45</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🧋</div>
+            <div class="demo-item-name">烏龍拿鐵</div>
+            <div class="demo-item-price">$75</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🍓</div>
+            <div class="demo-item-name">草莓果茶</div>
+            <div class="demo-item-price">$80</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ind-dessert" class="industry-content fade-in">
+    <div class="industry-info">
+      <div class="industry-badge badge-advanced">推薦 進階版</div>
+      <h3 class="industry-name">手作甜點店</h3>
+      <p class="industry-desc">商品圖片讓客人一眼選擇、感謝語增加品牌溫度，進階版就能滿足甜點店的所有需求。</p>
+      <ul class="industry-features">
+        <li>商品圖片上傳，讓甜點更誘人</li>
+        <li>規格設定（口味 / 尺寸 / 數量）</li>
+        <li>感謝語設定，附上社群帳號</li>
+        <li>商品銷售統計，掌握人氣品項</li>
+        <li>Excel 下載，方便備貨規劃</li>
+      </ul>
+    </div>
+    <div class="industry-demo">
+      <div class="demo-header">
+        <div class="demo-dots">
+          <div class="demo-dot" style="background:#ff5f57"></div>
+          <div class="demo-dot" style="background:#febc2e"></div>
+          <div class="demo-dot" style="background:#28c840"></div>
+        </div>
+        <span class="demo-title">手作甜點店 Demo</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-cats">
+          <div class="demo-cat active">蛋糕</div>
+          <div class="demo-cat">塔類</div>
+          <div class="demo-cat">餅乾禮盒</div>
+        </div>
+        <div class="demo-items">
+          <div class="demo-item">
+            <div class="demo-item-img">🎂</div>
+            <div class="demo-item-name">焦糖海鹽蛋糕</div>
+            <div class="demo-item-price">$180</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🥧</div>
+            <div class="demo-item-name">法式檸檬塔</div>
+            <div class="demo-item-price">$120</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🍰</div>
+            <div class="demo-item-name">草莓千層</div>
+            <div class="demo-item-price">$220</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🧁</div>
+            <div class="demo-item-name">抹茶紅豆捲</div>
+            <div class="demo-item-price">$160</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ind-aroma" class="industry-content fade-in">
+    <div class="industry-info">
+      <div class="industry-badge badge-advanced">推薦 進階版</div>
+      <h3 class="industry-name">香氛選物店</h3>
+      <p class="industry-desc">實體商品有多種規格，商品圖片讓選購更直覺。進階版的規格設定讓香氛、蠟燭管理輕鬆無比。</p>
+      <ul class="industry-features">
+        <li>商品規格設定（容量 / 香味 / 顏色）</li>
+        <li>商品圖片，讓選物更有感</li>
+        <li>購買商品模式，不需要內用外帶</li>
+        <li>收據作為購買憑證</li>
+        <li>每日銷售統計快速對帳</li>
+      </ul>
+    </div>
+    <div class="industry-demo">
+      <div class="demo-header">
+        <div class="demo-dots">
+          <div class="demo-dot" style="background:#ff5f57"></div>
+          <div class="demo-dot" style="background:#febc2e"></div>
+          <div class="demo-dot" style="background:#28c840"></div>
+        </div>
+        <span class="demo-title">香氛選物店 Demo</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-cats">
+          <div class="demo-cat active">香氛蠟燭</div>
+          <div class="demo-cat">擴香</div>
+          <div class="demo-cat">禮盒組</div>
+        </div>
+        <div class="demo-items">
+          <div class="demo-item">
+            <div class="demo-item-img">🕯</div>
+            <div class="demo-item-name">玫瑰香氛蠟燭 100g</div>
+            <div class="demo-item-price">$380</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🌿</div>
+            <div class="demo-item-name">森林擴香瓶 200ml</div>
+            <div class="demo-item-price">$580</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🕯</div>
+            <div class="demo-item-name">柑橘蠟燭 200g</div>
+            <div class="demo-item-price">$480</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🎁</div>
+            <div class="demo-item-name">節日禮盒組</div>
+            <div class="demo-item-price">$980</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ind-market" class="industry-content fade-in">
+    <div class="industry-info">
+      <div class="industry-badge badge-basic">推薦 基本版</div>
+      <h3 class="industry-name">文創市集攤位</h3>
+      <p class="industry-desc">市集擺攤不需要複雜功能，基本版讓你快速收款、記錄當日營業額，輕巧好帶。</p>
+      <ul class="industry-features">
+        <li>快速點餐收款，不拖延排隊</li>
+        <li>現金、LINE Pay 等多種收款</li>
+        <li>當日統計，即時掌握銷售</li>
+        <li>熱感應收據列印</li>
+        <li>輕量化，筆電即可運行</li>
+      </ul>
+    </div>
+    <div class="industry-demo">
+      <div class="demo-header">
+        <div class="demo-dots">
+          <div class="demo-dot" style="background:#ff5f57"></div>
+          <div class="demo-dot" style="background:#febc2e"></div>
+          <div class="demo-dot" style="background:#28c840"></div>
+        </div>
+        <span class="demo-title">文創攤位 Demo</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-cats">
+          <div class="demo-cat active">手工藝品</div>
+          <div class="demo-cat">印刷品</div>
+          <div class="demo-cat">飾品</div>
+        </div>
+        <div class="demo-items">
+          <div class="demo-item">
+            <div class="demo-item-img">🎨</div>
+            <div class="demo-item-name">手繪明信片</div>
+            <div class="demo-item-price">$80</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">👜</div>
+            <div class="demo-item-name">手工帆布袋</div>
+            <div class="demo-item-price">$350</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">📎</div>
+            <div class="demo-item-name">壓克力吊飾</div>
+            <div class="demo-item-price">$120</div>
+          </div>
+          <div class="demo-item">
+            <div class="demo-item-img">🖼</div>
+            <div class="demo-item-name">插畫海報 A3</div>
+            <div class="demo-item-price">$250</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare">
+  <div class="fade-in">
+    <div class="section-eyebrow">VS. Competitors</div>
+    <h2 class="section-title">為什麼選擇<br>川收 ChuanPOS？</h2>
+  </div>
+  <table class="compare-table fade-in">
+    <thead>
+      <tr>
+        <th>功能 / 項目</th>
+        <th class="us">川收 ChuanPOS</th>
+        <th>訂閱制系統 A</th>
+        <th>平板 POS 系統 B</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>費用模式</td>
+        <td class="us compare-yes">一次買斷</td>
+        <td class="compare-no">月租 $800–1,500</td>
+        <td class="compare-no">月租 $500–2,000</td>
+      </tr>
+      <tr>
+        <td>一年總費用（進階功能）</td>
+        <td class="us compare-yes">$8,800 永久</td>
+        <td class="compare-no">$9,600–18,000</td>
+        <td class="compare-no">$6,000–24,000</td>
+      </tr>
+      <tr>
+        <td>到府安裝＋教學</td>
+        <td class="us compare-yes">✓ 含括在內</td>
+        <td class="compare-no">需自行設定</td>
+        <td class="compare-partial">加價服務</td>
+      </tr>
+      <tr>
+        <td>台中在地支援</td>
+        <td class="us compare-yes">✓ 可面對面</td>
+        <td class="compare-no">線上客服</td>
+        <td class="compare-no">線上客服</td>
+      </tr>
+      <tr>
+        <td>網路斷線仍可使用</td>
+        <td class="us compare-yes">✓ 本地端運行</td>
+        <td class="compare-no">需要網路</td>
+        <td class="compare-partial">部分功能</td>
+      </tr>
+      <tr>
+        <td>客製化開發</td>
+        <td class="us compare-yes">✓ 接受客製</td>
+        <td class="compare-no">固定功能</td>
+        <td class="compare-no">固定功能</td>
+      </tr>
+      <tr>
+        <td>資料安全（本機儲存）</td>
+        <td class="us compare-yes">✓ 資料在你手上</td>
+        <td class="compare-partial">雲端儲存</td>
+        <td class="compare-partial">雲端儲存</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- WHY BUYOUT -->
+<section style="padding:80px 5%;background:var(--black);color:var(--white)">
+  <div class="fade-in" style="max-width:640px;margin:0 auto;text-align:center">
+    <div class="section-eyebrow">Why No Subscription</div>
+    <h2 class="section-title" style="color:var(--white);margin-bottom:20px">為什麼不做<br>月租 POS？</h2>
+    <p style="font-size:16px;color:rgba(255,255,255,0.55);line-height:1.9;margin-bottom:32px">
+      很多 POS 系統採用訂閱制，因為這樣每個月都可以持續收費。<br>
+      但對小店來說，其實負擔很重。<br><br>
+      所以川收選擇：<strong style="color:var(--accent-light);font-size:20px">一次買斷</strong><br>
+      買了之後，就可以一直使用。<br>
+      不用再擔心每個月被系統扣錢。
+    </p>
+    <a href="#plans" class="btn-primary" style="display:inline-flex">查看方案價格 →</a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="fade-in">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-title">常見問題</h2>
+  </div>
+  <div class="faq-grid fade-in">
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">需要什麼設備？安裝困難嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">只需要一台 Windows 電腦。購買後下載 .exe 安裝檔，點兩下安裝、輸入授權碼即可使用，不需要任何技術背景。如需到府安裝與教學，可另外加購。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">沒有網路可以使用嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">可以。系統是本地端運作，即使沒有網路，也能正常使用收款與統計功能。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">資料安全嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">所有資料都存在你的電腦裡，不會上傳到雲端，資料完全由店家掌控。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">外縣市可以安裝嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">可以。購買後提供下載安裝檔與授權碼，全台皆可自行安裝使用。如需到府安裝與教學，台中地區免車馬費，外縣市酌收車馬費，歡迎先 LINE 詢問。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">不會用怎麼辦？<div class="faq-icon">+</div></div>
+      <div class="faq-a">安裝時會提供完整操作教學，之後也可以透過 LINE 詢問使用問題。大部分店家幾分鐘就能上手。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">可以先試用再決定嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">可以！你現在就能在頁面上體驗各行業的 Demo 展示。如需完整說明，歡迎 LINE 洽詢。</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="fade-in">
+    <div class="section-eyebrow" style="color:var(--accent-light)">Get Started</div>
+    <h2 class="section-title">準備好讓你的店<br><em>更有效率</em>了嗎？</h2>
+    <p class="cta-desc">不用月租，一次買斷永久使用。台中在地到府安裝，從設定到教學全包。</p>
+    <div class="cta-actions">
+      <a href="https://line.me" class="btn-line">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        LINE 免費諮詢
+      </a>
+      <a href="#plans" class="btn-outline">查看方案價格</a>
+    </div>
+    <p class="cta-note">回覆時間：週一至週六 10:00–20:00</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">川收 <span>Chuan</span>POS</div>
+  <p class="footer-note">© 2026 ChuanPOS · 台中在地小店點餐系統 · 一次買斷，永久使用</p>
+</footer>
+
+<script>
+// Intersection Observer for fade-in
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// Industry tabs
+function showIndustry(id) {
+  document.querySelectorAll('.industry-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.ind-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('ind-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// FAQ toggle
+function toggleFaq(el) {
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+</script>
+
+</body>
+</html>
