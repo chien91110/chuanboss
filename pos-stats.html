@@ -112,6 +112,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 @media(max-width:700px){
   #bottom-nav{top:auto;bottom:0;left:0;right:0;width:auto;height:56px;flex-direction:row;border-right:none;border-top:1px solid var(--gray-200);padding:0;}
   .bottom-nav-btn{padding:0;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:480px){
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .kpi-val{font-size:22px;}
+  .period-tabs{gap:4px;}
+  .period-tab{padding:6px 10px;font-size:12px;}
+  .custom-range{gap:4px;}
+  .custom-range input[type=date]{flex:1;min-width:0;font-size:12px;}
+  .chart-card,.business-day-wrap{padding:12px;}
 }
 
 /* SPINNER */

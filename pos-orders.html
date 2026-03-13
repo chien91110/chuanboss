@@ -115,6 +115,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   #bottom-nav{top:auto;bottom:0;left:0;right:0;width:auto;height:56px;flex-direction:row;border-right:none;border-top:1px solid var(--gray-200);padding:0;}
   .bottom-nav-btn{padding:0;}
 }
+@media(max-width:480px){
+  #daily-summary{grid-template-columns:1fr;gap:8px;}
+  .filter-bar{flex-wrap:wrap;gap:6px;}
+  .filter-bar select{flex:1;min-width:0;}
+  .date-range-row{gap:4px;}
+  .date-range-input{flex:1;min-width:0;font-size:12px;}
+  .btn-range-apply{padding:7px 12px;font-size:12px;}
+  .order-group-header{font-size:12px;}
+  .order-subtotal{font-size:11px;}
+}
 
 /* SPINNER */
 .full-spinner{position:fixed;inset:0;background:var(--gray-50);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:500;}
