@@ -386,13 +386,13 @@ input::placeholder { color: var(--gray-400); }
 
         <hr class="form-divider">
 
-        <div class="checkbox-group">
+        <label class="checkbox-group" for="reg-marketing" style="cursor:pointer">
           <input type="checkbox" id="reg-marketing">
-          <label class="checkbox-label" for="reg-marketing">
+          <div class="checkbox-label">
             <strong>同意接收川收的最新消息與優惠</strong><br>
             我們會不定期發送系統更新、功能介紹與專屬優惠，你可以隨時取消訂閱。
-          </label>
-        </div>
+          </div>
+        </label>
 
         <button class="btn-submit" id="btn-register" onclick="handleRegister()">開始 20 天免費試用</button>
       </div>
