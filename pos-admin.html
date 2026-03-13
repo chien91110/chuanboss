@@ -14,60 +14,55 @@
   --accent: #c17f3e; --accent-light: #e8c99a; --green: #3d7a5c; --red: #c0392b;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-bottom:16px;padding-left:72px;}@media(max-width:700px){body{padding-left:0;padding-bottom:72px;}}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-bottom:16px;padding-left:72px;}
+@media(max-width:700px){body{padding-left:0;padding-bottom:72px;}}
 
-/* NAV */
-#top-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
+#top-nav{position:fixed;top:0;left:72px;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
+@media(max-width:700px){#top-nav{left:0;}}
 .nav-logo-small{color:white;font-weight:700;font-size:15px;}
 .nav-logo-small span{color:var(--accent-light);}
-.nav-title{color:rgba(255,255,255,0.6);font-size:13px;flex:1;}
+.nav-brand{color:rgba(255,255,255,0.5);font-size:12px;flex:1;}
+.nav-brand em{color:var(--accent-light);font-style:normal;font-weight:600;}
 
-/* TABS */
-.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:sticky;top:52px;z-index:50;overflow-x:auto;scrollbar-width:none;margin-left:0;}
+.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:sticky;top:52px;z-index:50;overflow-x:auto;scrollbar-width:none;}
 .admin-tabs::-webkit-scrollbar{display:none;}
 .admin-tab{padding:14px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
 .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
-/* CONTENT */
 .tab-content{display:none;padding:16px;}
 .tab-content.active{display:block;}
 
-/* SECTION HEADER */
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .section-title{font-size:16px;font-weight:700;}
 .btn-add{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--black);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all 0.15s;}
-.btn-add:hover{background:#222;}
+.btn-add:hover{background:#333;}
 
-/* CARDS */
 .item-card{background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1.5px solid var(--gray-200);display:flex;align-items:center;gap:12px;}
-.item-card-img{width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.item-card-img{width:48px;height:48px;border-radius:8px;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;}
 .item-card-info{flex:1;min-width:0;}
 .item-card-name{font-size:14px;font-weight:600;margin-bottom:2px;}
 .item-card-sub{font-size:12px;color:var(--gray-400);}
 .item-card-price{font-size:15px;font-weight:700;color:var(--accent);font-family:'Space Mono',monospace;flex-shrink:0;}
-.item-card-actions{display:flex;gap:6px;flex-shrink:0;}
-.btn-edit{padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;}
-.btn-edit:hover{border-color:var(--accent);color:var(--accent);}
-.btn-del{padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;cursor:pointer;color:var(--gray-400);transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;}
-.btn-del:hover{border-color:var(--red);color:var(--red);}
+.item-card-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+.btn-sm{padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;color:var(--gray-600);}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm.danger:hover{border-color:var(--red);color:var(--red);}
+.btn-sm.success:hover{border-color:var(--green);color:var(--green);}
 
-/* EMPTY */
 .empty-card{background:var(--white);border-radius:14px;padding:40px;text-align:center;color:var(--gray-400);border:1.5px dashed var(--gray-200);}
 .empty-card .icon{font-size:36px;margin-bottom:12px;}
 .empty-card p{font-size:13px;line-height:1.6;}
 
-/* PLAN LIMIT BADGE */
 .limit-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--gray-100);border-radius:100px;font-size:12px;color:var(--gray-600);margin-bottom:16px;}
 .limit-badge.warning{background:#fff8e6;color:#e67e22;}
 
-/* CSV 上傳區 */
 .csv-section{background:var(--white);border-radius:14px;padding:20px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
 .csv-title{font-size:14px;font-weight:700;margin-bottom:8px;}
 .csv-desc{font-size:12px;color:var(--gray-600);line-height:1.6;margin-bottom:14px;}
 .csv-actions{display:flex;gap:10px;flex-wrap:wrap;}
-.btn-download-template{padding:8px 14px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
-.btn-download-template:hover{border-color:var(--accent);color:var(--accent);}
-.btn-upload-csv{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+.btn-outline{padding:8px 14px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-filled{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 .csv-preview{margin-top:14px;display:none;}
 .csv-preview-title{font-size:12px;font-weight:700;color:var(--gray-600);margin-bottom:8px;}
 .csv-table{width:100%;border-collapse:collapse;font-size:12px;}
@@ -76,7 +71,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .btn-confirm-import{margin-top:12px;padding:10px 20px;background:var(--green);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 
 /* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;padding:0;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
 .modal-overlay.show{display:flex;}
 .modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
 .modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:100px;margin:0 auto 20px;}
@@ -86,68 +81,101 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 .form-input{width:100%;padding:11px 13px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;outline:none;transition:border-color 0.15s;}
 .form-input:focus{border-color:var(--accent);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.form-select{width:100%;padding:11px 13px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;outline:none;background:var(--white);appearance:none;}
+.form-select{width:100%;padding:11px 13px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;outline:none;background:var(--white);}
 .form-select:focus{border-color:var(--accent);}
-
-/* 規格列表 */
-.variants-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
-.variant-row{display:flex;gap:8px;align-items:center;}
-.variant-row input{flex:1;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;}
-.variant-row input:focus{border-color:var(--accent);}
-.btn-remove-variant{padding:6px 10px;border:none;background:var(--gray-100);border-radius:6px;cursor:pointer;color:var(--gray-600);font-size:13px;}
-.btn-add-variant{padding:7px 12px;border:1.5px dashed var(--gray-200);border-radius:8px;background:none;font-size:12px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
-.btn-add-variant:hover{border-color:var(--accent);color:var(--accent);}
-
-/* 圖片上傳 */
-.img-upload-area{border:2px dashed var(--gray-200);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:4px;}
-.img-upload-area:hover{border-color:var(--accent);}
-.img-preview{width:80px;height:80px;object-fit:cover;border-radius:8px;margin:0 auto 8px;display:block;}
-.img-upload-hint{font-size:12px;color:var(--gray-400);}
-
 .modal-actions{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-100);}
 .btn-cancel{flex:1;padding:12px;background:var(--gray-100);border:none;border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer;}
 .btn-save{flex:2;padding:12px;background:var(--black);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;}
 .btn-save:disabled{background:var(--gray-400);cursor:not-allowed;}
 
-/* LOADING */
+/* 規格組 */
+.spec-hint{font-size:11px;color:var(--gray-400);margin-bottom:10px;}
+.spec-groups-wrap{display:flex;flex-direction:column;gap:12px;margin-bottom:10px;}
+.spec-group{border:1.5px solid var(--gray-200);border-radius:12px;overflow:hidden;}
+.spec-group-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);}
+.spec-group-label{font-size:11px;font-weight:700;color:var(--gray-600);white-space:nowrap;}
+.spec-group-input{flex:1;padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;}
+.spec-group-input:focus{border-color:var(--accent);}
+.btn-remove-group{padding:5px 8px;border:none;background:none;border-radius:6px;cursor:pointer;color:var(--red);font-size:14px;}
+.spec-opts{padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+.spec-opt-row{display:flex;gap:8px;align-items:center;}
+.spec-opt-row input[type=text]{flex:1;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;}
+.spec-opt-row input[type=text]:focus{border-color:var(--accent);}
+.spec-opt-price{width:80px;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Space Mono',monospace;outline:none;}
+.spec-opt-price:focus{border-color:var(--accent);}
+.spec-price-unit{font-size:11px;color:var(--gray-400);}
+.btn-remove-opt{padding:5px 8px;border:none;background:none;border-radius:6px;cursor:pointer;color:var(--gray-400);font-size:14px;}
+.btn-remove-opt:hover{color:var(--red);}
+.btn-add-opt{display:flex;align-items:center;gap:4px;padding:6px 12px;border:1.5px dashed var(--gray-200);border-radius:8px;background:none;font-size:12px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin:4px 14px 12px;transition:all 0.15s;}
+.btn-add-opt:hover{border-color:var(--accent);color:var(--accent);}
+.btn-add-spec-group{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border:1.5px dashed var(--gray-200);border-radius:12px;background:none;font-size:13px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
+.btn-add-spec-group:hover{border-color:var(--accent);color:var(--accent);}
+
+/* 圖片上傳 */
+.img-upload-area{border:2px dashed var(--gray-200);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.img-upload-area:hover{border-color:var(--accent);}
+.img-preview-thumb{width:80px;height:80px;object-fit:cover;border-radius:8px;margin:0 auto 8px;display:block;}
+.img-upload-hint{font-size:12px;color:var(--gray-400);}
+
+/* 訂單類型 */
+.card-section{background:var(--white);border-radius:14px;padding:20px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.toggle-label{font-size:14px;font-weight:600;}
+.toggle-sub{font-size:12px;color:var(--gray-400);margin-top:2px;}
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--gray-200);border-radius:100px;cursor:pointer;transition:background 0.2s;}
+.toggle-switch input:checked + .toggle-slider{background:var(--accent);}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:transform 0.2s;}
+.toggle-switch input:checked + .toggle-slider::before{transform:translateX(20px);}
+.order-type-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--gray-50);border-radius:10px;margin-bottom:8px;}
+.ot-emoji{font-size:20px;cursor:pointer;width:32px;text-align:center;border-radius:6px;padding:2px;}
+.ot-emoji:hover{background:var(--gray-200);}
+.ot-name-input{flex:1;padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;background:white;}
+.ot-name-input:focus{border-color:var(--accent);}
+.btn-add-ot{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border:1.5px dashed var(--gray-200);border-radius:10px;background:none;font-size:13px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin-top:4px;transition:all 0.15s;}
+.btn-add-ot:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Emoji Picker */
+.emoji-picker{display:none;position:fixed;background:white;border:1.5px solid var(--gray-200);border-radius:14px;padding:12px;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,0.15);width:260px;}
+.emoji-picker.show{display:block;}
+.emoji-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.emoji-btn{font-size:18px;padding:5px;border:none;background:none;cursor:pointer;border-radius:6px;text-align:center;line-height:1;}
+.emoji-btn:hover{background:var(--gray-100);}
+
 .loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;margin-right:6px;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
 .full-spinner{position:fixed;inset:0;background:var(--gray-50);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:500;}
 .spinner{width:36px;height:36px;border:3px solid var(--gray-200);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
 
-/* TOAST */
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:white;padding:10px 20px;border-radius:100px;font-size:13px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:white;padding:10px 20px;border-radius:100px;font-size:13px;z-index:600;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 
-/* SIDE NAV - 桌面 */
 #bottom-nav{position:fixed;top:52px;left:0;bottom:0;z-index:100;width:72px;background:var(--white);border-right:1px solid var(--gray-200);display:flex;flex-direction:column;padding:8px 0;}
-.bottom-nav-btn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;font-size:10px;color:var(--gray-400);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;padding:12px 0;border-radius:0;}
+.bottom-nav-btn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;font-size:10px;color:var(--gray-400);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;padding:12px 0;}
 .bottom-nav-btn .icon{font-size:22px;}
 .bottom-nav-btn.active{color:var(--accent);background:var(--gray-50);}
 .bottom-nav-btn:hover{background:var(--gray-50);color:var(--gray-600);}
-/* 手機版改回底部 */
 @media(max-width:700px){
   #bottom-nav{top:auto;bottom:0;left:0;right:0;width:auto;height:56px;flex-direction:row;border-right:none;border-top:1px solid var(--gray-200);padding:0;}
   .bottom-nav-btn{padding:0;}
 }
-
 @media(max-width:480px){.form-row{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
 <div id="top-nav">
   <div class="nav-logo-small">川收 <span>Chuan</span>POS</div>
-  <div class="nav-title">後台管理</div>
+  <div class="nav-brand" id="nav-brand">後台管理</div>
 </div>
 
 <div class="admin-tabs">
   <button class="admin-tab active" onclick="switchTab('products')">商品管理</button>
   <button class="admin-tab" onclick="switchTab('categories')">分類管理</button>
   <button class="admin-tab" onclick="switchTab('payments')">付款方式</button>
+  <button class="admin-tab" onclick="switchTab('ordertypes')">訂單類型</button>
 </div>
 
 <!-- 商品管理 -->
@@ -157,14 +185,12 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
     <button class="btn-add" onclick="openProductModal()">＋ 新增商品</button>
   </div>
   <div id="product-limit-badge"></div>
-
-  <!-- CSV 批量上傳（進階版以上） -->
   <div class="csv-section" id="csv-section" style="display:none">
     <div class="csv-title">📥 批量上傳商品</div>
     <div class="csv-desc">下載範本 CSV 填寫後上傳，可一次匯入多筆商品。<br>格式：商品名稱、價格、分類名稱、單位（可空白）</div>
     <div class="csv-actions">
-      <button class="btn-download-template" onclick="downloadTemplate()">⬇ 下載範本</button>
-      <button class="btn-upload-csv" onclick="document.getElementById('csv-file').click()">上傳 CSV</button>
+      <button class="btn-outline" onclick="downloadTemplate()">⬇ 下載範本</button>
+      <button class="btn-filled" onclick="document.getElementById('csv-file').click()">上傳 CSV</button>
       <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleCSV(event)">
     </div>
     <div class="csv-preview" id="csv-preview">
@@ -178,7 +204,6 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
       <button class="btn-confirm-import" onclick="importCSV()">確認匯入</button>
     </div>
   </div>
-
   <div id="products-list"></div>
 </div>
 
@@ -188,6 +213,7 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
     <div class="section-title">商品分類</div>
     <button class="btn-add" onclick="openCategoryModal()">＋ 新增分類</button>
   </div>
+  <div id="cat-limit-badge"></div>
   <div id="categories-list"></div>
 </div>
 
@@ -200,7 +226,31 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
   <div id="payments-list"></div>
 </div>
 
-<!-- BOTTOM NAV -->
+<!-- 訂單類型 -->
+<div class="tab-content" id="tab-ordertypes">
+  <div class="card-section">
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">啟用訂單類型</div>
+        <div class="toggle-sub">開啟後，結帳時可讓店員選擇訂單類型</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="ot-enabled">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div id="ot-content" style="display:none">
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:12px;">點擊 emoji 圖示可更換</div>
+      <div id="ot-list"></div>
+      <button class="btn-add-ot" onclick="addOTRow()">＋ 新增類型</button>
+      <div style="margin-top:16px;text-align:right;">
+        <button class="btn-save" style="flex:none;padding:10px 28px;" onclick="saveOTSettings()">儲存設定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDE NAV -->
 <div id="bottom-nav">
   <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
   <button class="bottom-nav-btn" onclick="go('pos-orders.html')"><span class="icon">📋</span>訂單</button>
@@ -231,15 +281,12 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
     </div>
     <div class="form-group">
       <label class="form-label">商品分類</label>
-      <select class="form-select" id="p-category">
-        <option value="">不分類</option>
-      </select>
+      <select class="form-select" id="p-category"><option value="">不分類</option></select>
     </div>
-    <!-- 圖片（進階版以上） -->
     <div class="form-group" id="p-img-group" style="display:none">
       <label class="form-label">商品圖片</label>
       <div class="img-upload-area" onclick="document.getElementById('p-img-file').click()">
-        <img id="p-img-preview" class="img-preview" style="display:none">
+        <img id="p-img-preview" class="img-preview-thumb" style="display:none">
         <div class="img-upload-hint" id="p-img-hint">點擊上傳圖片</div>
       </div>
       <input type="file" id="p-img-file" accept="image/*" style="display:none" onchange="previewImg(event)">
@@ -247,9 +294,10 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
     </div>
     <!-- 規格 -->
     <div class="form-group">
-      <label class="form-label">規格選項（可選，例如：冰/熱）</label>
-      <div class="variants-list" id="variants-list"></div>
-      <button class="btn-add-variant" onclick="addVariantRow()">＋ 新增規格</button>
+      <label class="form-label">商品規格</label>
+      <div class="spec-hint" id="spec-hint"></div>
+      <div class="spec-groups-wrap" id="spec-groups-wrap"></div>
+      <button class="btn-add-spec-group" id="btn-add-spec" onclick="addSpecGroup()">＋ 新增規格種類</button>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-product')">取消</button>
@@ -292,6 +340,11 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
   </div>
 </div>
 
+<!-- Emoji Picker -->
+<div class="emoji-picker" id="emoji-picker">
+  <div class="emoji-grid" id="emoji-grid"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -300,13 +353,25 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const PLAN_LIMITS = { basic: { products: 10, categories: 5 }, advanced: { products: 20, categories: 20 }, premium: { products: Infinity, categories: Infinity } };
+const PLAN_LIMITS = {
+  basic:    { products: 10,       categories: 5,        specGroups: 1, specOptions: 3 },
+  advanced: { products: 20,       categories: 20,       specGroups: 2, specOptions: 3 },
+  premium:  { products: 50,       categories: Infinity, specGroups: 3, specOptions: 5 }
+};
+const PLAN_LABELS = {
+  basic:    { products: '試用基本版限制10個',  categories: '試用基本版限制5個' },
+  advanced: { products: '試用進階版限制20個', categories: '試用進階版限制20個' },
+  premium:  { products: '試用高級版限制50個', categories: '無限制' }
+};
+
+const EMOJIS = ['🏠','🛍','🎁','🍔','🍕','🍜','🍣','🍱','🍰','🎂','🧁','🥗','🍗','🌮','🌯','🍟','🧋','☕','🍵','🥤','🚗','✈️','🎮','📱','💼','🔑','🌸','⭐','❤️','🎵','🎨','📦','🧴','💄','👗','🏋️','🎯','🛒','💳','🏷','🎪','🎠','🌿','🍃','🌟','🔥','💎','🪴','🐾','🦋'];
 
 let currentUser = null, currentTrial = null;
 let categories = [], products = [], payments = [];
-let csvData = [];
-let editingVariants = [];
+let csvData = [], editingSpecGroups = [];
 let currentPlan = 'basic';
+let otSettings = { enabled: false, types: [] };
+let emojiTargetIdx = null;
 
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
@@ -314,15 +379,23 @@ async function init() {
   currentUser = session.user;
 
   const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
-  if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) { window.location.href = 'trial.html'; return; }
+  if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+    window.location.href = 'trial.html'; return;
+  }
   currentTrial = trial;
   currentPlan = trial.plan;
 
-  // 進階版以上顯示 CSV 上傳
-  if (currentPlan !== 'basic') document.getElementById('csv-section').style.display = 'block';
-  // 進階版以上顯示圖片上傳
-  if (currentPlan !== 'basic') document.getElementById('p-img-group').style.display = 'block';
+  const { data: profile } = await sb.from('profiles').select('brand_name').eq('id', currentUser.id).single();
+  if (profile?.brand_name) {
+    document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 後台管理 &nbsp;·&nbsp; 試用版`;
+  }
 
+  if (currentPlan !== 'basic') {
+    document.getElementById('csv-section').style.display = 'block';
+    document.getElementById('p-img-group').style.display = 'block';
+  }
+
+  await loadOTSettings();
   await loadAll();
   document.getElementById('spinner').style.display = 'none';
 }
@@ -341,20 +414,20 @@ async function loadAll() {
   renderPayments();
 }
 
-// ── TABS ──
 function switchTab(tab) {
-  document.querySelectorAll('.admin-tab').forEach((t,i) => t.classList.toggle('active', ['products','categories','payments'][i] === tab));
+  document.querySelectorAll('.admin-tab').forEach((t, i) =>
+    t.classList.toggle('active', ['products','categories','payments','ordertypes'][i] === tab));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
 }
 
 // ── PRODUCTS ──
 function renderProducts() {
-  const limit = PLAN_LIMITS[currentPlan].products;
+  const lim = PLAN_LIMITS[currentPlan];
   const count = products.length;
-  const badge = document.getElementById('product-limit-badge');
-  const limitLabel = limit === Infinity ? '無限制' : limit;
-  badge.innerHTML = `<span class="limit-badge ${limit !== Infinity && count >= limit * 0.8 ? 'warning' : ''}">商品數量：${count} / ${limitLabel}</span>`;
+  const pct = lim.products === Infinity ? 0 : count / lim.products;
+  document.getElementById('product-limit-badge').innerHTML =
+    `<span class="limit-badge${pct >= 0.8 ? ' warning' : ''}">商品數量：${count} / ${PLAN_LABELS[currentPlan].products}</span>`;
 
   const el = document.getElementById('products-list');
   if (!products.length) {
@@ -363,56 +436,60 @@ function renderProducts() {
   }
   el.innerHTML = products.map(p => {
     const cat = categories.find(c => c.id === p.category_id);
-    const varCount = p.product_variants?.length || 0;
-    return `
-    <div class="item-card">
-      <div class="item-card-img">
-        ${p.image_url ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}
-      </div>
+    const groups = new Set((p.product_variants || []).map(v => v.name.split('|')[0]));
+    return `<div class="item-card">
+      <div class="item-card-img">${p.image_url ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}</div>
       <div class="item-card-info">
         <div class="item-card-name">${p.name}</div>
-        <div class="item-card-sub">${cat ? cat.name : '未分類'} ${varCount > 0 ? `· ${varCount} 種規格` : ''} · ${p.unit || '份'}</div>
+        <div class="item-card-sub">${cat ? cat.name : '未分類'}${groups.size > 0 ? ` · ${groups.size} 種規格` : ''} · ${p.unit || '份'}</div>
       </div>
       <div class="item-card-price">$${p.price}</div>
       <div class="item-card-actions">
-        <button class="btn-edit" onclick="openProductModal('${p.id}')">編輯</button>
-        <button class="btn-del" onclick="deleteProduct('${p.id}')">刪除</button>
+        <button class="btn-sm success" onclick="copyProduct('${p.id}')">複製</button>
+        <button class="btn-sm" onclick="openProductModal('${p.id}')">編輯</button>
+        <button class="btn-sm danger" onclick="deleteProduct('${p.id}')">刪除</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function openProductModal(productId = null) {
-  const limit = PLAN_LIMITS[currentPlan].products;
-  if (!productId && products.length >= limit) {
-    showToast(`試用版商品上限 ${limit} 個`); return;
+function openProductModal(productId = null, copyFromId = null) {
+  const lim = PLAN_LIMITS[currentPlan];
+  if (!productId && products.length >= lim.products) {
+    showToast('已達上限：' + PLAN_LABELS[currentPlan].products); return;
   }
-  // 填充分類選項
   const sel = document.getElementById('p-category');
   sel.innerHTML = '<option value="">不分類</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-
-  editingVariants = [];
-  document.getElementById('variants-list').innerHTML = '';
+  editingSpecGroups = [];
   document.getElementById('p-img-preview').style.display = 'none';
   document.getElementById('p-img-hint').style.display = 'block';
   document.getElementById('p-img-url').value = '';
+  document.getElementById('spec-hint').textContent =
+    `此版本可設定 ${lim.specGroups} 種規格，每種最多 ${lim.specOptions} 個選項`;
 
-  if (productId) {
-    const p = products.find(x => x.id === productId);
-    document.getElementById('product-modal-title').textContent = '編輯商品';
-    document.getElementById('product-id').value = p.id;
-    document.getElementById('p-name').value = p.name;
+  const srcId = productId || copyFromId;
+  if (srcId) {
+    const p = products.find(x => x.id === srcId);
+    document.getElementById('product-modal-title').textContent = productId ? '編輯商品' : '複製商品';
+    document.getElementById('product-id').value = productId || '';
+    document.getElementById('p-name').value = copyFromId ? p.name + '（複製）' : p.name;
     document.getElementById('p-price').value = p.price;
     document.getElementById('p-unit').value = p.unit || '';
     document.getElementById('p-category').value = p.category_id || '';
-    document.getElementById('p-img-url').value = p.image_url || '';
-    if (p.image_url) {
+    if (p.image_url && currentPlan !== 'basic') {
+      document.getElementById('p-img-url').value = p.image_url;
       document.getElementById('p-img-preview').src = p.image_url;
       document.getElementById('p-img-preview').style.display = 'block';
       document.getElementById('p-img-hint').style.display = 'none';
     }
-    editingVariants = (p.product_variants || []).map(v => ({ id: v.id, name: v.name, price_delta: v.price_delta || 0 }));
-    renderVariants();
+    // 還原規格（groupName|optionName 格式）
+    const byGroup = {};
+    (p.product_variants || []).forEach(v => {
+      const [gName, oName] = v.name.includes('|') ? v.name.split('|') : ['規格', v.name];
+      if (!byGroup[gName]) byGroup[gName] = [];
+      byGroup[gName].push({ name: oName, price_delta: v.price_delta || 0 });
+    });
+    editingSpecGroups = Object.entries(byGroup).map(([name, options]) => ({ name, options }));
   } else {
     document.getElementById('product-modal-title').textContent = '新增商品';
     document.getElementById('product-id').value = '';
@@ -421,38 +498,70 @@ function openProductModal(productId = null) {
     document.getElementById('p-unit').value = '';
     document.getElementById('p-category').value = '';
   }
+  renderSpecGroups();
   document.getElementById('modal-product').classList.add('show');
 }
 
-function renderVariants() {
-  const list = document.getElementById('variants-list');
-  list.innerHTML = editingVariants.map((v, i) => `
-    <div class="variant-row">
-      <input placeholder="規格名稱（如：冰）" value="${v.name}" oninput="editingVariants[${i}].name=this.value">
-      <input placeholder="價差（如：-30）" type="number" value="${v.price_delta}" oninput="editingVariants[${i}].price_delta=parseInt(this.value)||0" style="width:100px">
-      <button class="btn-remove-variant" onclick="removeVariant(${i})">✕</button>
-    </div>
-  `).join('');
+function copyProduct(id) {
+  const lim = PLAN_LIMITS[currentPlan];
+  if (products.length >= lim.products) { showToast('已達上限：' + PLAN_LABELS[currentPlan].products); return; }
+  openProductModal(null, id);
 }
 
-function addVariantRow() {
-  editingVariants.push({ name: '', price_delta: 0 });
-  renderVariants();
+// ── 規格 ──
+function renderSpecGroups() {
+  const lim = PLAN_LIMITS[currentPlan];
+  const wrap = document.getElementById('spec-groups-wrap');
+  wrap.innerHTML = editingSpecGroups.map((g, gi) => `
+    <div class="spec-group">
+      <div class="spec-group-head">
+        <span class="spec-group-label">規格 ${gi + 1}</span>
+        <input class="spec-group-input" placeholder="規格名稱（如：溫度）" value="${escHtml(g.name)}"
+          oninput="editingSpecGroups[${gi}].name=this.value">
+        <button class="btn-remove-group" onclick="removeSpecGroup(${gi})">✕</button>
+      </div>
+      <div class="spec-opts" id="spec-opts-${gi}">
+        ${g.options.map((o, oi) => `
+          <div class="spec-opt-row">
+            <input type="text" placeholder="選項（如：熱）" value="${escHtml(o.name)}"
+              oninput="editingSpecGroups[${gi}].options[${oi}].name=this.value">
+            <input class="spec-opt-price" type="number" placeholder="+0" value="${o.price_delta || ''}"
+              oninput="editingSpecGroups[${gi}].options[${oi}].price_delta=parseInt(this.value)||0">
+            <span class="spec-price-unit">元</span>
+            <button class="btn-remove-opt" onclick="removeSpecOpt(${gi},${oi})">✕</button>
+          </div>`).join('')}
+        ${g.options.length < lim.specOptions
+          ? `<button class="btn-add-opt" onclick="addSpecOpt(${gi})">＋ 新增選項</button>`
+          : `<div style="font-size:11px;color:var(--gray-400);padding:6px 14px 12px;">已達選項上限（${lim.specOptions}個）</div>`}
+      </div>
+    </div>`).join('');
+  document.getElementById('btn-add-spec').style.display =
+    editingSpecGroups.length >= lim.specGroups ? 'none' : 'flex';
 }
-function removeVariant(i) {
-  editingVariants.splice(i, 1);
-  renderVariants();
+
+function addSpecGroup() {
+  const lim = PLAN_LIMITS[currentPlan];
+  if (editingSpecGroups.length >= lim.specGroups) { showToast(`此版本最多 ${lim.specGroups} 種規格`); return; }
+  editingSpecGroups.push({ name: '', options: [{ name: '', price_delta: 0 }] });
+  renderSpecGroups();
 }
+function removeSpecGroup(gi) { editingSpecGroups.splice(gi, 1); renderSpecGroups(); }
+function addSpecOpt(gi) {
+  const lim = PLAN_LIMITS[currentPlan];
+  if (editingSpecGroups[gi].options.length >= lim.specOptions) { showToast(`最多 ${lim.specOptions} 個選項`); return; }
+  editingSpecGroups[gi].options.push({ name: '', price_delta: 0 });
+  renderSpecGroups();
+}
+function removeSpecOpt(gi, oi) { editingSpecGroups[gi].options.splice(oi, 1); renderSpecGroups(); }
 
 function previewImg(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     document.getElementById('p-img-preview').src = ev.target.result;
     document.getElementById('p-img-preview').style.display = 'block';
     document.getElementById('p-img-hint').style.display = 'none';
-    document.getElementById('p-img-url').value = ev.target.result; // base64 暫存
+    document.getElementById('p-img-url').value = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -464,27 +573,28 @@ async function saveProduct() {
   const category_id = document.getElementById('p-category').value || null;
   const image_url = document.getElementById('p-img-url').value || null;
   const productId = document.getElementById('product-id').value;
-
   if (!name || isNaN(price)) { showToast('請填寫商品名稱與售價'); return; }
 
   const btn = document.getElementById('btn-save-product');
   btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>儲存中...';
-
   try {
     let pid = productId;
     if (productId) {
       await sb.from('products').update({ name, price, unit, category_id, image_url }).eq('id', productId);
-      // 刪除舊規格
       await sb.from('product_variants').delete().eq('product_id', productId);
     } else {
       const { data } = await sb.from('products').insert({ user_id: currentUser.id, name, price, unit, category_id, image_url }).select().single();
       pid = data.id;
     }
-    // 新增規格
-    const validVariants = editingVariants.filter(v => v.name.trim());
-    if (validVariants.length > 0) {
-      await sb.from('product_variants').insert(validVariants.map(v => ({ product_id: pid, name: v.name, price_delta: v.price_delta })));
-    }
+    const allVariants = [];
+    editingSpecGroups.forEach(g => {
+      if (!g.name.trim()) return;
+      g.options.forEach(o => {
+        if (!o.name.trim()) return;
+        allVariants.push({ product_id: pid, name: `${g.name}|${o.name}`, price_delta: o.price_delta || 0 });
+      });
+    });
+    if (allVariants.length) await sb.from('product_variants').insert(allVariants);
     await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: 'product_save' });
     closeModal('modal-product');
     await loadAll();
@@ -496,32 +606,34 @@ async function saveProduct() {
 async function deleteProduct(id) {
   if (!confirm('確定要刪除這個商品嗎？')) return;
   await sb.from('products').delete().eq('id', id);
-  await loadAll();
-  showToast('已刪除');
+  await loadAll(); showToast('已刪除');
 }
 
 // ── CATEGORIES ──
 function renderCategories() {
-  const limit = PLAN_LIMITS[currentPlan].categories;
+  const lim = PLAN_LIMITS[currentPlan];
+  const count = categories.length;
+  document.getElementById('cat-limit-badge').innerHTML =
+    `<span class="limit-badge${lim.categories !== Infinity && count >= lim.categories ? ' warning' : ''}">商品分類：${count} / ${PLAN_LABELS[currentPlan].categories}</span>`;
+
   const el = document.getElementById('categories-list');
   if (!categories.length) {
     el.innerHTML = `<div class="empty-card"><div class="icon">🗂</div><p>還沒有分類<br>點右上角「新增分類」</p></div>`;
     return;
   }
-  el.innerHTML = `<div class="limit-badge" style="display:inline-flex;margin-bottom:12px">分類數量：${categories.length} / ${limit === Infinity ? '無限制' : limit}</div>` +
-    categories.map(c => `
+  el.innerHTML = categories.map(c => `
     <div class="item-card">
       <div class="item-card-info"><div class="item-card-name">${c.name}</div></div>
       <div class="item-card-actions">
-        <button class="btn-edit" onclick="openCategoryModal('${c.id}')">編輯</button>
-        <button class="btn-del" onclick="deleteCategory('${c.id}')">刪除</button>
+        <button class="btn-sm" onclick="openCategoryModal('${c.id}')">編輯</button>
+        <button class="btn-sm danger" onclick="deleteCategory('${c.id}')">刪除</button>
       </div>
     </div>`).join('');
 }
 
 function openCategoryModal(id = null) {
-  const limit = PLAN_LIMITS[currentPlan].categories;
-  if (!id && categories.length >= limit) { showToast(`試用版分類上限 ${limit} 個`); return; }
+  const lim = PLAN_LIMITS[currentPlan];
+  if (!id && categories.length >= lim.categories) { showToast('已達上限：' + PLAN_LABELS[currentPlan].categories); return; }
   document.getElementById('cat-modal-title').textContent = id ? '編輯分類' : '新增分類';
   document.getElementById('cat-id').value = id || '';
   document.getElementById('cat-name').value = id ? (categories.find(c => c.id === id)?.name || '') : '';
@@ -542,23 +654,22 @@ async function saveCategory() {
 async function deleteCategory(id) {
   if (!confirm('刪除此分類？分類下的商品將變為未分類。')) return;
   await sb.from('categories').delete().eq('id', id);
-  await loadAll();
-  showToast('已刪除');
+  await loadAll(); showToast('已刪除');
 }
 
 // ── PAYMENTS ──
 function renderPayments() {
   const el = document.getElementById('payments-list');
   if (!payments.length) {
-    el.innerHTML = `<div class="empty-card"><div class="icon">💳</div><p>還沒有付款方式<br>預設會顯示現金、刷卡、LINE Pay</p></div>`;
+    el.innerHTML = `<div class="empty-card"><div class="icon">💳</div><p>還沒有付款方式<br>可新增現金、刷卡、LINE Pay 等</p></div>`;
     return;
   }
   el.innerHTML = payments.map(p => `
     <div class="item-card">
       <div class="item-card-info"><div class="item-card-name">${p.name}</div></div>
       <div class="item-card-actions">
-        <button class="btn-edit" onclick="openPaymentModal('${p.id}')">編輯</button>
-        <button class="btn-del" onclick="deletePayment('${p.id}')">刪除</button>
+        <button class="btn-sm" onclick="openPaymentModal('${p.id}')">編輯</button>
+        <button class="btn-sm danger" onclick="deletePayment('${p.id}')">刪除</button>
       </div>
     </div>`).join('');
 }
@@ -584,55 +695,116 @@ async function savePayment() {
 async function deletePayment(id) {
   if (!confirm('確定刪除？')) return;
   await sb.from('payment_methods').delete().eq('id', id);
-  await loadAll();
-  showToast('已刪除');
+  await loadAll(); showToast('已刪除');
 }
+
+// ── 訂單類型 ──
+async function loadOTSettings() {
+  const { data } = await sb.from('feature_logs')
+    .select('feature').eq('user_id', currentUser.id)
+    .like('feature', 'order_type_settings|%')
+    .order('used_at', { ascending: false }).limit(1);
+  if (data?.[0]) {
+    try { otSettings = JSON.parse(data[0].feature.replace(/^order_type_settings\|/, '')); } catch {}
+  }
+  if (!otSettings.types?.length) {
+    otSettings = { enabled: false, types: [
+      { emoji: '🏠', name: '內用' },
+      { emoji: '🛍', name: '外帶' },
+      { emoji: '🎁', name: '外送' }
+    ]};
+  }
+  document.getElementById('ot-enabled').checked = otSettings.enabled;
+  document.getElementById('ot-content').style.display = otSettings.enabled ? 'block' : 'none';
+  document.getElementById('ot-enabled').onchange = function() {
+    otSettings.enabled = this.checked;
+    document.getElementById('ot-content').style.display = this.checked ? 'block' : 'none';
+  };
+  renderOTList();
+}
+
+function renderOTList() {
+  document.getElementById('ot-list').innerHTML = otSettings.types.map((t, i) => `
+    <div class="order-type-row">
+      <span class="ot-emoji" onclick="openEmojiPicker(${i}, event)">${t.emoji}</span>
+      <input class="ot-name-input" value="${escHtml(t.name)}" placeholder="類型名稱"
+        oninput="otSettings.types[${i}].name=this.value">
+      <button class="btn-sm danger" onclick="removeOT(${i})">✕</button>
+    </div>`).join('');
+}
+
+function addOTRow() {
+  otSettings.types.push({ emoji: '🏷', name: '' });
+  renderOTList();
+}
+function removeOT(i) { otSettings.types.splice(i, 1); renderOTList(); }
+
+async function saveOTSettings() {
+  const payload = `order_type_settings|${JSON.stringify(otSettings)}`;
+  await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: payload });
+  showToast('訂單類型設定已儲存');
+}
+
+// ── Emoji Picker ──
+function openEmojiPicker(idx, e) {
+  e.stopPropagation();
+  emojiTargetIdx = idx;
+  const picker = document.getElementById('emoji-picker');
+  document.getElementById('emoji-grid').innerHTML = EMOJIS.map(em =>
+    `<button class="emoji-btn" onclick="selectEmoji('${em}')">${em}</button>`).join('');
+  const rect = e.target.getBoundingClientRect();
+  const top = rect.bottom + window.scrollY + 4;
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - 268));
+  picker.style.top = top + 'px';
+  picker.style.left = left + 'px';
+  picker.classList.add('show');
+}
+function selectEmoji(em) {
+  if (emojiTargetIdx !== null) {
+    otSettings.types[emojiTargetIdx].emoji = em;
+    renderOTList();
+    emojiTargetIdx = null;
+  }
+  document.getElementById('emoji-picker').classList.remove('show');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#emoji-picker') && !e.target.classList.contains('ot-emoji'))
+    document.getElementById('emoji-picker').classList.remove('show');
+});
 
 // ── CSV ──
 function downloadTemplate() {
   const csv = '商品名稱,價格,分類名稱,單位\n拿鐵,150,飲品,杯\n起司蛋糕,180,甜點,份\n手提袋,350,商品,個';
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '川收商品範本.csv';
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = '川收商品範本.csv'; a.click();
 }
-
 function handleCSV(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     const lines = ev.target.result.split('\n').filter(l => l.trim());
     csvData = [];
-    const tbody = document.getElementById('csv-tbody');
-    tbody.innerHTML = '';
-    // 跳過第一行標題
+    const tbody = document.getElementById('csv-tbody'); tbody.innerHTML = '';
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
       if (!cols[0] || !cols[1]) continue;
       const name = cols[0], price = parseInt(cols[1]), catName = cols[2] || '', unit = cols[3] || '份';
       const isDup = products.some(p => p.name === name);
       csvData.push({ name, price, catName, unit, isDup });
-      tbody.innerHTML += `<tr>
-        <td>${name}</td><td>$${price}</td><td>${catName||'未分類'}</td><td>${unit}</td>
-        <td style="color:${isDup ? 'var(--red)' : 'var(--green)'}">${isDup ? '重複略過' : '可匯入'}</td>
-      </tr>`;
+      tbody.innerHTML += `<tr><td>${name}</td><td>$${price}</td><td>${catName||'未分類'}</td><td>${unit}</td>
+        <td style="color:${isDup?'var(--red)':'var(--green)'}">${isDup?'重複略過':'可匯入'}</td></tr>`;
     }
     document.getElementById('csv-count').textContent = csvData.filter(r => !r.isDup).length;
     document.getElementById('csv-preview').style.display = 'block';
   };
-  reader.readAsText(file, 'UTF-8');
-  e.target.value = '';
+  reader.readAsText(file, 'UTF-8'); e.target.value = '';
 }
-
 async function importCSV() {
+  const lim = PLAN_LIMITS[currentPlan];
   const toImport = csvData.filter(r => !r.isDup && !isNaN(r.price));
   if (!toImport.length) { showToast('沒有可匯入的商品'); return; }
-  const limit = PLAN_LIMITS[currentPlan].products;
-  const available = limit - products.length;
-  const importing = toImport.slice(0, available);
-
+  const importing = toImport.slice(0, lim.products - products.length);
   for (const row of importing) {
     let catId = null;
     if (row.catName) {
@@ -652,19 +824,16 @@ async function importCSV() {
 }
 
 // ── HELPERS ──
+function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
-});
-
+document.querySelectorAll('.modal-overlay').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-
 function go(url) { window.location.href = url; }
-
 init();
 </script>
 </body>
