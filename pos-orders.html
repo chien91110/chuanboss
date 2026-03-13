@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>川收 ChuanPOS｜訂單紀錄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --black:#0a0a0a;--white:#fff;--gray-50:#f8f8f6;--gray-100:#f0efec;
+  --gray-200:#e2e0da;--gray-400:#9c9890;--gray-600:#5a5750;
+  --accent:#c17f3e;--accent-light:#e8c99a;--green:#3d7a5c;--red:#c0392b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-bottom:72px;}
+
+/* NAV */
+#top-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.nav-logo-small{color:white;font-weight:700;font-size:15px;}
+.nav-logo-small span{color:var(--accent-light);}
+.nav-title{color:rgba(255,255,255,0.6);font-size:13px;flex:1;}
+.nav-date{color:rgba(255,255,255,0.4);font-size:12px;font-family:'Space Mono',monospace;}
+
+/* FILTER BAR */
+#filter-bar{position:sticky;top:52px;z-index:50;background:var(--white);border-bottom:1px solid var(--gray-200);padding:10px 16px;display:flex;gap:8px;align-items:center;overflow-x:auto;scrollbar-width:none;}
+#filter-bar::-webkit-scrollbar{display:none;}
+.filter-btn{padding:6px 14px;border-radius:100px;border:1.5px solid var(--gray-200);background:none;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;color:var(--gray-600);font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
+.filter-btn.active{background:var(--black);border-color:var(--black);color:white;}
+.filter-date{padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:100px;font-size:12px;font-family:'Noto Sans TC',sans-serif;outline:none;color:var(--gray-600);cursor:pointer;}
+.filter-date:focus{border-color:var(--accent);}
+
+/* 今日小結 */
+#daily-summary{margin:12px 16px;background:var(--white);border-radius:16px;padding:16px;border:1.5px solid var(--gray-200);display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.summary-item{text-align:center;}
+.summary-val{font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:var(--black);}
+.summary-val.green{color:var(--green);}
+.summary-label{font-size:11px;color:var(--gray-400);margin-top:2px;}
+
+/* 訂單列表 */
+#orders-container{padding:0 16px;}
+.date-group-label{font-size:12px;font-weight:700;color:var(--gray-400);letter-spacing:0.05em;padding:12px 0 6px;}
+
+.order-card{background:var(--white);border-radius:14px;margin-bottom:10px;border:1.5px solid var(--gray-200);overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.order-card:hover{border-color:var(--accent);}
+.order-card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;}
+.order-num{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--gray-600);}
+.order-time{font-size:12px;color:var(--gray-400);}
+.order-total{font-size:18px;font-weight:700;font-family:'Space Mono',monospace;color:var(--black);}
+.order-tags{display:flex;gap:6px;align-items:center;}
+.order-tag{font-size:11px;padding:3px 8px;border-radius:100px;background:var(--gray-100);color:var(--gray-600);}
+.order-tag.discount{background:#fff8e6;color:#e67e22;}
+
+.order-card-items{padding:0 16px 12px;border-top:1px solid var(--gray-100);}
+.order-item-row{display:flex;justify-content:space-between;font-size:12px;color:var(--gray-600);padding:4px 0;}
+.order-item-row:first-child{padding-top:10px;}
+.order-item-name{flex:1;}
+.order-item-qty{color:var(--gray-400);margin:0 8px;}
+.order-item-price{font-family:'Space Mono',monospace;}
+
+/* 刪除按鈕 */
+.order-card-footer{padding:10px 16px;border-top:1px solid var(--gray-100);display:flex;justify-content:flex-end;gap:8px;}
+.btn-delete-order{padding:6px 12px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;color:var(--gray-400);cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
+.btn-delete-order:hover{border-color:var(--red);color:var(--red);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:var(--gray-400);}
+.empty-state .icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:14px;line-height:1.6;}
+
+/* LOAD MORE */
+.btn-load-more{display:block;width:100%;padding:12px;background:var(--gray-100);border:none;border-radius:12px;font-size:13px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin-top:8px;transition:all 0.15s;}
+.btn-load-more:hover{background:var(--gray-200);}
+
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;height:56px;background:var(--white);border-top:1px solid var(--gray-200);display:flex;}
+.bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;font-size:10px;color:var(--gray-400);cursor:pointer;transition:color 0.15s;font-family:'Noto Sans TC',sans-serif;}
+.bottom-nav-btn .icon{font-size:20px;}
+.bottom-nav-btn.active{color:var(--accent);}
+
+/* SPINNER */
+.full-spinner{position:fixed;inset:0;background:var(--gray-50);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:500;}
+.spinner{width:36px;height:36px;border:3px solid var(--gray-200);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:white;padding:10px 20px;border-radius:100px;font-size:13px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* 詳細 MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:100px;margin:0 auto 20px;}
+.detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.detail-num{font-family:'Space Mono',monospace;font-size:13px;color:var(--gray-400);}
+.detail-total{font-size:28px;font-weight:700;font-family:'Space Mono',monospace;}
+.detail-section{margin-bottom:16px;}
+.detail-label{font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+.detail-row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px solid var(--gray-100);}
+.detail-row:last-child{border-bottom:none;}
+.detail-row.total-row{font-weight:700;font-size:16px;border-top:2px solid var(--gray-200);border-bottom:none;margin-top:4px;padding-top:10px;}
+.detail-row.discount-row{color:var(--red);}
+.detail-row.change-row{color:var(--green);}
+.detail-tag{font-size:12px;padding:3px 10px;border-radius:100px;background:var(--gray-100);color:var(--gray-600);}
+.detail-note{font-size:13px;color:var(--gray-600);background:var(--gray-50);padding:10px 12px;border-radius:8px;}
+.btn-close-detail{width:100%;padding:13px;background:var(--gray-100);border:none;border-radius:12px;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer;margin-top:16px;}
+</style>
+</head>
+<body>
+
+<div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
+
+<div id="top-nav">
+  <div class="nav-logo-small">川收 <span>Chuan</span>POS</div>
+  <div class="nav-title">訂單紀錄</div>
+  <div class="nav-date" id="nav-today"></div>
+</div>
+
+<div id="filter-bar">
+  <button class="filter-btn active" onclick="setFilter('today',this)">今日</button>
+  <button class="filter-btn" onclick="setFilter('week',this)">本週</button>
+  <button class="filter-btn" onclick="setFilter('month',this)">本月</button>
+  <button class="filter-btn" onclick="setFilter('all',this)">全部</button>
+  <input class="filter-date" type="date" id="filter-date-input" onchange="setFilter('custom',null,this.value)" title="指定日期">
+</div>
+
+<div id="daily-summary">
+  <div class="summary-item">
+    <div class="summary-val green" id="sum-total">$0</div>
+    <div class="summary-label">總營業額</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-val" id="sum-orders">0</div>
+    <div class="summary-label">訂單數</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-val" id="sum-avg">$0</div>
+    <div class="summary-label">平均客單</div>
+  </div>
+</div>
+
+<div id="orders-container"></div>
+
+<div id="bottom-nav">
+  <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
+  <button class="bottom-nav-btn active"><span class="icon">📋</span>訂單</button>
+  <button class="bottom-nav-btn" onclick="go('pos-stats.html')"><span class="icon">📊</span>統計</button>
+  <button class="bottom-nav-btn" onclick="go('pos-admin.html')"><span class="icon">⚙️</span>後台</button>
+  <button class="bottom-nav-btn" onclick="go('trial.html')"><span class="icon">🏠</span>返回</button>
+</div>
+
+<!-- 訂單詳細 Modal -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="detail-header">
+      <div>
+        <div class="detail-num" id="detail-num"></div>
+        <div class="detail-total" id="detail-total"></div>
+      </div>
+      <div style="text-align:right">
+        <div class="detail-tag" id="detail-type"></div>
+        <div style="font-size:12px;color:var(--gray-400);margin-top:6px" id="detail-time"></div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">訂購內容</div>
+      <div id="detail-items"></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">金額明細</div>
+      <div id="detail-amounts"></div>
+    </div>
+
+    <div class="detail-section" id="detail-note-section" style="display:none">
+      <div class="detail-label">備註</div>
+      <div class="detail-note" id="detail-note"></div>
+    </div>
+
+    <button class="btn-close-detail" onclick="closeModal()">關閉</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const ORDER_TYPES = { dine_in:'內用', takeout:'外帶', product:'購買商品' };
+
+let currentUser = null, currentTrial = null;
+let orders = [];
+let currentFilter = 'today';
+let canDelete = false; // 進階版以上才能刪除
+
+async function init() {
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = session.user;
+
+  const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
+  if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) { window.location.href = 'trial.html'; return; }
+  currentTrial = trial;
+  canDelete = trial.plan !== 'basic';
+
+  const today = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit' });
+  document.getElementById('nav-today').textContent = today;
+
+  await loadOrders();
+  document.getElementById('spinner').style.display = 'none';
+}
+
+function getDateRange(filter, customDate = null) {
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+
+  if (filter === 'today') {
+    return { from: `${todayStr}T00:00:00`, to: `${todayStr}T23:59:59` };
+  } else if (filter === 'week') {
+    const day = now.getDay() || 7;
+    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+    return { from: `${mon.toISOString().slice(0,10)}T00:00:00`, to: `${todayStr}T23:59:59` };
+  } else if (filter === 'month') {
+    return { from: `${todayStr.slice(0,7)}-01T00:00:00`, to: `${todayStr}T23:59:59` };
+  } else if (filter === 'custom' && customDate) {
+    return { from: `${customDate}T00:00:00`, to: `${customDate}T23:59:59` };
+  }
+  return null; // all
+}
+
+async function loadOrders() {
+  let query = sb.from('orders')
+    .select('*, order_items(*)')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  const range = getDateRange(currentFilter, document.getElementById('filter-date-input').value);
+  if (range) query = query.gte('created_at', range.from).lte('created_at', range.to);
+
+  const { data } = await query.limit(100);
+  orders = data || [];
+  renderOrders();
+  renderSummary();
+}
+
+function renderSummary() {
+  const total = orders.reduce((s, o) => s + o.total, 0);
+  const avg = orders.length ? Math.round(total / orders.length) : 0;
+  document.getElementById('sum-total').textContent = `$${total.toLocaleString()}`;
+  document.getElementById('sum-orders').textContent = orders.length;
+  document.getElementById('sum-avg').textContent = `$${avg.toLocaleString()}`;
+}
+
+function renderOrders() {
+  const el = document.getElementById('orders-container');
+  if (!orders.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>這段時間還沒有訂單</p></div>`;
+    return;
+  }
+
+  // 按日期分組
+  const groups = {};
+  orders.forEach(o => {
+    const d = new Date(o.created_at).toLocaleDateString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', weekday:'short' });
+    if (!groups[d]) groups[d] = [];
+    groups[d].push(o);
+  });
+
+  el.innerHTML = Object.entries(groups).map(([date, dayOrders]) => `
+    <div class="date-group-label">${date}</div>
+    ${dayOrders.map(o => renderOrderCard(o)).join('')}
+  `).join('');
+}
+
+function renderOrderCard(o) {
+  const time = new Date(o.created_at).toLocaleTimeString('zh-TW', { hour:'2-digit', minute:'2-digit' });
+  const items = o.order_items || [];
+  const topItems = items.slice(0, 3);
+  const more = items.length > 3 ? `<div class="order-item-row" style="color:var(--gray-400)">還有 ${items.length - 3} 項...</div>` : '';
+
+  return `
+  <div class="order-card" onclick="openDetail('${o.id}')">
+    <div class="order-card-header">
+      <div>
+        <div class="order-num">#${o.order_number}</div>
+        <div class="order-time">${time} · ${ORDER_TYPES[o.order_type] || o.order_type} · ${o.payment_method}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="order-total">$${o.total.toLocaleString()}</div>
+        ${o.discount > 0 ? `<div class="order-tag discount" style="margin-top:4px">折扣 -$${o.discount}</div>` : ''}
+      </div>
+    </div>
+    <div class="order-card-items">
+      ${topItems.map(i => `
+        <div class="order-item-row">
+          <span class="order-item-name">${i.product_name}${i.variant_name ? ` (${i.variant_name})` : ''}</span>
+          <span class="order-item-qty">×${i.quantity}</span>
+          <span class="order-item-price">$${i.subtotal}</span>
+        </div>
+      `).join('')}
+      ${more}
+    </div>
+    ${canDelete ? `
+    <div class="order-card-footer">
+      <button class="btn-delete-order" onclick="event.stopPropagation();deleteOrder('${o.id}')">刪除訂單</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function openDetail(orderId) {
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+  const items = o.order_items || [];
+  const time = new Date(o.created_at).toLocaleString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+  document.getElementById('detail-num').textContent = `訂單 #${o.order_number}`;
+  document.getElementById('detail-total').textContent = `$${o.total.toLocaleString()}`;
+  document.getElementById('detail-type').textContent = ORDER_TYPES[o.order_type] || o.order_type;
+  document.getElementById('detail-time').textContent = time;
+
+  document.getElementById('detail-items').innerHTML = items.map(i => `
+    <div class="detail-row">
+      <span>${i.product_name}${i.variant_name ? ` (${i.variant_name})` : ''} ×${i.quantity}</span>
+      <span style="font-family:'Space Mono',monospace">$${i.subtotal}</span>
+    </div>
+  `).join('');
+
+  let amountsHtml = `<div class="detail-row"><span>小計</span><span style="font-family:'Space Mono',monospace">$${o.subtotal}</span></div>`;
+  if (o.discount > 0) amountsHtml += `<div class="detail-row discount-row"><span>折扣</span><span style="font-family:'Space Mono',monospace">-$${o.discount}</span></div>`;
+  amountsHtml += `<div class="detail-row total-row"><span>總計</span><span style="font-family:'Space Mono',monospace">$${o.total}</span></div>`;
+  amountsHtml += `<div class="detail-row"><span>付款方式</span><span>${o.payment_method}</span></div>`;
+  if (o.received_amount) amountsHtml += `<div class="detail-row"><span>收款金額</span><span style="font-family:'Space Mono',monospace">$${o.received_amount}</span></div>`;
+  if (o.change_amount !== null && o.change_amount >= 0) amountsHtml += `<div class="detail-row change-row"><span>找零</span><span style="font-family:'Space Mono',monospace">$${o.change_amount}</span></div>`;
+  document.getElementById('detail-amounts').innerHTML = amountsHtml;
+
+  if (o.note) {
+    document.getElementById('detail-note-section').style.display = 'block';
+    document.getElementById('detail-note').textContent = o.note;
+  } else {
+    document.getElementById('detail-note-section').style.display = 'none';
+  }
+
+  document.getElementById('modal-detail').classList.add('show');
+}
+
+async function deleteOrder(id) {
+  if (!confirm('確定要刪除這筆訂單？')) return;
+  await sb.from('order_items').delete().eq('order_id', id);
+  await sb.from('orders').delete().eq('id', id);
+  orders = orders.filter(o => o.id !== id);
+  renderOrders();
+  renderSummary();
+  showToast('訂單已刪除');
+}
+
+function setFilter(filter, btn, customDate = null) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (filter !== 'custom') document.getElementById('filter-date-input').value = '';
+  loadOrders();
+}
+
+function closeModal() { document.getElementById('modal-detail').classList.remove('show'); }
+document.getElementById('modal-detail').addEventListener('click', e => { if (e.target === document.getElementById('modal-detail')) closeModal(); });
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function go(url) { window.location.href = url; }
+
+init();
+</script>
+</body>
+</html>
