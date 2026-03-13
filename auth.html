@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川收 ChuanPOS｜會員登入 / 註冊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #ffffff;
+  --gray-50: #f8f8f6;
+  --gray-100: #f0efec;
+  --gray-200: #e2e0da;
+  --gray-400: #9c9890;
+  --gray-600: #5a5750;
+  --accent: #c17f3e;
+  --accent-light: #e8c99a;
+  --green: #3d7a5c;
+  --red: #c0392b;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: var(--gray-50);
+  color: var(--black);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%; height: 64px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gray-200);
+}
+.nav-logo {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 700; font-size: 18px;
+  text-decoration: none; color: var(--black);
+}
+.nav-logo span { color: var(--accent); }
+
+/* MAIN */
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px 40px;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.auth-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.auth-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.auth-subtitle {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+/* TABS */
+.auth-tabs {
+  display: flex;
+  background: var(--gray-100);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 28px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--gray-600);
+  border: none;
+  background: transparent;
+}
+.auth-tab.active {
+  background: var(--white);
+  color: var(--black);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* FORM */
+.form-section { display: none; }
+.form-section.active { display: block; }
+
+.form-group {
+  margin-bottom: 16px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin-bottom: 6px;
+}
+label span.required {
+  color: var(--accent);
+  margin-left: 2px;
+}
+input, select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  color: var(--black);
+  background: var(--white);
+  transition: border-color 0.2s;
+  outline: none;
+  appearance: none;
+}
+input:focus, select:focus {
+  border-color: var(--accent);
+}
+input::placeholder { color: var(--gray-400); }
+
+/* checkbox */
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  background: var(--gray-50);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+.checkbox-group input[type="checkbox"] {
+  width: 18px; height: 18px;
+  min-width: 18px;
+  margin-top: 1px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.checkbox-label {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+.checkbox-label strong { color: var(--black); }
+
+/* 分隔線 */
+.form-divider {
+  border: none;
+  border-top: 1px solid var(--gray-200);
+  margin: 20px 0;
+}
+.form-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  margin-bottom: 14px;
+}
+
+/* BTN */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+.btn-submit:hover { background: #222; transform: translateY(-1px); }
+.btn-submit:disabled { background: var(--gray-400); cursor: not-allowed; transform: none; }
+
+/* ALERT */
+.alert {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: none;
+}
+.alert.error { background: #fdecea; color: var(--red); border: 1px solid #f5c6c2; }
+.alert.success { background: #e8f5ee; color: var(--green); border: 1px solid #b8ddc9; }
+.alert.show { display: block; }
+
+/* LOADING */
+.loading-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 底部提示 */
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--gray-400);
+}
+.auth-footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* 驗證信提示頁 */
+.verify-screen {
+  display: none;
+  text-align: center;
+  padding: 20px 0;
+}
+.verify-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+.verify-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.verify-desc {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+.verify-email {
+  font-weight: 700;
+  color: var(--black);
+}
+
+@media (max-width: 520px) {
+  .auth-card { padding: 28px 20px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">川收 <span>Chuan</span>POS</a>
+</nav>
+
+<main>
+  <div class="auth-container">
+    <div class="auth-card">
+
+      <div class="auth-header">
+        <div class="auth-title">歡迎使用川收 POS</div>
+        <div class="auth-subtitle">登入或註冊帳號，開始 20 天免費試用</div>
+      </div>
+
+      <!-- TABS -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">登入</button>
+        <button class="auth-tab" onclick="switchTab('register')">免費試用 →</button>
+      </div>
+
+      <!-- ALERT -->
+      <div class="alert" id="alert"></div>
+
+      <!-- 登入 -->
+      <div class="form-section active" id="section-login">
+        <div class="form-group">
+          <label>電子信箱<span class="required">*</span></label>
+          <input type="email" id="login-email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>密碼<span class="required">*</span></label>
+          <input type="password" id="login-password" placeholder="請輸入密碼">
+        </div>
+        <button class="btn-submit" id="btn-login" onclick="handleLogin()">登入</button>
+      </div>
+
+      <!-- 註冊 -->
+      <div class="form-section" id="section-register">
+
+        <div class="form-section-title">帳號資訊</div>
+        <div class="form-group">
+          <label>電子信箱<span class="required">*</span></label>
+          <input type="email" id="reg-email" placeholder="your@email.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>密碼<span class="required">*</span></label>
+            <input type="password" id="reg-password" placeholder="至少 8 個字元">
+          </div>
+          <div class="form-group">
+            <label>確認密碼<span class="required">*</span></label>
+            <input type="password" id="reg-password2" placeholder="再輸入一次">
+          </div>
+        </div>
+
+        <hr class="form-divider">
+        <div class="form-section-title">品牌資訊</div>
+
+        <div class="form-group">
+          <label>品牌 / 店鋪名稱<span class="required">*</span></label>
+          <input type="text" id="reg-brand" placeholder="例：川咖啡">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>產業別<span class="required">*</span></label>
+            <select id="reg-industry">
+              <option value="">請選擇</option>
+              <option value="coffee">精品咖啡廳</option>
+              <option value="drinks">手搖飲料店</option>
+              <option value="dessert">手作甜點店</option>
+              <option value="select">香氛選物店</option>
+              <option value="market">文創攤位</option>
+              <option value="restaurant">餐廳</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>創業年份</label>
+            <select id="reg-year">
+              <option value="">請選擇</option>
+              <script>
+                for(let y = new Date().getFullYear(); y >= 2000; y--) {
+                  document.write(`<option value="${y}">${y} 年</option>`);
+                }
+              </script>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>店鋪縣市<span class="required">*</span></label>
+          <select id="reg-city">
+            <option value="">請選擇</option>
+            <option>台北市</option><option>新北市</option><option>桃園市</option>
+            <option>台中市</option><option>台南市</option><option>高雄市</option>
+            <option>基隆市</option><option>新竹市</option><option>新竹縣</option>
+            <option>苗栗縣</option><option>彰化縣</option><option>南投縣</option>
+            <option>雲林縣</option><option>嘉義市</option><option>嘉義縣</option>
+            <option>屏東縣</option><option>宜蘭縣</option><option>花蓮縣</option>
+            <option>台東縣</option><option>澎湖縣</option><option>金門縣</option>
+            <option>連江縣</option>
+          </select>
+        </div>
+
+        <hr class="form-divider">
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="reg-marketing">
+          <label class="checkbox-label" for="reg-marketing">
+            <strong>同意接收川收的最新消息與優惠</strong><br>
+            我們會不定期發送系統更新、功能介紹與專屬優惠，你可以隨時取消訂閱。
+          </label>
+        </div>
+
+        <button class="btn-submit" id="btn-register" onclick="handleRegister()">開始 20 天免費試用</button>
+      </div>
+
+      <!-- 驗證信畫面 -->
+      <div class="verify-screen" id="verify-screen">
+        <div class="verify-icon">📬</div>
+        <div class="verify-title">請確認你的信箱</div>
+        <div class="verify-desc">
+          我們已寄送驗證信到<br>
+          <span class="verify-email" id="verify-email-display"></span><br><br>
+          請點擊信中的連結完成驗證，<br>驗證完成後即可登入開始試用！
+        </div>
+      </div>
+
+    </div>
+
+    <div class="auth-footer">
+      回到 <a href="index.html">川收首頁</a> · 有問題？<a href="https://line.me">LINE 洽詢</a>
+    </div>
+  </div>
+</main>
+
+<script>
+const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => {
+    t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+  });
+  document.getElementById('section-login').classList.toggle('active', tab === 'login');
+  document.getElementById('section-register').classList.toggle('active', tab === 'register');
+  hideAlert();
+}
+
+function showAlert(msg, type = 'error') {
+  const el = document.getElementById('alert');
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+}
+function hideAlert() {
+  document.getElementById('alert').className = 'alert';
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (loading) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span>處理中...';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btnId === 'btn-login' ? '登入' : '開始 20 天免費試用';
+  }
+}
+
+// ── 登入 ──
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showAlert('請填寫電子信箱與密碼');
+  hideAlert();
+  setLoading('btn-login', true);
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    // 登入成功 → 導向試用選擇頁
+    window.location.href = 'trial.html';
+  } catch (e) {
+    showAlert(e.message === 'Invalid login credentials' ? '電子信箱或密碼錯誤' : e.message);
+  } finally {
+    setLoading('btn-login', false);
+  }
+}
+
+// ── 註冊 ──
+async function handleRegister() {
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const password2 = document.getElementById('reg-password2').value;
+  const brand = document.getElementById('reg-brand').value.trim();
+  const industry = document.getElementById('reg-industry').value;
+  const year = document.getElementById('reg-year').value;
+  const city = document.getElementById('reg-city').value;
+  const marketing = document.getElementById('reg-marketing').checked;
+
+  if (!email || !password || !brand || !industry || !city)
+    return showAlert('請填寫所有必填欄位（標有 * 的欄位）');
+  if (password.length < 8)
+    return showAlert('密碼至少需要 8 個字元');
+  if (password !== password2)
+    return showAlert('兩次密碼輸入不一致');
+
+  hideAlert();
+  setLoading('btn-register', true);
+
+  try {
+    // 1. 建立 auth 帳號
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { brand_name: brand }
+      }
+    });
+    if (error) throw error;
+
+    // 2. 建立 profile
+    if (data.user) {
+      const { error: profileError } = await sb.from('profiles').insert({
+        id: data.user.id,
+        email,
+        brand_name: brand,
+        industry,
+        founded_year: year ? parseInt(year) : null,
+        city,
+        accept_marketing: marketing
+      });
+      if (profileError) throw profileError;
+    }
+
+    // 3. 顯示驗證信提示
+    document.getElementById('section-register').style.display = 'none';
+    document.querySelector('.auth-tabs').style.display = 'none';
+    document.querySelector('.auth-header').style.display = 'none';
+    document.getElementById('alert').className = 'alert';
+    document.getElementById('verify-email-display').textContent = email;
+    document.getElementById('verify-screen').style.display = 'block';
+
+  } catch (e) {
+    if (e.message.includes('already registered')) {
+      showAlert('這個電子信箱已經註冊過了，請直接登入');
+    } else {
+      showAlert(e.message);
+    }
+  } finally {
+    setLoading('btn-register', false);
+  }
+}
+
+// Enter 鍵送出
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const loginActive = document.getElementById('section-login').classList.contains('active');
+    if (loginActive) handleLogin();
+    else handleRegister();
+  }
+});
+
+// 已登入則直接跳轉
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) window.location.href = 'trial.html';
+});
+</script>
+</body>
+</html>
