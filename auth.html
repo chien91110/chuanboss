@@ -163,13 +163,11 @@ input::placeholder { color: var(--gray-400); }
   margin-bottom: 16px;
 }
 .checkbox-group input[type="checkbox"] {
-  width: 20px; height: 20px;
-  min-width: 20px;
+  width: 16px; height: 16px;
+  min-width: 16px;
   margin-top: 2px;
   accent-color: var(--accent);
   cursor: pointer;
-  border: 2px solid var(--gray-200);
-  border-radius: 4px;
 }
 .checkbox-label {
   font-size: 13px;
@@ -386,13 +384,21 @@ input::placeholder { color: var(--gray-400); }
 
         <hr class="form-divider">
 
-        <label class="checkbox-group" for="reg-marketing" style="cursor:pointer">
-          <input type="checkbox" id="reg-marketing">
+        <div class="checkbox-group" style="cursor:pointer" onclick="toggleMarketing()">
+          <input type="checkbox" id="reg-marketing" style="display:none">
+          <div id="custom-checkbox" style="
+            width:20px;height:20px;min-width:20px;
+            border:2px solid var(--gray-200);border-radius:5px;
+            background:var(--white);display:flex;align-items:center;justify-content:center;
+            margin-top:1px;transition:all 0.15s;flex-shrink:0;
+          ">
+            <span id="check-icon" style="display:none;color:white;font-size:13px;font-weight:700">✓</span>
+          </div>
           <div class="checkbox-label">
             <strong>同意接收川收的最新消息與優惠</strong><br>
             我們會不定期發送系統更新、功能介紹與專屬優惠，你可以隨時取消訂閱。
           </div>
-        </label>
+        </div>
 
         <button class="btn-submit" id="btn-register" onclick="handleRegister()">開始 20 天免費試用</button>
       </div>
@@ -449,6 +455,23 @@ function setLoading(btnId, loading) {
   } else {
     btn.disabled = false;
     btn.innerHTML = btnId === 'btn-login' ? '登入' : '開始 20 天免費試用';
+  }
+}
+
+// ── 廣告勾選 ──
+function toggleMarketing() {
+  const cb = document.getElementById('reg-marketing');
+  const box = document.getElementById('custom-checkbox');
+  const icon = document.getElementById('check-icon');
+  cb.checked = !cb.checked;
+  if (cb.checked) {
+    box.style.background = 'var(--accent)';
+    box.style.borderColor = 'var(--accent)';
+    icon.style.display = 'block';
+  } else {
+    box.style.background = 'var(--white)';
+    box.style.borderColor = 'var(--gray-200)';
+    icon.style.display = 'none';
   }
 }
 
