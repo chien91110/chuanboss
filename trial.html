@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川收 ChuanPOS｜試用中心</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #ffffff;
+  --gray-50: #f8f8f6;
+  --gray-100: #f0efec;
+  --gray-200: #e2e0da;
+  --gray-400: #9c9890;
+  --gray-600: #5a5750;
+  --accent: #c17f3e;
+  --accent-light: #e8c99a;
+  --green: #3d7a5c;
+  --red: #c0392b;
+  --orange: #e67e22;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: var(--gray-50);
+  color: var(--black);
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%; height: 64px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gray-200);
+}
+.nav-logo {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 700; font-size: 18px;
+  text-decoration: none; color: var(--black);
+}
+.nav-logo span { color: var(--accent); }
+.nav-user {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: var(--gray-600);
+}
+.btn-logout {
+  padding: 6px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-logout:hover { border-color: var(--black); color: var(--black); }
+
+/* LOADING */
+#loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 16px;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SCREENS */
+.screen { display: none; padding: 88px 5% 60px; }
+.screen.active { display: block; }
+
+/* ── 選擇版本畫面 ── */
+.select-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.select-eyebrow {
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700; margin-bottom: 12px;
+}
+.select-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px; margin-bottom: 12px;
+}
+.select-desc { font-size: 15px; color: var(--gray-600); }
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.plan-card {
+  background: var(--white);
+  border: 2px solid var(--gray-200);
+  border-radius: 20px;
+  padding: 32px 28px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+}
+.plan-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(193,127,62,0.12);
+}
+.plan-card.featured {
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px rgba(193,127,62,0.15);
+}
+.plan-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--white);
+  font-size: 12px; font-weight: 700; padding: 4px 16px;
+  border-radius: 100px; white-space: nowrap;
+}
+.plan-name { font-size: 12px; color: var(--gray-400); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 8px; }
+.plan-price {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px; margin-bottom: 4px;
+}
+.plan-price span { font-size: 16px; font-family: 'Noto Sans TC', sans-serif; }
+.plan-subtitle { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; }
+.plan-divider { border: none; border-top: 1px solid var(--gray-200); margin-bottom: 16px; }
+.plan-feature {
+  font-size: 13px; color: var(--gray-600);
+  padding: 5px 0;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.plan-feature .check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+.plan-feature.highlight { color: var(--black); font-weight: 500; }
+.plan-trial-note {
+  margin-top: 20px;
+  padding: 10px 14px;
+  background: var(--gray-50);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--gray-600);
+  text-align: center;
+}
+.btn-start-trial {
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.plan-card.featured .btn-start-trial { background: var(--accent); }
+.btn-start-trial:hover { opacity: 0.85; transform: translateY(-1px); }
+
+/* ── 試用中畫面 ── */
+.trial-dashboard {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.trial-welcome {
+  margin-bottom: 28px;
+}
+.trial-welcome h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px; margin-bottom: 6px;
+}
+.trial-welcome p { font-size: 14px; color: var(--gray-600); }
+
+/* 警告banner */
+.trial-warning {
+  display: none;
+  background: #fff8e6;
+  border: 1.5px solid #f5c842;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.trial-warning.hidden { display: none !important; }
+.warning-icon { font-size: 24px; flex-shrink: 0; }
+.warning-text { font-size: 14px; line-height: 1.6; }
+.warning-text strong { color: var(--orange); }
+
+/* 狀態卡 */
+.status-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  border: 1.5px solid var(--gray-200);
+}
+.status-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.status-plan {
+  font-size: 12px; color: var(--accent); font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px;
+}
+.status-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+}
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-active { background: #e8f5ee; color: var(--green); }
+.badge-warning { background: #fff8e6; color: var(--orange); }
+
+/* 倒數進度條 */
+.countdown-section { margin-bottom: 8px; }
+.countdown-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--gray-600);
+  margin-bottom: 8px;
+}
+.countdown-label strong { color: var(--black); font-size: 20px; }
+.progress-bar {
+  height: 8px;
+  background: var(--gray-100);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: var(--green);
+  transition: width 0.5s ease;
+}
+.progress-fill.warning { background: var(--orange); }
+.progress-fill.critical { background: var(--red); }
+
+.countdown-dates {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--gray-400);
+  margin-top: 6px;
+}
+
+/* 功能卡 */
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.feature-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1.5px solid var(--gray-200);
+}
+.feature-card-icon { font-size: 28px; margin-bottom: 10px; }
+.feature-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.feature-card-desc { font-size: 12px; color: var(--gray-600); line-height: 1.5; }
+
+/* ── 凍結畫面 ── */
+.frozen-screen {
+  max-width: 560px;
+  margin: 60px auto 0;
+  text-align: center;
+}
+.frozen-icon { font-size: 64px; margin-bottom: 20px; }
+.frozen-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px; margin-bottom: 14px; color: var(--gray-600);
+}
+.frozen-desc {
+  font-size: 15px; color: var(--gray-600);
+  line-height: 1.8; margin-bottom: 32px;
+}
+.frozen-data-note {
+  background: var(--gray-100);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--gray-600);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.btn-line {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px;
+  background: #06C755;
+  color: var(--white);
+  border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer; text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-line:hover { background: #05a847; transform: translateY(-1px); }
+
+/* MODAL 確認選版本 */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+.modal-icon { font-size: 40px; margin-bottom: 12px; }
+.modal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; margin-bottom: 10px;
+}
+.modal-desc { font-size: 14px; color: var(--gray-600); line-height: 1.6; margin-bottom: 24px; }
+.modal-plan-name {
+  font-size: 16px; font-weight: 700;
+  color: var(--accent); margin-bottom: 6px;
+}
+.modal-note {
+  font-size: 12px; color: var(--gray-400);
+  background: var(--gray-50);
+  padding: 10px 14px; border-radius: 8px;
+  margin-bottom: 24px; text-align: left;
+  line-height: 1.6;
+}
+.modal-actions { display: flex; gap: 12px; }
+.btn-cancel {
+  flex: 1; padding: 12px;
+  background: var(--gray-100);
+  border: none; border-radius: 10px;
+  font-size: 14px; font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel:hover { background: var(--gray-200); }
+.btn-confirm {
+  flex: 2; padding: 12px;
+  background: var(--black);
+  color: var(--white);
+  border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-confirm:hover { background: #222; }
+.btn-confirm:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+.loading-spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-right: 6px; vertical-align: middle;
+}
+
+@media (max-width: 680px) {
+  .plans-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+  .features-grid { grid-template-columns: 1fr; }
+  .status-top { flex-direction: column; }
+  .select-title { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">川收 <span>Chuan</span>POS</a>
+  <div class="nav-user">
+    <span id="nav-brand">載入中...</span>
+    <button class="btn-logout" onclick="handleLogout()">登出</button>
+  </div>
+</nav>
+
+<!-- 載入中 -->
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div style="font-size:14px;color:var(--gray-400)">載入中...</div>
+</div>
+
+<!-- 選擇版本 -->
+<div class="screen" id="screen-select">
+  <div class="select-header">
+    <div class="select-eyebrow">Free Trial · 20 Days</div>
+    <h1 class="select-title">選擇你要試用的版本</h1>
+    <p class="select-desc">試用期間可體驗該版本的所有功能，20 天後帳號將會凍結。<br>一個帳號只能選擇一次，請確認後再開始。</p>
+  </div>
+  <div class="plans-grid">
+
+    <div class="plan-card" onclick="selectPlan('basic')">
+      <div class="plan-name">BASIC · 基本版</div>
+      <div class="plan-price">$4,800<span> 元</span></div>
+      <div class="plan-subtitle">剛起步的小店，協助店鋪基本統計</div>
+      <hr class="plan-divider">
+      <div class="plan-feature"><span class="check">✓</span>商品分類 5 個</div>
+      <div class="plan-feature"><span class="check">✓</span>商品數量 20 個</div>
+      <div class="plan-feature"><span class="check">✓</span>商品規格設定</div>
+      <div class="plan-feature"><span class="check">✓</span>收款 + 找零計算</div>
+      <div class="plan-feature"><span class="check">✓</span>今日 / 本月統計</div>
+      <div class="plan-feature"><span class="check">✓</span>自訂日期區間統計</div>
+      <div class="plan-trial-note">試用期間商品數量限制 10 個</div>
+      <button class="btn-start-trial">試用基本版</button>
+    </div>
+
+    <div class="plan-card featured" onclick="selectPlan('advanced')">
+      <div class="plan-badge">⭐ 最多人選擇</div>
+      <div class="plan-name">ADVANCED · 進階版</div>
+      <div class="plan-price">$8,800<span> 元</span></div>
+      <div class="plan-subtitle">功能完整，適合大多數小店</div>
+      <hr class="plan-divider">
+      <div class="plan-feature highlight"><span class="check">✓</span>基本版全功能</div>
+      <div class="plan-feature"><span class="check">✓</span>商品分類 20 個</div>
+      <div class="plan-feature"><span class="check">✓</span>商品圖片上傳</div>
+      <div class="plan-feature"><span class="check">✓</span>套餐組合設定</div>
+      <div class="plan-feature"><span class="check">✓</span>感謝語設定</div>
+      <div class="plan-feature"><span class="check">✓</span>每日結帳 / 營業日誌</div>
+      <div class="plan-feature"><span class="check">✓</span>訂單修改 / 刪除</div>
+      <div class="plan-trial-note">試用期間商品數量限制 20 個</div>
+      <button class="btn-start-trial">試用進階版</button>
+    </div>
+
+    <div class="plan-card" onclick="selectPlan('premium')">
+      <div class="plan-name">PREMIUM · 高級版</div>
+      <div class="plan-price">$15,000<span> 元</span></div>
+      <div class="plan-subtitle">完整功能，適合商品數有一定規模的店</div>
+      <hr class="plan-divider">
+      <div class="plan-feature highlight"><span class="check">✓</span>進階版全功能</div>
+      <div class="plan-feature"><span class="check">✓</span>商品分類 / 數量無限</div>
+      <div class="plan-feature"><span class="check">✓</span>桌號點餐</div>
+      <div class="plan-feature"><span class="check">✓</span>多語言感謝語</div>
+      <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
+      <div class="plan-feature"><span class="check">✓</span>每月報表 Email</div>
+      <div class="plan-feature"><span class="check">✓</span>多人帳號</div>
+      <div class="plan-trial-note">試用期間商品數量限制 50 個</div>
+      <button class="btn-start-trial">試用高級版</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- 試用中 -->
+<div class="screen" id="screen-trial">
+  <div class="trial-dashboard">
+
+    <div class="trial-welcome">
+      <h1 id="welcome-title">歡迎回來</h1>
+      <p id="welcome-sub">你的試用版本正在進行中</p>
+    </div>
+
+    <!-- 倒數5天警告 -->
+    <div class="trial-warning hidden" id="trial-warning">
+      <div class="warning-icon">⚠️</div>
+      <div class="warning-text">
+        <strong>試用期即將結束！</strong>剩餘 <strong id="warning-days"></strong> 天。
+        試用結束後帳號將永久凍結，如需購買正式版請提早聯絡。
+        <a href="https://line.me" style="color:var(--orange);font-weight:700">LINE 聯繫購買 →</a>
+      </div>
+    </div>
+
+    <!-- 狀態卡 -->
+    <div class="status-card">
+      <div class="status-top">
+        <div>
+          <div class="status-plan" id="status-plan-label"></div>
+          <div class="status-name" id="status-plan-name"></div>
+        </div>
+        <div class="status-badge badge-active" id="status-badge">試用中</div>
+      </div>
+      <div class="countdown-section">
+        <div class="countdown-label">
+          <span>試用進度</span>
+          <span>剩餘 <strong id="days-left"></strong> 天</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="countdown-dates">
+          <span id="date-start"></span>
+          <span id="date-end"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能入口 -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card-icon">🖥️</div>
+        <div class="feature-card-title">進入 POS 系統</div>
+        <div class="feature-card-desc">開始試用你的點餐收款系統，體驗完整功能。</div>
+        <button onclick="logFeature('pos_enter')" style="margin-top:12px;padding:9px 16px;background:var(--black);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%">進入系統 →</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">📊</div>
+        <div class="feature-card-title">營業統計</div>
+        <div class="feature-card-desc">查看今日、本月營業額與訂單統計數據。</div>
+        <button onclick="logFeature('stats_view')" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%">查看統計</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">📦</div>
+        <div class="feature-card-title">商品管理</div>
+        <div class="feature-card-desc">新增、編輯商品與分類，設定規格與圖片。</div>
+        <button onclick="logFeature('product_manage')" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%">管理商品</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">💬</div>
+        <div class="feature-card-title">聯絡購買</div>
+        <div class="feature-card-desc">試用滿意？聯絡我們取得授權碼與安裝檔。</div>
+        <a href="https://line.me" class="btn-line" style="margin-top:12px;justify-content:center;padding:9px 16px;font-size:13px;border-radius:8px" onclick="logFeature('contact_purchase')">LINE 聯繫</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 凍結畫面 -->
+<div class="screen" id="screen-frozen">
+  <div class="frozen-screen">
+    <div class="frozen-icon">🔒</div>
+    <div class="frozen-title">試用期已結束</div>
+    <div class="frozen-desc">
+      你的 20 天試用期已於到期日結束。<br>
+      感謝你試用川收 ChuanPOS！
+    </div>
+    <div class="frozen-data-note">
+      📁 你在試用期間建立的商品、訂單資料仍然完整保存。<br>
+      購買正式安裝版後，可將資料匯出供參考使用。
+    </div>
+    <a href="https://line.me" class="btn-line" onclick="logFeature('frozen_contact')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+      聯絡購買正式版
+    </a>
+  </div>
+</div>
+
+<!-- 確認選版本 Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon">🚀</div>
+    <div class="modal-title">確認開始試用？</div>
+    <div class="modal-plan-name" id="modal-plan-name"></div>
+    <div class="modal-desc">選擇後將立即開始計算 20 天試用期</div>
+    <div class="modal-note">
+      ⚠️ 注意：一個帳號只能選擇一次版本，選擇後無法更換。<br>
+      試用期結束後帳號將永久凍結，無法繼續使用。
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-confirm" id="btn-confirm" onclick="confirmTrial()">確認開始試用</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const PLAN_NAMES = { basic: '基本版', advanced: '進階版', premium: '高級版' };
+const PLAN_LABELS = { basic: 'BASIC', advanced: 'ADVANCED', premium: 'PREMIUM' };
+
+let currentUser = null;
+let currentProfile = null;
+let selectedPlan = null;
+
+function showScreen(id) {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = session.user;
+
+  // 載入 profile
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (!profile) { window.location.href = 'auth.html'; return; }
+  currentProfile = profile;
+  document.getElementById('nav-brand').textContent = profile.brand_name;
+
+  // 查詢是否有試用紀錄
+  const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
+
+  if (!trial) {
+    // 沒有試用紀錄 → 選版本
+    showScreen('screen-select');
+  } else if (trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+    // 已凍結或已到期 → 凍結畫面
+    if (!trial.is_frozen) {
+      await sb.from('trials').update({ is_frozen: true, frozen_at: new Date().toISOString() }).eq('id', trial.id);
+    }
+    showScreen('screen-frozen');
+  } else {
+    // 試用中
+    renderTrialDashboard(trial, profile);
+    showScreen('screen-trial');
+  }
+}
+
+function renderTrialDashboard(trial, profile) {
+  const start = new Date(trial.started_at);
+  const end = new Date(trial.expires_at);
+  const now = new Date();
+  const totalDays = 20;
+  const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+  const daysUsed = totalDays - daysLeft;
+  const progress = Math.min(100, (daysUsed / totalDays) * 100);
+
+  document.getElementById('welcome-title').textContent = `歡迎回來，${profile.brand_name}`;
+  document.getElementById('welcome-sub').textContent = `你正在試用${PLAN_NAMES[trial.plan]}，剩餘 ${daysLeft} 天`;
+  document.getElementById('status-plan-label').textContent = PLAN_LABELS[trial.plan];
+  document.getElementById('status-plan-name').textContent = PLAN_NAMES[trial.plan] + ' 試用中';
+  document.getElementById('days-left').textContent = daysLeft;
+  document.getElementById('date-start').textContent = `開始：${start.toLocaleDateString('zh-TW')}`;
+  document.getElementById('date-end').textContent = `到期：${end.toLocaleDateString('zh-TW')}`;
+
+  const fill = document.getElementById('progress-fill');
+  fill.style.width = progress + '%';
+  if (daysLeft <= 3) fill.className = 'progress-fill critical';
+  else if (daysLeft <= 5) fill.className = 'progress-fill warning';
+
+  if (daysLeft <= 5) {
+    const badge = document.getElementById('status-badge');
+    badge.className = 'status-badge badge-warning';
+    badge.textContent = `剩 ${daysLeft} 天`;
+    const warning = document.getElementById('trial-warning');
+    warning.classList.remove('hidden');
+    document.getElementById('warning-days').textContent = daysLeft;
+  }
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.getElementById('modal-plan-name').textContent = `${PLAN_LABELS[plan]} · ${PLAN_NAMES[plan]}`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  selectedPlan = null;
+}
+
+async function confirmTrial() {
+  if (!selectedPlan) return;
+  const btn = document.getElementById('btn-confirm');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>建立中...';
+
+  try {
+    const { error } = await sb.from('trials').insert({
+      user_id: currentUser.id,
+      plan: selectedPlan
+    });
+    if (error) throw error;
+
+    await logFeature('trial_start_' + selectedPlan);
+    window.location.reload();
+  } catch (e) {
+    alert('發生錯誤：' + e.message);
+    btn.disabled = false;
+    btn.textContent = '確認開始試用';
+  }
+}
+
+async function logFeature(feature) {
+  if (!currentUser) return;
+  await sb.from('feature_logs').insert({ user_id: currentUser.id, feature });
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  window.location.href = 'auth.html';
+}
+
+init();
+</script>
+</body>
+</html>
