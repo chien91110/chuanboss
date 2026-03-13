@@ -163,11 +163,13 @@ input::placeholder { color: var(--gray-400); }
   margin-bottom: 16px;
 }
 .checkbox-group input[type="checkbox"] {
-  width: 18px; height: 18px;
-  min-width: 18px;
-  margin-top: 1px;
+  width: 20px; height: 20px;
+  min-width: 20px;
+  margin-top: 2px;
   accent-color: var(--accent);
   cursor: pointer;
+  border: 2px solid var(--gray-200);
+  border-radius: 4px;
 }
 .checkbox-label {
   font-size: 13px;
@@ -356,7 +358,7 @@ input::placeholder { color: var(--gray-400); }
             </select>
           </div>
           <div class="form-group">
-            <label>創業年份</label>
+            <label>創業年份<span class="required">*</span></label>
             <select id="reg-year">
               <option value="">請選擇</option>
               <script>
@@ -402,7 +404,8 @@ input::placeholder { color: var(--gray-400); }
         <div class="verify-desc">
           我們已寄送驗證信到<br>
           <span class="verify-email" id="verify-email-display"></span><br><br>
-          請點擊信中的連結完成驗證，<br>驗證完成後即可登入開始試用！
+          請點擊信中的連結完成驗證，<br>驗證完成後即可回到登入頁面登入！<br><br>
+          <span style="font-size:12px;color:var(--gray-400)">未驗證信箱無法登入</span>
         </div>
       </div>
 
@@ -479,7 +482,7 @@ async function handleRegister() {
   const city = document.getElementById('reg-city').value;
   const marketing = document.getElementById('reg-marketing').checked;
 
-  if (!email || !password || !brand || !industry || !city)
+  if (!email || !password || !brand || !industry || !year || !city)
     return showAlert('請填寫所有必填欄位（標有 * 的欄位）');
   if (password.length < 8)
     return showAlert('密碼至少需要 8 個字元');
