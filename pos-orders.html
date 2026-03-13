@@ -25,10 +25,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .nav-brand{color:rgba(255,255,255,0.5);font-size:12px;flex:1;}
 .nav-brand em{color:var(--accent-light);font-style:normal;font-weight:600;}
 
+/* STICKY HEADER WRAPPER — 把 filter bar + 自訂區間包起來一起 sticky */
+#sticky-header{
+  position:sticky;top:52px;z-index:50;
+  background:var(--white);
+  border-bottom:1px solid var(--gray-200);
+}
+
 /* FILTER BAR */
 #filter-bar{
-  position:sticky;top:52px;z-index:50;background:var(--white);
-  border-bottom:1px solid var(--gray-200);padding:10px 16px;
+  padding:10px 16px;
   display:flex;gap:8px;align-items:center;overflow-x:auto;
   scrollbar-width:none;flex-wrap:wrap;
 }
@@ -42,8 +48,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
 /* 自訂區間 */
 .date-range-row{
-  display:none;align-items:center;gap:8px;padding:10px 16px 0;
-  flex-wrap:wrap;
+  display:none;align-items:center;gap:8px;
+  padding:0 16px 10px;flex-wrap:wrap;
 }
 .date-range-row.show{display:flex;}
 .date-range-label{font-size:12px;color:var(--gray-600);white-space:nowrap;}
@@ -148,22 +154,22 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   <div class="nav-brand" id="nav-brand">訂單紀錄</div>
 </div>
 
-<!-- 篩選列 -->
-<div id="filter-bar">
-  <button class="filter-btn active" onclick="setFilter('today',this)">今日</button>
-  <button class="filter-btn" onclick="setFilter('week',this)">本週</button>
-  <button class="filter-btn" onclick="setFilter('month',this)">本月</button>
-  <button class="filter-btn" onclick="setFilter('all',this)">全部</button>
-  <button class="filter-btn" id="btn-range" onclick="setFilter('range',this)">自訂區間</button>
-</div>
-
-<!-- 自訂區間選擇器（獨立一行，不擠在 filter bar） -->
-<div class="date-range-row" id="date-range-row">
-  <span class="date-range-label">從</span>
-  <input class="date-range-input" type="date" id="range-from">
-  <span class="date-range-label">到</span>
-  <input class="date-range-input" type="date" id="range-to">
-  <button class="btn-range-apply" onclick="applyRange()">套用</button>
+<!-- 篩選列（包成一個 sticky wrapper） -->
+<div id="sticky-header">
+  <div id="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('today',this)">今日</button>
+    <button class="filter-btn" onclick="setFilter('week',this)">本週</button>
+    <button class="filter-btn" onclick="setFilter('month',this)">本月</button>
+    <button class="filter-btn" onclick="setFilter('all',this)">全部</button>
+    <button class="filter-btn" id="btn-range" onclick="setFilter('range',this)">自訂區間</button>
+  </div>
+  <div class="date-range-row" id="date-range-row">
+    <span class="date-range-label">從</span>
+    <input class="date-range-input" type="date" id="range-from">
+    <span class="date-range-label">到</span>
+    <input class="date-range-input" type="date" id="range-to">
+    <button class="btn-range-apply" onclick="applyRange()">套用</button>
+  </div>
 </div>
 
 <!-- 統計摘要 -->

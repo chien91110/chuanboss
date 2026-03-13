@@ -26,8 +26,15 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .nav-brand{color:rgba(255,255,255,0.5);font-size:12px;flex:1;}
 .nav-brand em{color:var(--accent-light);font-style:normal;font-weight:600;}
 
+/* STICKY HEADER WRAPPER */
+#sticky-header{
+  position:sticky;top:52px;z-index:50;
+  background:var(--white);
+  border-bottom:1px solid var(--gray-200);
+}
+
 /* PERIOD TABS */
-#period-tabs{position:sticky;top:52px;z-index:50;background:var(--white);border-bottom:1px solid var(--gray-200);display:flex;overflow-x:auto;scrollbar-width:none;}
+#period-tabs{display:flex;overflow-x:auto;scrollbar-width:none;}
 #period-tabs::-webkit-scrollbar{display:none;}
 .period-tab{padding:13px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
 .period-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
@@ -35,7 +42,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 /* 自訂區間 */
 #custom-range{
   display:none;padding:10px 16px;background:var(--white);
-  border-bottom:1px solid var(--gray-200);gap:8px;align-items:center;flex-wrap:wrap;
+  border-top:1px solid var(--gray-100);gap:8px;align-items:center;flex-wrap:wrap;
 }
 #custom-range.show{display:flex;}
 .date-input{padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;}
@@ -126,19 +133,20 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   <div class="nav-brand" id="nav-brand">營業統計</div>
 </div>
 
-<div id="period-tabs">
-  <button class="period-tab active" onclick="setPeriod('today',this)">今日</button>
-  <button class="period-tab" onclick="setPeriod('week',this)">本週</button>
-  <button class="period-tab" onclick="setPeriod('month',this)">本月</button>
-  <button class="period-tab" onclick="setPeriod('custom',this)">自訂區間</button>
-</div>
-
-<div id="custom-range">
-  <span style="color:var(--gray-600);font-size:13px">從</span>
-  <input class="date-input" type="date" id="date-from">
-  <span style="color:var(--gray-400);font-size:13px">到</span>
-  <input class="date-input" type="date" id="date-to">
-  <button class="btn-apply" onclick="loadStats()">查詢</button>
+<div id="sticky-header">
+  <div id="period-tabs">
+    <button class="period-tab active" onclick="setPeriod('today',this)">今日</button>
+    <button class="period-tab" onclick="setPeriod('week',this)">本週</button>
+    <button class="period-tab" onclick="setPeriod('month',this)">本月</button>
+    <button class="period-tab" onclick="setPeriod('custom',this)">自訂區間</button>
+  </div>
+  <div id="custom-range">
+    <span style="color:var(--gray-600);font-size:13px">從</span>
+    <input class="date-input" type="date" id="date-from">
+    <span style="color:var(--gray-400);font-size:13px">到</span>
+    <input class="date-input" type="date" id="date-to">
+    <button class="btn-apply" onclick="loadStats()">查詢</button>
+  </div>
 </div>
 
 <div class="content" id="main-content" style="display:none">
