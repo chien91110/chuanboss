@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>川收 ChuanPOS｜營業統計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --black:#0a0a0a;--white:#fff;--gray-50:#f8f8f6;--gray-100:#f0efec;
+  --gray-200:#e2e0da;--gray-400:#9c9890;--gray-600:#5a5750;
+  --accent:#c17f3e;--accent-light:#e8c99a;--green:#3d7a5c;--red:#c0392b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-bottom:72px;}
+
+#top-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.nav-logo-small{color:white;font-weight:700;font-size:15px;}
+.nav-logo-small span{color:var(--accent-light);}
+.nav-title{color:rgba(255,255,255,0.6);font-size:13px;flex:1;}
+
+/* PERIOD TABS */
+#period-tabs{position:sticky;top:52px;z-index:50;background:var(--white);border-bottom:1px solid var(--gray-200);display:flex;overflow-x:auto;scrollbar-width:none;}
+#period-tabs::-webkit-scrollbar{display:none;}
+.period-tab{padding:13px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
+.period-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* 自訂日期 */
+#custom-range{display:none;padding:10px 16px;background:var(--white);border-bottom:1px solid var(--gray-200);gap:8px;align-items:center;flex-wrap:wrap;}
+#custom-range.show{display:flex;}
+.date-input{padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;}
+.date-input:focus{border-color:var(--accent);}
+.btn-apply{padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+
+.content{padding:16px;}
+
+/* KPI 卡 */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.kpi-card{background:var(--white);border-radius:16px;padding:16px;border:1.5px solid var(--gray-200);}
+.kpi-label{font-size:11px;color:var(--gray-400);font-weight:600;letter-spacing:0.05em;margin-bottom:6px;}
+.kpi-val{font-size:22px;font-weight:700;font-family:'Space Mono',monospace;line-height:1.2;}
+.kpi-val.green{color:var(--green);}
+.kpi-val.accent{color:var(--accent);}
+.kpi-sub{font-size:11px;color:var(--gray-400);margin-top:4px;}
+
+/* 圖表卡 */
+.chart-card{background:var(--white);border-radius:16px;padding:16px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
+.chart-title{font-size:14px;font-weight:700;margin-bottom:14px;}
+.chart-wrap{position:relative;height:200px;}
+
+/* 付款方式圓餅 */
+.chart-wrap-pie{position:relative;height:180px;max-width:280px;margin:0 auto;}
+
+/* 商品排行 */
+.rank-list{display:flex;flex-direction:column;gap:8px;}
+.rank-item{display:flex;align-items:center;gap:10px;}
+.rank-num{font-size:12px;font-weight:700;color:var(--gray-400);width:20px;text-align:center;flex-shrink:0;}
+.rank-num.top{color:var(--accent);}
+.rank-bar-wrap{flex:1;}
+.rank-name{font-size:13px;font-weight:500;margin-bottom:4px;}
+.rank-bar{height:6px;background:var(--gray-100);border-radius:100px;overflow:hidden;}
+.rank-bar-fill{height:100%;background:var(--accent);border-radius:100px;transition:width 0.5s ease;}
+.rank-qty{font-size:12px;color:var(--gray-400);white-space:nowrap;}
+.rank-val{font-size:13px;font-weight:700;font-family:'Space Mono',monospace;color:var(--black);white-space:nowrap;}
+
+/* 訂單類型 */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.type-card{background:var(--gray-50);border-radius:12px;padding:12px;text-align:center;}
+.type-icon{font-size:24px;margin-bottom:4px;}
+.type-name{font-size:11px;color:var(--gray-600);margin-bottom:2px;}
+.type-val{font-size:16px;font-weight:700;}
+
+/* 營業日紀錄（進階版以上） */
+.business-day-section{background:var(--white);border-radius:16px;padding:16px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
+.business-day-title{font-size:14px;font-weight:700;margin-bottom:12px;}
+.business-day-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.bd-card{background:var(--gray-50);border-radius:12px;padding:12px;text-align:center;}
+.bd-label{font-size:11px;color:var(--gray-400);margin-bottom:4px;}
+.bd-val{font-size:18px;font-weight:700;font-family:'Space Mono',monospace;}
+.btn-checkin{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all 0.2s;}
+.btn-checkin:hover{background:#2d6347;}
+.btn-checkin.checked{background:var(--gray-200);color:var(--gray-600);cursor:default;}
+.checkin-log{margin-top:12px;}
+.checkin-label{font-size:11px;color:var(--gray-400);font-weight:600;letter-spacing:0.05em;margin-bottom:8px;}
+.checkin-item{font-size:12px;color:var(--gray-600);padding:4px 0;border-bottom:1px solid var(--gray-100);}
+
+/* LOCKED 遮罩 */
+.locked-section{background:var(--white);border-radius:16px;padding:24px;margin-bottom:16px;border:1.5px dashed var(--gray-200);text-align:center;color:var(--gray-400);}
+.locked-section .lock-icon{font-size:28px;margin-bottom:8px;}
+.locked-section p{font-size:13px;line-height:1.6;}
+
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;height:56px;background:var(--white);border-top:1px solid var(--gray-200);display:flex;}
+.bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;font-size:10px;color:var(--gray-400);cursor:pointer;transition:color 0.15s;font-family:'Noto Sans TC',sans-serif;}
+.bottom-nav-btn .icon{font-size:20px;}
+.bottom-nav-btn.active{color:var(--accent);}
+
+/* SPINNER */
+.full-spinner{position:fixed;inset:0;background:var(--gray-50);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:500;}
+.spinner{width:36px;height:36px;border:3px solid var(--gray-200);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:white;padding:10px 20px;border-radius:100px;font-size:13px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+@media(max-width:400px){.kpi-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
+
+<div id="top-nav">
+  <div class="nav-logo-small">川收 <span>Chuan</span>POS</div>
+  <div class="nav-title">營業統計</div>
+</div>
+
+<div id="period-tabs">
+  <button class="period-tab active" onclick="setPeriod('today',this)">今日</button>
+  <button class="period-tab" onclick="setPeriod('week',this)">本週</button>
+  <button class="period-tab" onclick="setPeriod('month',this)">本月</button>
+  <button class="period-tab" onclick="setPeriod('custom',this)">自訂區間</button>
+</div>
+
+<div id="custom-range">
+  <input class="date-input" type="date" id="date-from">
+  <span style="color:var(--gray-400);font-size:13px">到</span>
+  <input class="date-input" type="date" id="date-to">
+  <button class="btn-apply" onclick="loadStats()">查詢</button>
+</div>
+
+<div class="content" id="main-content" style="display:none">
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">總營業額</div>
+      <div class="kpi-val green" id="kpi-revenue">$0</div>
+      <div class="kpi-sub" id="kpi-revenue-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">訂單數</div>
+      <div class="kpi-val" id="kpi-orders">0</div>
+      <div class="kpi-sub" id="kpi-orders-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">平均客單</div>
+      <div class="kpi-val accent" id="kpi-avg">$0</div>
+      <div class="kpi-sub">每筆訂單平均</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">總折扣</div>
+      <div class="kpi-val" id="kpi-discount">$0</div>
+      <div class="kpi-sub">折扣合計金額</div>
+    </div>
+  </div>
+
+  <!-- 趨勢圖（本週/本月/自訂） -->
+  <div class="chart-card" id="trend-card">
+    <div class="chart-title" id="trend-title">每日營業額</div>
+    <div class="chart-wrap">
+      <canvas id="trend-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- 訂單類型 -->
+  <div class="chart-card">
+    <div class="chart-title">訂單類型</div>
+    <div class="type-grid">
+      <div class="type-card"><div class="type-icon">🪑</div><div class="type-name">內用</div><div class="type-val" id="type-dine">0</div></div>
+      <div class="type-card"><div class="type-icon">🛍</div><div class="type-name">外帶</div><div class="type-val" id="type-take">0</div></div>
+      <div class="type-card"><div class="type-icon">📦</div><div class="type-name">購買商品</div><div class="type-val" id="type-prod">0</div></div>
+    </div>
+  </div>
+
+  <!-- 付款方式 -->
+  <div class="chart-card">
+    <div class="chart-title">付款方式分佈</div>
+    <div class="chart-wrap-pie">
+      <canvas id="payment-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- 商品銷售排行 -->
+  <div class="chart-card">
+    <div class="chart-title">商品銷售排行</div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
+
+  <!-- 營業日記錄（進階版以上） -->
+  <div id="business-day-section"></div>
+
+</div>
+
+<div id="bottom-nav">
+  <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
+  <button class="bottom-nav-btn" onclick="go('pos-orders.html')"><span class="icon">📋</span>訂單</button>
+  <button class="bottom-nav-btn active"><span class="icon">📊</span>統計</button>
+  <button class="bottom-nav-btn" onclick="go('pos-admin.html')"><span class="icon">⚙️</span>後台</button>
+  <button class="bottom-nav-btn" onclick="go('trial.html')"><span class="icon">🏠</span>返回</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null, currentTrial = null, currentPlan = 'basic';
+let currentPeriod = 'today';
+let trendChart = null, paymentChart = null;
+
+async function init() {
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'auth.html'; return; }
+  currentUser = session.user;
+
+  const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
+  if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) { window.location.href = 'trial.html'; return; }
+  currentTrial = trial;
+  currentPlan = trial.plan;
+
+  // 自訂日期預設今日
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('date-from').value = today;
+  document.getElementById('date-to').value = today;
+
+  await loadStats();
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+}
+
+function getRange() {
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  if (currentPeriod === 'today') return { from: `${today}T00:00:00`, to: `${today}T23:59:59` };
+  if (currentPeriod === 'week') {
+    const day = now.getDay() || 7;
+    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+    return { from: `${mon.toISOString().slice(0,10)}T00:00:00`, to: `${today}T23:59:59` };
+  }
+  if (currentPeriod === 'month') return { from: `${today.slice(0,7)}-01T00:00:00`, to: `${today}T23:59:59` };
+  if (currentPeriod === 'custom') {
+    const f = document.getElementById('date-from').value;
+    const t = document.getElementById('date-to').value;
+    return { from: `${f}T00:00:00`, to: `${t}T23:59:59` };
+  }
+}
+
+async function loadStats() {
+  const range = getRange();
+  const { data: orders } = await sb.from('orders')
+    .select('*, order_items(*)')
+    .eq('user_id', currentUser.id)
+    .gte('created_at', range.from)
+    .lte('created_at', range.to)
+    .order('created_at');
+
+  const data = orders || [];
+  renderKPI(data);
+  renderTrend(data, range);
+  renderTypes(data);
+  renderPayments(data);
+  renderRankList(data);
+  renderBusinessDay();
+}
+
+function renderKPI(orders) {
+  const revenue = orders.reduce((s,o) => s + o.total, 0);
+  const discount = orders.reduce((s,o) => s + (o.discount||0), 0);
+  const avg = orders.length ? Math.round(revenue / orders.length) : 0;
+
+  document.getElementById('kpi-revenue').textContent = `$${revenue.toLocaleString()}`;
+  document.getElementById('kpi-orders').textContent = orders.length;
+  document.getElementById('kpi-avg').textContent = `$${avg.toLocaleString()}`;
+  document.getElementById('kpi-discount').textContent = `$${discount.toLocaleString()}`;
+
+  const label = { today:'今日', week:'本週', month:'本月', custom:'區間' }[currentPeriod];
+  document.getElementById('kpi-revenue-sub').textContent = label + '累計';
+  document.getElementById('kpi-orders-sub').textContent = label + '合計';
+}
+
+function renderTrend(orders, range) {
+  const card = document.getElementById('trend-card');
+  if (currentPeriod === 'today') { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  // 建立日期 → 金額 map
+  const map = {};
+  orders.forEach(o => {
+    const d = o.created_at.slice(0,10);
+    map[d] = (map[d] || 0) + o.total;
+  });
+
+  // 生成日期序列
+  const from = new Date(range.from.slice(0,10));
+  const to = new Date(range.to.slice(0,10));
+  const labels = [], values = [];
+  for (let d = new Date(from); d <= to; d.setDate(d.getDate()+1)) {
+    const key = d.toISOString().slice(0,10);
+    labels.push(key.slice(5)); // MM-DD
+    values.push(map[key] || 0);
+  }
+
+  document.getElementById('trend-title').textContent = currentPeriod === 'month' ? '每日營業額（本月）' : '每日營業額';
+
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trend-chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: 'rgba(193,127,62,0.7)',
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 0 } },
+        y: { grid: { color: '#f0efec' }, ticks: { font: { size: 10 }, callback: v => `$${v}` } }
+      }
+    }
+  });
+}
+
+function renderTypes(orders) {
+  const counts = { dine_in: 0, takeout: 0, product: 0 };
+  orders.forEach(o => { if (counts[o.order_type] !== undefined) counts[o.order_type]++; });
+  document.getElementById('type-dine').textContent = counts.dine_in;
+  document.getElementById('type-take').textContent = counts.takeout;
+  document.getElementById('type-prod').textContent = counts.product;
+}
+
+function renderPayments(orders) {
+  const map = {};
+  orders.forEach(o => { map[o.payment_method] = (map[o.payment_method]||0) + o.total; });
+  const labels = Object.keys(map);
+  const values = Object.values(map);
+  const colors = ['#c17f3e','#3d7a5c','#5a8fc7','#9c6bbf','#c05a5a','#7a7a3d'];
+
+  if (paymentChart) paymentChart.destroy();
+  if (!labels.length) return;
+
+  paymentChart = new Chart(document.getElementById('payment-chart'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 12 } },
+        tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toLocaleString()}` } }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+function renderRankList(orders) {
+  const map = {};
+  orders.forEach(o => {
+    (o.order_items || []).forEach(i => {
+      const key = i.product_name;
+      if (!map[key]) map[key] = { qty: 0, revenue: 0 };
+      map[key].qty += i.quantity;
+      map[key].revenue += i.subtotal;
+    });
+  });
+
+  const sorted = Object.entries(map).sort((a,b) => b[1].qty - a[1].qty).slice(0, 8);
+  const maxQty = sorted[0]?.[1].qty || 1;
+
+  const el = document.getElementById('rank-list');
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--gray-400);font-size:13px;padding:20px">尚無銷售資料</div>';
+    return;
+  }
+  el.innerHTML = sorted.map(([name, stat], i) => `
+    <div class="rank-item">
+      <div class="rank-num ${i < 3 ? 'top' : ''}">${i+1}</div>
+      <div class="rank-bar-wrap">
+        <div class="rank-name">${name}</div>
+        <div class="rank-bar"><div class="rank-bar-fill" style="width:${Math.round(stat.qty/maxQty*100)}%"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="rank-qty">${stat.qty} 份</div>
+        <div class="rank-val">$${stat.revenue.toLocaleString()}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function renderBusinessDay() {
+  const el = document.getElementById('business-day-section');
+
+  if (currentPlan === 'basic') {
+    el.innerHTML = `
+      <div class="locked-section">
+        <div class="lock-icon">🔒</div>
+        <p><strong>營業日紀錄</strong><br>進階版以上功能<br>升級後可記錄每日開店打卡，計算平均每營業日營業額</p>
+      </div>`;
+    return;
+  }
+
+  // 載入本月打卡紀錄
+  const today = new Date().toISOString().slice(0,10);
+  const monthStart = `${today.slice(0,7)}-01`;
+  const { data: logs } = await sb.from('business_days')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .gte('business_date', monthStart)
+    .order('business_date', { ascending: false });
+
+  const checkins = logs || [];
+  const todayChecked = checkins.some(c => c.business_date === today);
+
+  // 本月營業額
+  const { data: monthOrders } = await sb.from('orders')
+    .select('total')
+    .eq('user_id', currentUser.id)
+    .gte('created_at', `${monthStart}T00:00:00`)
+    .lte('created_at', `${today}T23:59:59`);
+
+  const monthRevenue = (monthOrders || []).reduce((s,o) => s+o.total, 0);
+  const avgPerDay = checkins.length > 0 ? Math.round(monthRevenue / checkins.length) : 0;
+
+  el.innerHTML = `
+    <div class="business-day-section">
+      <div class="business-day-title">📅 營業日紀錄（本月）</div>
+      <div class="business-day-grid">
+        <div class="bd-card">
+          <div class="bd-label">本月營業天數</div>
+          <div class="bd-val">${checkins.length} 天</div>
+        </div>
+        <div class="bd-card">
+          <div class="bd-label">平均每日營業額</div>
+          <div class="bd-val">$${avgPerDay.toLocaleString()}</div>
+        </div>
+      </div>
+      <button class="btn-checkin ${todayChecked ? 'checked' : ''}" onclick="checkIn()" id="btn-checkin">
+        ${todayChecked ? '✅ 今日已打卡' : '📍 今日開店打卡'}
+      </button>
+      ${checkins.length > 0 ? `
+        <div class="checkin-log">
+          <div class="checkin-label">本月打卡紀錄</div>
+          ${checkins.slice(0,10).map(c => `<div class="checkin-item">📅 ${c.business_date}</div>`).join('')}
+        </div>` : ''}
+    </div>`;
+}
+
+async function checkIn() {
+  const today = new Date().toISOString().slice(0,10);
+  const { error } = await sb.from('business_days').insert({ user_id: currentUser.id, business_date: today });
+  if (error && error.code === '23505') { showToast('今日已打卡'); return; }
+  showToast('打卡成功！');
+  renderBusinessDay();
+}
+
+function setPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const customRange = document.getElementById('custom-range');
+  if (period === 'custom') { customRange.classList.add('show'); return; }
+  customRange.classList.remove('show');
+  loadStats();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function go(url) { window.location.href = url; }
+
+init();
+</script>
+</body>
+</html>
