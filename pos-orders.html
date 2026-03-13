@@ -66,7 +66,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
 /* 統計卡片 */
 #daily-summary{
-  margin:16px 16px 12px;
+  margin:20px 16px 12px;
   background:var(--white);border-radius:16px;padding:16px;
   border:1.5px solid var(--gray-200);
   display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
@@ -75,7 +75,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .summary-val{font-size:18px;font-weight:700;font-family:'Space Mono',monospace;color:var(--black);word-break:break-all;}
 .summary-val.green{color:var(--green);}
 .summary-label{font-size:11px;color:var(--gray-400);margin-top:2px;}
-.summary-period{font-size:11px;color:var(--gray-400);text-align:center;margin:-6px 0 10px;padding:0 16px;}
+
 
 /* 訂單列表 */
 #orders-container{padding:0 16px;}
@@ -173,8 +173,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 </div>
 
 <!-- 統計摘要 -->
-<div class="summary-period" id="summary-period"></div>
 <div id="daily-summary">
+  <div id="summary-period-row" style="grid-column:1/-1;font-size:11px;color:var(--gray-400);text-align:center;margin-bottom:4px;display:none">
+    <span id="summary-period"></span>
+  </div>
   <div class="summary-item">
     <div class="summary-val green" id="sum-total">$0</div>
     <div class="summary-label">總營業額</div>
@@ -345,7 +347,14 @@ function getDateRange() {
 
 async function loadOrders() {
   const range = getDateRange();
-  document.getElementById('summary-period').textContent = range.label;
+  const periodRow = document.getElementById('summary-period-row');
+  const periodEl = document.getElementById('summary-period');
+  if (range.label && range.label !== '今日') {
+    periodEl.textContent = range.label;
+    periodRow.style.display = 'block';
+  } else {
+    periodRow.style.display = 'none';
+  }
 
   let query = sb.from('orders')
     .select('*, order_items(*)')
