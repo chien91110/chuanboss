@@ -14,7 +14,7 @@
   --accent: #c17f3e; --accent-light: #e8c99a; --green: #3d7a5c; --red: #c0392b;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-bottom:72px;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-bottom:16px;padding-left:72px;}@media(max-width:700px){body{padding-left:0;padding-bottom:72px;}}
 
 /* NAV */
 #top-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
@@ -23,7 +23,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .nav-title{color:rgba(255,255,255,0.6);font-size:13px;flex:1;}
 
 /* TABS */
-.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:sticky;top:52px;z-index:50;overflow-x:auto;scrollbar-width:none;}
+.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:sticky;top:52px;z-index:50;overflow-x:auto;scrollbar-width:none;margin-left:0;}
 .admin-tabs::-webkit-scrollbar{display:none;}
 .admin-tab{padding:14px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
 .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
@@ -120,11 +120,17 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:white;padding:10px 20px;border-radius:100px;font-size:13px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 
-/* BOTTOM NAV */
-#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;height:56px;background:var(--white);border-top:1px solid var(--gray-200);display:flex;}
-.bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;font-size:10px;color:var(--gray-400);cursor:pointer;transition:color 0.15s;font-family:'Noto Sans TC',sans-serif;}
-.bottom-nav-btn .icon{font-size:20px;}
-.bottom-nav-btn.active{color:var(--accent);}
+/* SIDE NAV - 桌面 */
+#bottom-nav{position:fixed;top:52px;left:0;bottom:0;z-index:100;width:72px;background:var(--white);border-right:1px solid var(--gray-200);display:flex;flex-direction:column;padding:8px 0;}
+.bottom-nav-btn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;font-size:10px;color:var(--gray-400);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;padding:12px 0;border-radius:0;}
+.bottom-nav-btn .icon{font-size:22px;}
+.bottom-nav-btn.active{color:var(--accent);background:var(--gray-50);}
+.bottom-nav-btn:hover{background:var(--gray-50);color:var(--gray-600);}
+/* 手機版改回底部 */
+@media(max-width:700px){
+  #bottom-nav{top:auto;bottom:0;left:0;right:0;width:auto;height:56px;flex-direction:row;border-right:none;border-top:1px solid var(--gray-200);padding:0;}
+  .bottom-nav-btn{padding:0;}
+}
 
 @media(max-width:480px){.form-row{grid-template-columns:1fr;}}
 </style>
@@ -294,7 +300,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const PLAN_LIMITS = { basic: { products: 10, categories: 5 }, advanced: { products: 20, categories: 20 }, premium: { products: 9999, categories: 9999 } };
+const PLAN_LIMITS = { basic: { products: 10, categories: 5 }, advanced: { products: 20, categories: 20 }, premium: { products: Infinity, categories: Infinity } };
 
 let currentUser = null, currentTrial = null;
 let categories = [], products = [], payments = [];
@@ -347,7 +353,8 @@ function renderProducts() {
   const limit = PLAN_LIMITS[currentPlan].products;
   const count = products.length;
   const badge = document.getElementById('product-limit-badge');
-  badge.innerHTML = `<span class="limit-badge ${count >= limit * 0.8 ? 'warning' : ''}">商品數量：${count} / ${limit === 9999 ? '無限' : limit}</span>`;
+  const limitLabel = limit === Infinity ? '無限制' : limit;
+  badge.innerHTML = `<span class="limit-badge ${limit !== Infinity && count >= limit * 0.8 ? 'warning' : ''}">商品數量：${count} / ${limitLabel}</span>`;
 
   const el = document.getElementById('products-list');
   if (!products.length) {
@@ -501,7 +508,7 @@ function renderCategories() {
     el.innerHTML = `<div class="empty-card"><div class="icon">🗂</div><p>還沒有分類<br>點右上角「新增分類」</p></div>`;
     return;
   }
-  el.innerHTML = `<div class="limit-badge" style="display:inline-flex;margin-bottom:12px">分類數量：${categories.length} / ${limit === 9999 ? '無限' : limit}</div>` +
+  el.innerHTML = `<div class="limit-badge" style="display:inline-flex;margin-bottom:12px">分類數量：${categories.length} / ${limit === Infinity ? '無限制' : limit}</div>` +
     categories.map(c => `
     <div class="item-card">
       <div class="item-card-info"><div class="item-card-name">${c.name}</div></div>
