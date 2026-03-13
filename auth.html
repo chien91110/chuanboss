@@ -540,13 +540,9 @@ async function handleRegister() {
       if (profileError) throw profileError;
     }
 
-    // 3. 顯示驗證信提示
-    document.getElementById('section-register').style.display = 'none';
-    document.querySelector('.auth-tabs').style.display = 'none';
-    document.querySelector('.auth-header').style.display = 'none';
-    document.getElementById('alert').className = 'alert';
-    document.getElementById('verify-email-display').textContent = email;
-    document.getElementById('verify-screen').style.display = 'block';
+    // 3. 註冊成功直接登入導向
+    showAlert('註冊成功！正在進入系統...', 'success');
+    setTimeout(() => { window.location.href = 'trial.html'; }, 1000);
 
   } catch (e) {
     if (e.message.includes('already registered')) {
