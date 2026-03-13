@@ -394,6 +394,11 @@ nav {
   .status-top { flex-direction: column; }
   .select-title { font-size: 28px; }
 }
+
+/* 按鈕按下效果 */
+button:active, .plan-card:active { transform: scale(0.97) !important; }
+.btn-start-trial:active { transform: scale(0.97) translateY(0) !important; }
+.btn-confirm:active { transform: scale(0.97) !important; }
 </style>
 </head>
 <body>
@@ -521,19 +526,19 @@ nav {
         <div class="feature-card-icon">🖥️</div>
         <div class="feature-card-title">進入 POS 系統</div>
         <div class="feature-card-desc">開始試用你的點餐收款系統，體驗完整功能。</div>
-        <button onclick="logFeature('pos_enter')" style="margin-top:12px;padding:9px 16px;background:var(--black);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%">進入系統 →</button>
+        <button onclick="logFeature('pos_enter');window.location.href='pos-trial.html'" style="margin-top:12px;padding:9px 16px;background:var(--black);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%;transition:all 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">進入系統 →</button>
       </div>
       <div class="feature-card">
         <div class="feature-card-icon">📊</div>
         <div class="feature-card-title">營業統計</div>
         <div class="feature-card-desc">查看今日、本月營業額與訂單統計數據。</div>
-        <button onclick="logFeature('stats_view')" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%">查看統計</button>
+        <button onclick="logFeature('stats_view');window.location.href='pos-stats.html'" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%;transition:all 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">查看統計</button>
       </div>
       <div class="feature-card">
         <div class="feature-card-icon">📦</div>
         <div class="feature-card-title">商品管理</div>
         <div class="feature-card-desc">新增、編輯商品與分類，設定規格與圖片。</div>
-        <button onclick="logFeature('product_manage')" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%">管理商品</button>
+        <button onclick="logFeature('product_manage');window.location.href='pos-admin.html'" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%;transition:all 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">管理商品</button>
       </div>
       <div class="feature-card">
         <div class="feature-card-icon">💬</div>
