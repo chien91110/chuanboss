@@ -31,8 +31,18 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
 /* tab-content 需讓出 navbar(52px) + tabs列(49px) = 101px */
-.tab-content{display:none;padding:16px;margin-top:101px;}
+.tab-content{display:none;padding:0;margin-top:101px;}
 .tab-content.active{display:block;}
+.tab-inner{padding:16px;}
+
+/* 商品搜尋 sticky */
+.product-search-bar{
+  position:sticky;top:101px;z-index:40;
+  background:var(--gray-50);
+  padding:10px 16px;
+  border-bottom:1px solid var(--gray-200);
+  display:flex;gap:8px;flex-wrap:wrap;
+}
 
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .section-title{font-size:16px;font-weight:700;}
@@ -208,18 +218,19 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 
 <!-- 商品管理 -->
 <div class="tab-content active" id="tab-products">
-  <div class="section-header">
-    <div class="section-title">商品列表</div>
-    <button class="btn-add" onclick="openProductModal()">＋ 新增商品</button>
-  </div>
-  <div id="product-limit-badge"></div>
-  <!-- 搜尋 + 分類篩選 -->
-  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+  <!-- 搜尋列（sticky） -->
+  <div class="product-search-bar">
     <input id="product-search" class="form-input" placeholder="🔍 搜尋商品名稱..." style="flex:1;min-width:160px;padding:8px 12px;font-size:13px" oninput="filterProducts()">
     <select id="product-cat-filter" class="form-select" style="flex:0 0 auto;width:auto;padding:8px 12px;font-size:13px" onchange="filterProducts()">
       <option value="">全部分類</option>
     </select>
   </div>
+  <div class="tab-inner">
+    <div class="section-header">
+      <div class="section-title">商品列表</div>
+      <button class="btn-add" onclick="openProductModal()">＋ 新增商品</button>
+    </div>
+    <div id="product-limit-badge"></div>
   <div class="csv-section" id="csv-section" style="display:none">
     <div class="csv-title">📥 批量上傳商品</div>
     <div class="csv-desc">下載範本 CSV 填寫後上傳，可一次匯入多筆商品（含規格）。<br>格式：商品名稱、價格、分類名稱、單位、規格1名稱、規格1選項（選項1:加價,選項2:加價）、規格2名稱、規格2選項、...</div>
@@ -240,29 +251,35 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
     </div>
   </div>
   <div id="products-list"></div>
+  </div><!-- /tab-inner -->
 </div>
 
 <!-- 分類管理 -->
 <div class="tab-content" id="tab-categories">
+  <div class="tab-inner">
   <div class="section-header">
     <div class="section-title">商品分類</div>
     <button class="btn-add" onclick="openCategoryModal()">＋ 新增分類</button>
   </div>
   <div id="cat-limit-badge"></div>
   <div id="categories-list"></div>
+  </div><!-- /tab-inner -->
 </div>
 
 <!-- 付款方式 -->
 <div class="tab-content" id="tab-payments">
+  <div class="tab-inner">
   <div class="section-header">
     <div class="section-title">付款方式</div>
     <button class="btn-add" onclick="openPaymentModal()">＋ 新增</button>
   </div>
   <div id="payments-list"></div>
+  </div><!-- /tab-inner -->
 </div>
 
 <!-- 訂單類型 -->
 <div class="tab-content" id="tab-ordertypes">
+  <div class="tab-inner">
   <div class="card-section">
     <div class="toggle-row">
       <div>
@@ -283,10 +300,12 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
       </div>
     </div>
   </div>
+  </div><!-- /tab-inner -->
 </div>
 
 <!-- 感謝語（進階版以上） -->
 <div class="tab-content" id="tab-thanks">
+  <div class="tab-inner">
   <div class="card-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <div style="font-size:14px;font-weight:700">結帳感謝語</div>
@@ -299,6 +318,7 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
       <button class="btn-save" style="flex:none;padding:10px 28px" onclick="saveThanks()">儲存感謝語</button>
     </div>
   </div>
+  </div><!-- /tab-inner -->
 </div>
 
 <!-- SIDE NAV -->
