@@ -633,6 +633,8 @@ function closeEditModal() {
 document.getElementById('modal-edit').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-edit')) closeEditModal();
 });
+
+async function deleteOrder(id) {
   if (!confirm('確定要刪除這筆訂單？')) return;
   await sb.from('order_items').delete().eq('order_id', id);
   await sb.from('orders').delete().eq('id', id);
