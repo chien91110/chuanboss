@@ -282,7 +282,9 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 /* 結帳成功 */
 #success-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(10,10,10,0.82); z-index: 300;
+  background: rgba(60, 45, 30, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 300;
   align-items: center; justify-content: center;
   padding: 20px; flex-direction: column; gap: 12px;
 }
@@ -291,32 +293,34 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   background: white; border-radius: 28px;
   width: 100%; max-width: 340px;
   overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+  box-shadow: 0 20px 60px rgba(100, 70, 30, 0.25);
 }
 .success-top {
-  background: linear-gradient(160deg, #1c1c1c 0%, #333 100%);
+  background: linear-gradient(160deg, #c17f3e 0%, #a06530 100%);
   padding: 32px 28px 28px; text-align: center;
 }
 .success-icon { font-size: 48px; margin-bottom: 12px; display: block; }
 .success-title { font-size: 18px; font-weight: 700; color: white; margin-bottom: 16px; letter-spacing: 0.03em; }
-.success-amount-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.success-amount-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
 .success-amount-row:last-child { border-bottom: none; padding-bottom: 0; }
-.success-amount-label { font-size: 12px; color: rgba(255,255,255,0.45); }
+.success-amount-label { font-size: 12px; color: rgba(255,255,255,0.6); }
 .success-amount-val { font-size: 15px; font-weight: 700; font-family: 'Space Mono', monospace; color: white; }
-.success-amount-val.green { color: #6ee7a8; font-size: 32px; }
-.success-amount-val.muted { color: rgba(255,255,255,0.55); font-size: 13px; }
-.success-bottom { padding: 20px 24px 24px; }
+.success-amount-val.green { color: #fff8ee; font-size: 32px; }
+.success-amount-val.muted { color: rgba(255,255,255,0.65); font-size: 13px; }
+.success-bottom { padding: 20px 24px 24px; background: var(--white); }
 .btn-next-order {
-  width: 100%; padding: 14px; background: var(--black); color: white;
+  width: 100%; padding: 14px; background: var(--accent); color: white;
   border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
   font-family: 'Noto Sans TC', sans-serif; cursor: pointer; transition: background 0.15s;
 }
-.btn-next-order:hover { background: #333; }
+.btn-next-order:hover { background: #a06530; }
 /* 感謝語：卡片外獨立顯示 */
 .success-thank-outside {
-  background: rgba(255,255,255,0.08); border-radius: 14px;
+  background: rgba(255, 245, 230, 0.18);
+  border: 1px solid rgba(255, 220, 160, 0.3);
+  border-radius: 14px;
   padding: 14px 18px; max-width: 340px; width: 100%;
-  font-size: 13px; color: rgba(255,255,255,0.75);
+  font-size: 13px; color: rgba(255, 245, 220, 0.9);
   line-height: 1.7; text-align: center;
 }
 
