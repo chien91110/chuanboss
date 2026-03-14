@@ -40,7 +40,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   display: flex; height: 100vh;
   padding-top: var(--nav-h); padding-left: 72px;
 }
-@media (max-width: 700px) { #app { padding-left: 0; padding-bottom: 56px; } }
+@media (max-width: 700px) { #app { padding-left: 0; } }
 
 /* LEFT: PRODUCTS */
 #products-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -289,32 +289,60 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 
 /* MOBILE */
 @media (max-width: 700px) {
-  :root { --cart-w: 100%; }
+  :root { --cart-w: 100%; --toggle-h: 48px; }
   #app { flex-direction: column; }
-  #products-panel { height: calc(100vh - var(--nav-h) - 56px); }
 
-  /* 手機版購物車：預設隱藏，從底部滑上來 */
+  /* 商品區：扣掉 nav(52) + toggle-bar(48) + bottom-nav(56) */
+  #products-panel { height: calc(100vh - var(--nav-h) - var(--toggle-h) - 56px); }
+
+  /* 購物車：從 toggle-bar 上方滑出，高度同商品區 */
   #cart-panel {
-    position: fixed; bottom: 56px; left: 0; right: 0;
-    height: 75vh; border-left: none; border-top: 1px solid var(--gray-200);
+    position: fixed;
+    bottom: calc(56px + var(--toggle-h));
+    left: 0; right: 0;
+    height: calc(100vh - var(--nav-h) - var(--toggle-h) - 56px);
+    border-left: none; border-top: 1px solid var(--gray-200);
     transform: translateY(100%); transition: transform 0.3s ease;
     z-index: 150;
   }
   #cart-panel.open { transform: translateY(0); }
 
-  /* 購物車開關按鈕（固定在底部導覽列上方） */
+  /* Toggle bar：緊貼 bottom-nav 上方，高度固定 48px */
   #cart-toggle-bar {
-    display: flex; position: fixed; bottom: 56px; left: 0; right: 0; z-index: 140;
+    display: flex; position: fixed;
+    bottom: 56px; left: 0; right: 0; height: var(--toggle-h);
+    z-index: 140;
     background: var(--black); color: white;
-    padding: 10px 16px; align-items: center; justify-content: space-between;
-    cursor: pointer; transition: background 0.15s;
+    padding: 0 16px; align-items: center; justify-content: space-between;
+    cursor: pointer;
   }
-  #cart-toggle-bar:hover { background: #222; }
-  #cart-toggle-label { font-size: 13px; font-weight: 700; }
-  #cart-toggle-count { font-size: 12px; color: rgba(255,255,255,0.6); }
-  #cart-toggle-total { font-size: 15px; font-weight: 700; font-family: 'Space Mono', monospace; color: var(--accent-light); }
-  #cart-close-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 14px; background: var(--gray-100); border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; margin-bottom: 4px; width: 100%; }
+  #cart-toggle-bar:active { background: #222; }
+  #cart-close-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 8px 14px;
+    background: var(--gray-100); border: none; border-radius: 8px;
+    font-size: 13px; cursor: pointer;
+    font-family: 'Noto Sans TC', sans-serif;
+    margin-bottom: 4px; width: 100%;
+  }
 }
+
+/* 小手機補強（≤390px，涵蓋 iPhone SE / Android 小機） */
+@media (max-width: 390px) {
+  #products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px; padding: 10px;
+  }
+  .product-name { font-size: 12px; }
+  .product-price { font-size: 13px; }
+  .cart-title { font-size: 13px; }
+  .amount-row.total { font-size: 15px; }
+  .btn-checkout { padding: 12px; font-size: 14px; }
+  .payment-btn, .order-type-btn { padding: 5px 8px; font-size: 11px; }
+  .modal-box { padding: 20px 14px; }
+  .spec-option-btn { padding: 10px 12px; font-size: 13px; }
+}
+
 @media (min-width: 701px) {
   #cart-toggle-bar { display: none; }
   #cart-close-btn { display: none; }
@@ -490,33 +518,42 @@ let specStep = 0;
 let specSelections = []; // [{groupName, optionName, price_delta}]
 
 async function init() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
-  currentUser = session.user;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+    currentUser = session.user;
 
-  const [{ data: profile }, { data: trial }] = await Promise.all([
-    sb.from('profiles').select('*').eq('id', currentUser.id).single(),
-    sb.from('trials').select('*').eq('user_id', currentUser.id).single()
-  ]);
-  if (!profile || !trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-    window.location.href = 'trial.html'; return;
+    const [{ data: profile }, { data: trial }] = await Promise.all([
+      sb.from('profiles').select('*').eq('id', currentUser.id).single(),
+      sb.from('trials').select('*').eq('user_id', currentUser.id).single()
+    ]);
+    if (!profile || !trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+      window.location.href = 'trial.html'; return;
+    }
+    currentTrial = trial;
+
+    if (profile.brand_name) {
+      document.getElementById('nav-brand-name').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 試用版`;
+    }
+    const daysLeft = Math.max(0, Math.ceil((new Date(trial.expires_at) - new Date()) / 86400000));
+    document.getElementById('nav-days-left').textContent = `試用剩 ${daysLeft} 天`;
+
+    await loadOTSettings();
+    await loadData();
+    await loadOrderNumber();
+    document.getElementById('spinner').style.display = 'none';
+
+    await checkDailyCheckin();
+  } catch(e) {
+    console.error('init error:', e);
+    document.getElementById('spinner').innerHTML =
+      `<div style="text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="font-size:14px;color:#5a5750;margin-bottom:8px">載入失敗</div>
+        <div style="font-size:12px;color:#9c9890;margin-bottom:16px">${e.message}</div>
+        <button onclick="location.reload()" style="padding:10px 20px;background:#0a0a0a;color:white;border:none;border-radius:10px;font-size:13px;cursor:pointer">重新載入</button>
+      </div>`;
   }
-  currentTrial = trial;
-
-  // Navbar
-  if (profile.brand_name) {
-    document.getElementById('nav-brand-name').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 試用版`;
-  }
-  const daysLeft = Math.max(0, Math.ceil((new Date(trial.expires_at) - new Date()) / 86400000));
-  document.getElementById('nav-days-left').textContent = `試用剩 ${daysLeft} 天`;
-
-  await loadOTSettings();
-  await loadData();
-  await loadOrderNumber();
-  document.getElementById('spinner').style.display = 'none';
-
-  // 開店打卡：每天第一次進入才跳出
-  await checkDailyCheckin();
 }
 
 // ── 訂單類型設定 ──
@@ -553,7 +590,9 @@ function selectOT(idx, btn) {
 async function loadData() {
   const [{ data: cats }, { data: prods }, { data: pays }] = await Promise.all([
     sb.from('categories').select('*').eq('user_id', currentUser.id).order('sort_order'),
-    sb.from('products').select('*, product_variants(*)').eq('user_id', currentUser.id).eq('is_available', true).order('sort_order'),
+    // is_available: true 或 null（欄位不存在舊資料）都當作上架
+    sb.from('products').select('*, product_variants(*)').eq('user_id', currentUser.id)
+      .neq('is_available', false).order('sort_order'),
     sb.from('payment_methods').select('*').eq('user_id', currentUser.id).order('sort_order')
   ]);
   categories = cats || [];
@@ -567,17 +606,21 @@ async function loadData() {
 }
 
 async function loadOrderNumber() {
-  const today = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // "20260314"
-  const prefix = today; // 20260314
+  // 用台灣時間（UTC+8）計算今日範圍
+  const now = new Date();
+  const tzOffset = 8 * 60; // UTC+8
+  const local = new Date(now.getTime() + (tzOffset - now.getTimezoneOffset()) * 60000);
+  const today = local.toISOString().slice(0, 10); // "2026-03-14"
+  const todayKey = today.replace(/-/g, '');       // "20260314"
 
-  // 查今日已有幾筆訂單
-  const todayStart = `${today.slice(0,4)}-${today.slice(4,6)}-${today.slice(6,8)}T00:00:00`;
-  const todayEnd   = `${today.slice(0,4)}-${today.slice(4,6)}-${today.slice(6,8)}T23:59:59`;
+  const todayStart = `${today}T00:00:00+08:00`;
+  const todayEnd   = `${today}T23:59:59+08:00`;
+
   const { count } = await sb.from('orders').select('*', { count: 'exact', head: true })
     .eq('user_id', currentUser.id)
     .gte('created_at', todayStart).lte('created_at', todayEnd);
 
-  orderNumber = parseInt(prefix + (101 + (count || 0)));
+  orderNumber = parseInt(todayKey + (101 + (count || 0)));
   document.getElementById('cart-order-num').textContent = `#${orderNumber}`;
 }
 

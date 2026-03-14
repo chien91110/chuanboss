@@ -131,13 +131,21 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   .kpi-grid{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:480px){
-  .kpi-grid{grid-template-columns:1fr 1fr;}
   .kpi-val{font-size:22px;}
   .period-tabs{gap:4px;}
   .period-tab{padding:6px 10px;font-size:12px;}
   .custom-range{gap:4px;}
   .custom-range input[type=date]{flex:1;min-width:0;font-size:12px;}
   .chart-card,.business-day-wrap{padding:12px;}
+}
+@media(max-width:390px){
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .kpi-val{font-size:18px;}
+  .kpi-label{font-size:10px;}
+  .period-tab{padding:5px 8px;font-size:11px;}
+  .business-day-grid{grid-template-columns:1fr;}
+  .rank-item{flex-wrap:wrap;gap:4px;}
+  .modal-sheet{padding:16px;}
 }
 
 /* SPINNER */
@@ -269,36 +277,47 @@ let currentPeriod = 'today';
 let trendChart = null, paymentChart = null;
 let otSettings = { enabled: false, types: [] };
 
+function showInitError(e) {
+  console.error('init error:', e);
+  document.getElementById('spinner').innerHTML =
+    `<div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:14px;color:#5a5750;margin-bottom:6px;font-weight:700">載入失敗</div>
+      <div style="font-size:12px;color:#9c9890;margin-bottom:20px;max-width:260px;line-height:1.5">${e?.message || '請確認網路連線後重試'}</div>
+      <button onclick="location.reload()" style="padding:10px 24px;background:#0a0a0a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">重新載入</button>
+    </div>`;
+}
+
 async function init() {
-  const { data:{ session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
-  currentUser = session.user;
+  try {
+    const { data:{ session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+    currentUser = session.user;
 
-  const [{ data: trial }, { data: profile }] = await Promise.all([
-    sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
-    sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
-  ]);
-  if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-    window.location.href = 'trial.html'; return;
-  }
-  currentTrial = trial;
-  currentPlan = trial.plan;
+    const [{ data: trial }, { data: profile }] = await Promise.all([
+      sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
+      sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
+    ]);
+    if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+      window.location.href = 'trial.html'; return;
+    }
+    currentTrial = trial;
+    currentPlan = trial.plan;
 
-  if (profile?.brand_name) {
-    document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 營業統計 &nbsp;·&nbsp; 試用版`;
-  }
+    if (profile?.brand_name) {
+      document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 營業統計 &nbsp;·&nbsp; 試用版`;
+    }
 
-  // 自訂日期預設今日
-  const today = new Date().toISOString().slice(0,10);
-  document.getElementById('date-from').value = today;
-  document.getElementById('date-to').value = today;
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('date-from').value = today;
+    document.getElementById('date-to').value = today;
 
-  // 讀取訂單類型設定
-  await loadOTSettings();
-  await loadStats();
+    await loadOTSettings();
+    await loadStats();
 
-  document.getElementById('spinner').style.display = 'none';
-  document.getElementById('main-content').style.display = 'block';
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+  } catch(e) { showInitError(e); }
 }
 
 async function loadOTSettings() {

@@ -403,31 +403,44 @@ let currentPlan = 'basic';
 let otSettings = { enabled: false, types: [] };
 let emojiTargetIdx = null;
 
+function showInitError(e) {
+  console.error('init error:', e);
+  document.getElementById('spinner').innerHTML =
+    `<div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:14px;color:#5a5750;margin-bottom:6px;font-weight:700">載入失敗</div>
+      <div style="font-size:12px;color:#9c9890;margin-bottom:20px;max-width:260px;line-height:1.5">${e?.message || '請確認網路連線後重試'}</div>
+      <button onclick="location.reload()" style="padding:10px 24px;background:#0a0a0a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">重新載入</button>
+    </div>`;
+}
+
 async function init() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
-  currentUser = session.user;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+    currentUser = session.user;
 
-  const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
-  if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-    window.location.href = 'trial.html'; return;
-  }
-  currentTrial = trial;
-  currentPlan = trial.plan;
+    const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
+    if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+      window.location.href = 'trial.html'; return;
+    }
+    currentTrial = trial;
+    currentPlan = trial.plan;
 
-  const { data: profile } = await sb.from('profiles').select('brand_name').eq('id', currentUser.id).single();
-  if (profile?.brand_name) {
-    document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 後台管理 &nbsp;·&nbsp; 試用版`;
-  }
+    const { data: profile } = await sb.from('profiles').select('brand_name').eq('id', currentUser.id).single();
+    if (profile?.brand_name) {
+      document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 後台管理 &nbsp;·&nbsp; 試用版`;
+    }
 
-  if (currentPlan !== 'basic') {
-    document.getElementById('csv-section').style.display = 'block';
-    document.getElementById('p-img-group').style.display = 'block';
-  }
+    if (currentPlan !== 'basic') {
+      document.getElementById('csv-section').style.display = 'block';
+      document.getElementById('p-img-group').style.display = 'block';
+    }
 
-  await loadOTSettings();
-  await loadAll();
-  document.getElementById('spinner').style.display = 'none';
+    await loadOTSettings();
+    await loadAll();
+    document.getElementById('spinner').style.display = 'none';
+  } catch(e) { showInitError(e); }
 }
 
 async function loadAll() {

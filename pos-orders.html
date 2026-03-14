@@ -126,14 +126,21 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   .bottom-nav-btn{padding:0;}
 }
 @media(max-width:480px){
-  #daily-summary{grid-template-columns:1fr;gap:8px;}
-  .filter-bar{flex-wrap:wrap;gap:6px;}
-  .filter-bar select{flex:1;min-width:0;}
+  #daily-summary{grid-template-columns:1fr 1fr;gap:8px;}
   .date-range-row{gap:4px;}
   .date-range-input{flex:1;min-width:0;font-size:12px;}
   .btn-range-apply{padding:7px 12px;font-size:12px;}
-  .order-group-header{font-size:12px;}
-  .order-subtotal{font-size:11px;}
+}
+@media(max-width:390px){
+  #daily-summary{grid-template-columns:1fr;}
+  #filter-bar{gap:5px;}
+  .filter-btn{padding:5px 10px;font-size:11px;}
+  .order-num{font-size:12px;}
+  .order-total{font-size:15px;}
+  .order-card-header{padding:10px 12px;}
+  .order-card-items{padding:0 12px 10px;}
+  .modal-sheet{padding:16px;}
+  .detail-total{font-size:22px;}
 }
 
 /* SPINNER */
@@ -296,35 +303,46 @@ let currentFilter = 'today';
 let canDelete = false;
 let otSettings = { enabled: false, types: [] };
 
+function showInitError(e) {
+  console.error('init error:', e);
+  document.getElementById('spinner').innerHTML =
+    `<div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:14px;color:#5a5750;margin-bottom:6px;font-weight:700">載入失敗</div>
+      <div style="font-size:12px;color:#9c9890;margin-bottom:20px;max-width:260px;line-height:1.5">${e?.message || '請確認網路連線後重試'}</div>
+      <button onclick="location.reload()" style="padding:10px 24px;background:#0a0a0a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">重新載入</button>
+    </div>`;
+}
+
 async function init() {
-  const { data:{ session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
-  currentUser = session.user;
+  try {
+    const { data:{ session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+    currentUser = session.user;
 
-  const [{ data: trial }, { data: profile }] = await Promise.all([
-    sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
-    sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
-  ]);
-  if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-    window.location.href = 'trial.html'; return;
-  }
-  currentTrial = trial;
-  canDelete = trial.plan !== 'basic';
+    const [{ data: trial }, { data: profile }] = await Promise.all([
+      sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
+      sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
+    ]);
+    if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+      window.location.href = 'trial.html'; return;
+    }
+    currentTrial = trial;
+    canDelete = trial.plan !== 'basic';
 
-  if (profile?.brand_name) {
-    document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 訂單紀錄 &nbsp;·&nbsp; 試用版`;
-  }
+    if (profile?.brand_name) {
+      document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 訂單紀錄 &nbsp;·&nbsp; 試用版`;
+    }
 
-  // 讀取訂單類型設定（顯示用）
-  await loadOTSettings();
-  await loadPaymentMethods();
-  // 預設自訂區間為今日
-  const today = new Date().toISOString().slice(0,10);
-  document.getElementById('range-from').value = today;
-  document.getElementById('range-to').value = today;
+    await loadOTSettings();
+    await loadPaymentMethods();
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('range-from').value = today;
+    document.getElementById('range-to').value = today;
 
-  await loadOrders();
-  document.getElementById('spinner').style.display = 'none';
+    await loadOrders();
+    document.getElementById('spinner').style.display = 'none';
+  } catch(e) { showInitError(e); }
 }
 
 async function loadOTSettings() {
