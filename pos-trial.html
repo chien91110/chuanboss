@@ -1016,7 +1016,8 @@ async function loadThankMessages() {
   if (plan === 'basic') return;
   const { data } = await sb.from('receipt_messages').select('*')
     .eq('user_id', currentUser.id).eq('is_active', true).order('sort_order');
-  thankMessages = data || [];
+  // message 欄位優先，沒有就 fallback 到 content
+  thankMessages = (data || []).map(t => ({ ...t, message: t.message || t.content || '' }));
   renderThankSection();
 }
 
