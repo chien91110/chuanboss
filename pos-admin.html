@@ -215,7 +215,7 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
   <div id="product-limit-badge"></div>
   <div class="csv-section" id="csv-section" style="display:none">
     <div class="csv-title">📥 批量上傳商品</div>
-    <div class="csv-desc">下載範本 CSV 填寫後上傳，可一次匯入多筆商品。<br>格式：商品名稱、價格、分類名稱、單位（可空白）</div>
+    <div class="csv-desc">下載範本 CSV 填寫後上傳，可一次匯入多筆商品（含規格）。<br>格式：商品名稱、價格、分類名稱、單位、規格1名稱、規格1選項（選項1:加價,選項2:加價）、規格2名稱、規格2選項、...</div>
     <div class="csv-actions">
       <button class="btn-outline" onclick="downloadTemplate()">⬇ 下載範本</button>
       <button class="btn-filled" onclick="document.getElementById('csv-file').click()">上傳 CSV</button>
@@ -225,7 +225,7 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
       <div class="csv-preview-title">預覽（共 <span id="csv-count"></span> 筆）</div>
       <div style="overflow-x:auto">
         <table class="csv-table">
-          <thead><tr><th>商品名稱</th><th>價格</th><th>分類</th><th>單位</th><th>狀態</th></tr></thead>
+          <thead><tr><th>商品名稱</th><th>價格</th><th>分類</th><th>單位</th><th>規格</th><th>狀態</th></tr></thead>
           <tbody id="csv-tbody"></tbody>
         </table>
       </div>
@@ -278,18 +278,24 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
   </div>
 </div>
 
-<!-- 感謝語（高級版） -->
+<!-- 感謝語（進階版以上） -->
 <div class="tab-content" id="tab-thanks">
   <div class="card-section">
-    <div style="font-size:14px;font-weight:700;margin-bottom:6px">結帳感謝語</div>
-    <div style="font-size:12px;color:var(--gray-600);margin-bottom:16px;line-height:1.6">結帳完成後隨機顯示一則感謝語，可設定多則輪替。<br>支援換行，適合放 Google 評論邀請、下次優惠提醒等。</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="font-size:14px;font-weight:700">結帳感謝語</div>
+      <span style="font-size:12px;color:var(--gray-400)" id="thanks-plan-note"></span>
+    </div>
+    <div style="font-size:12px;color:var(--gray-600);margin-bottom:16px;line-height:1.6">結帳時店員可選擇一則附在訂單上，支援換行。<br>適合放 Google 評論邀請、下次優惠提醒等。</div>
     <div id="thanks-list"></div>
-    <button class="btn-add-ot" style="margin-top:8px" onclick="addThanksRow()">＋ 新增一則</button>
+    <button class="btn-add-ot" style="margin-top:8px" id="btn-add-thanks" onclick="addThanksRow()">＋ 新增一則</button>
     <div style="margin-top:16px;text-align:right">
       <button class="btn-save" style="flex:none;padding:10px 28px" onclick="saveThanks()">儲存感謝語</button>
     </div>
   </div>
 </div>
+
+<!-- SIDE NAV -->
+<div id="bottom-nav">
   <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
   <button class="bottom-nav-btn" onclick="go('pos-orders.html')"><span class="icon">📋</span>訂單</button>
   <button class="bottom-nav-btn" onclick="go('pos-stats.html')"><span class="icon">📊</span>統計</button>
@@ -405,9 +411,9 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const PLAN_LIMITS = {
-  basic:    { products: 10,       categories: 5,        specGroups: 1, specOptions: 3 },
-  advanced: { products: 20,       categories: 20,       specGroups: 2, specOptions: 3 },
-  premium:  { products: 50,       categories: Infinity, specGroups: 3, specOptions: 5 }
+  basic:    { products: 10, categories: 5,        specGroups: 1, specOptions: 3, thanks: 0 },
+  advanced: { products: 20, categories: 20,       specGroups: 2, specOptions: 3, thanks: 5 },
+  premium:  { products: 50, categories: Infinity, specGroups: 3, specOptions: 5, thanks: 10 }
 };
 const PLAN_LABELS = {
   basic:    { products: '試用基本版限制10個',  categories: '試用基本版限制5個' },
@@ -457,8 +463,10 @@ async function init() {
       document.getElementById('csv-section').style.display = 'block';
       document.getElementById('p-img-group').style.display = 'block';
     }
-    if (currentPlan === 'premium') {
+    if (currentPlan === 'advanced' || currentPlan === 'premium') {
+      const lim = PLAN_LIMITS[currentPlan].thanks;
       document.getElementById('tab-btn-thanks').style.display = 'inline-block';
+      document.getElementById('thanks-plan-note').textContent = `此版本最多 ${lim} 則`;
     }
 
     await loadOTSettings();
@@ -894,7 +902,7 @@ async function renderThanksList() {
   thanksList = data || [];
   const el = document.getElementById('thanks-list');
   if (!thanksList.length) {
-    el.innerHTML = `<div style="font-size:13px;color:var(--gray-400);padding:12px 0;text-align:center">還沒有感謝語，點下方「新增一則」開始建立</div>`;
+    el.innerHTML = `<div class="thanks-empty" style="font-size:13px;color:var(--gray-400);padding:12px 0;text-align:center">還沒有感謝語，點下方「新增一則」開始建立</div>`;
     return;
   }
   el.innerHTML = thanksList.map((t, i) => `
@@ -906,34 +914,45 @@ async function renderThanksList() {
 }
 
 function addThanksRow() {
+  const lim = PLAN_LIMITS[currentPlan].thanks;
+  const current = document.querySelectorAll('#thanks-list .thanks-textarea').length;
+  if (current >= lim) { showToast(`此版本最多 ${lim} 則感謝語`); return; }
+
   thanksList.push({ id: null, message: '', is_active: true, sort_order: thanksList.length });
   const el = document.getElementById('thanks-list');
   // 移除空狀態訊息
-  if (el.querySelector('div[style*="text-align:center"]')) el.innerHTML = '';
-  el.innerHTML += `
-    <div class="thanks-row">
-      <textarea class="thanks-textarea" placeholder="輸入感謝語，支援換行..."
-        oninput="thanksList[${thanksList.length-1}].message=this.value"></textarea>
-      <button class="btn-sm danger" onclick="removeThanks(${thanksList.length-1})">刪除</button>
-    </div>`;
+  const empty = el.querySelector('.thanks-empty');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'thanks-row';
+  const idx = thanksList.length - 1;
+  div.innerHTML = `
+    <textarea class="thanks-textarea" placeholder="輸入感謝語，支援換行..."></textarea>
+    <button class="btn-sm danger" onclick="removeThanks(${idx})">刪除</button>`;
+  el.appendChild(div);
 }
 
 async function removeThanks(i) {
+  // 從 DOM 補回目前編輯中的值
+  const textareas = document.querySelectorAll('#thanks-list .thanks-textarea');
+  textareas.forEach((ta, idx) => { if (thanksList[idx]) thanksList[idx].message = ta.value; });
+
   const t = thanksList[i];
-  if (t.id) {
-    await sb.from('receipt_messages').delete().eq('id', t.id);
-  }
+  if (t?.id) await sb.from('receipt_messages').delete().eq('id', t.id);
   thanksList.splice(i, 1);
   renderThanksList();
   showToast('已刪除');
 }
 
 async function saveThanks() {
+  // 直接從 DOM 讀取所有 textarea 的值，不依賴 oninput binding
+  const textareas = document.querySelectorAll('#thanks-list .thanks-textarea');
   let saved = 0;
-  for (let i = 0; i < thanksList.length; i++) {
-    const t = thanksList[i];
-    if (!t.message.trim()) continue;
-    const payload = { user_id: currentUser.id, message: t.message.trim(), is_active: true, sort_order: i };
+  for (let i = 0; i < textareas.length; i++) {
+    const msg = textareas[i].value.trim();
+    if (!msg) continue;
+    const t = thanksList[i] || { id: null };
+    const payload = { user_id: currentUser.id, message: msg, is_active: true, sort_order: i };
     if (t.id) {
       await sb.from('receipt_messages').update(payload).eq('id', t.id);
     } else {
@@ -942,7 +961,12 @@ async function saveThanks() {
     }
     saved++;
   }
-  showToast(saved > 0 ? `感謝語已儲存（${saved} 則）` : '沒有可儲存的內容');
+  if (saved > 0) {
+    await renderThanksList(); // 重新從 DB 載入確認
+    showToast(`感謝語已儲存（${saved} 則）`);
+  } else {
+    showToast('沒有可儲存的內容');
+  }
 }
 
 // ── Emoji Picker ──
@@ -974,11 +998,45 @@ document.addEventListener('click', e => {
 
 // ── CSV ──
 function downloadTemplate() {
-  const csv = '商品名稱,價格,分類名稱,單位\n拿鐵,150,飲品,杯\n起司蛋糕,180,甜點,份\n手提袋,350,商品,個';
+  // 格式：商品名稱,價格,分類名稱,單位,規格1名稱,規格1選項,規格2名稱,規格2選項,...
+  // 規格選項格式：選項名稱:加價（加價可為0或省略）
+  // 例：熱:0,冰:0,冰沙:20
+  const header = '商品名稱,價格,分類名稱,單位,規格1名稱,規格1選項,規格2名稱,規格2選項';
+  const rows = [
+    '拿鐵,150,飲品,杯,溫度,熱:0|冰:0|冰沙:20,,',
+    '卡布奇諾,160,飲品,杯,溫度,熱:0|冰:0,容量,中杯:0|大杯:30',
+    '起司蛋糕,180,甜點,份,,,,'
+  ];
+  const csv = [header, ...rows].join('\n');
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = '川收商品範本.csv'; a.click();
 }
+
+function parseCSVLine(line) {
+  // 支援帶引號的欄位
+  const result = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQuote = !inQuote; continue; }
+    if (line[i] === ',' && !inQuote) { result.push(cur.trim()); cur = ''; continue; }
+    cur += line[i];
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function parseSpecCol(groupName, optionsStr) {
+  // 選項格式：熱:0|冰:0|冰沙:20
+  if (!groupName || !optionsStr) return null;
+  const options = optionsStr.split('|').map(o => {
+    const parts = o.split(':');
+    return { name: parts[0].trim(), price_delta: parseInt(parts[1]) || 0 };
+  }).filter(o => o.name);
+  if (!options.length) return null;
+  return { groupName: groupName.trim(), options };
+}
+
 function handleCSV(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -987,19 +1045,35 @@ function handleCSV(e) {
     csvData = [];
     const tbody = document.getElementById('csv-tbody'); tbody.innerHTML = '';
     for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+      const cols = parseCSVLine(lines[i]);
       if (!cols[0] || !cols[1]) continue;
-      const name = cols[0], price = parseInt(cols[1]), catName = cols[2] || '', unit = cols[3] || '份';
+      const name = cols[0], price = parseInt(cols[1]);
+      const catName = cols[2] || '', unit = cols[3] || '份';
+
+      // 解析規格（col 4-5: 規格1, col 6-7: 規格2, col 8-9: 規格3）
+      const specGroups = [];
+      for (let s = 0; s < 3; s++) {
+        const gIdx = 4 + s * 2;
+        const g = parseSpecCol(cols[gIdx], cols[gIdx + 1]);
+        if (g) specGroups.push(g);
+      }
+
       const isDup = products.some(p => p.name === name);
-      csvData.push({ name, price, catName, unit, isDup });
-      tbody.innerHTML += `<tr><td>${name}</td><td>$${price}</td><td>${catName||'未分類'}</td><td>${unit}</td>
-        <td style="color:${isDup?'var(--red)':'var(--green)'}">${isDup?'重複略過':'可匯入'}</td></tr>`;
+      const specLabel = specGroups.length ? specGroups.map(g => g.groupName).join('＋') : '無';
+      csvData.push({ name, price, catName, unit, specGroups, isDup });
+      tbody.innerHTML += `<tr>
+        <td>${name}</td><td>$${price}</td>
+        <td>${catName||'未分類'}</td><td>${unit}</td>
+        <td style="font-size:11px">${specLabel}</td>
+        <td style="color:${isDup?'var(--red)':'var(--green)'}">${isDup?'重複略過':'可匯入'}</td>
+      </tr>`;
     }
     document.getElementById('csv-count').textContent = csvData.filter(r => !r.isDup).length;
     document.getElementById('csv-preview').style.display = 'block';
   };
   reader.readAsText(file, 'UTF-8'); e.target.value = '';
 }
+
 async function importCSV() {
   const lim = PLAN_LIMITS[currentPlan];
   const toImport = csvData.filter(r => !r.isDup && !isNaN(r.price));
@@ -1015,7 +1089,22 @@ async function importCSV() {
       }
       catId = cat?.id || null;
     }
-    await sb.from('products').insert({ user_id: currentUser.id, name: row.name, price: row.price, unit: row.unit, category_id: catId });
+    const { data: prod } = await sb.from('products').insert({
+      user_id: currentUser.id, name: row.name, price: row.price,
+      unit: row.unit, category_id: catId
+    }).select().single();
+
+    // 匯入規格
+    if (prod && row.specGroups?.length) {
+      const variants = [];
+      const maxGroups = lim.specGroups;
+      row.specGroups.slice(0, maxGroups).forEach(g => {
+        g.options.slice(0, lim.specOptions).forEach(o => {
+          variants.push({ product_id: prod.id, name: `${g.groupName}|${o.name}`, price_delta: o.price_delta });
+        });
+      });
+      if (variants.length) await sb.from('product_variants').insert(variants);
+    }
   }
   document.getElementById('csv-preview').style.display = 'none';
   csvData = [];
