@@ -108,10 +108,22 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .checkin-date-input:focus{border-color:var(--accent);}
 .btn-checkin-save{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;}
 
-/* MODAL 打卡管理（全月） */
+/* 月曆打卡 */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;}
+.cal-header{font-size:11px;color:var(--gray-400);text-align:center;padding:4px 0;font-weight:600;}
+.cal-day{border-radius:8px;border:1.5px solid var(--gray-200);background:none;cursor:pointer;
+  font-size:13px;font-family:'Noto Sans TC',sans-serif;padding:8px 4px;text-align:center;
+  transition:all 0.15s;color:var(--gray-600);position:relative;}
+.cal-day:hover{border-color:var(--accent);}
+.cal-day.checked{background:var(--accent);border-color:var(--accent);color:white;font-weight:700;}
+.cal-day.today{box-shadow:0 0 0 2px var(--green);}
+.cal-day.empty{border:none;cursor:default;background:none;}
+.cal-day.future{opacity:0.35;cursor:not-allowed;}
+
+/* MODAL 月曆 */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
 .modal-overlay.show{display:flex;}
-.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;}
+.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
 .modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:100px;margin:0 auto 20px;}
 
 /* LOCKED */
@@ -239,24 +251,31 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
 </div>
 
-<!-- SIDE NAV -->
-<div id="bottom-nav">
+</div>
 
-<!-- 打卡管理 Modal -->
+<!-- 打卡管理 Modal（月曆選擇） -->
 <div class="modal-overlay" id="modal-checkin">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:4px">營業日管理</div>
-    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px" id="checkin-modal-month"></div>
-    <div id="checkin-modal-list"></div>
-    <div class="checkin-add-row" id="checkin-add-row">
-      <input class="checkin-date-input" type="date" id="checkin-new-date">
-      <button class="btn-checkin-save" onclick="addCheckinDate()">新增</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-size:16px;font-weight:700">營業日管理</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="changeCheckinMonth(-1)" style="padding:4px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;cursor:pointer;font-size:14px">‹</button>
+        <span style="font-size:13px;font-weight:600;min-width:64px;text-align:center" id="checkin-modal-month"></span>
+        <button onclick="changeCheckinMonth(1)" style="padding:4px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;cursor:pointer;font-size:14px">›</button>
+      </div>
     </div>
-    <button class="btn-add-checkin" onclick="toggleCheckinAddRow()">＋ 手動新增營業日</button>
-    <button style="width:100%;padding:12px;background:var(--gray-100);border:none;border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer;margin-top:12px" onclick="closeCheckinModal()">關閉</button>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:14px" id="checkin-modal-count"></div>
+    <div id="checkin-calendar"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button style="flex:1;padding:11px;background:var(--gray-100);border:none;border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer" onclick="closeCheckinModal()">關閉</button>
+      <button style="flex:2;padding:11px;background:var(--black);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer" onclick="saveCheckinMonth()">儲存本月營業日</button>
+    </div>
   </div>
 </div>
+
+<!-- SIDE NAV -->
+<div id="bottom-nav">
   <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
   <button class="bottom-nav-btn" onclick="go('pos-orders.html')"><span class="icon">📋</span>訂單</button>
   <button class="bottom-nav-btn active"><span class="icon">📊</span>統計</button>
@@ -593,70 +612,125 @@ async function renderBusinessDay() {
   </div>`;
 }
 
-// ── 打卡管理 Modal ──
+// ── 打卡管理 Modal（月曆版）──
+let checkinModalYM = ''; // "2026-03"
+let calChecked = new Set(); // 本月勾選的日期 Set
+
 function openCheckinModal() {
   const today = new Date().toISOString().slice(0,10);
-  const ym = today.slice(0,7);
-  document.getElementById('checkin-modal-month').textContent = `${ym} 共 ${allCheckins.length} 個營業日`;
-  document.getElementById('checkin-new-date').value = today;
-  document.getElementById('checkin-add-row').classList.remove('show');
-  renderCheckinModalList();
+  checkinModalYM = today.slice(0,7);
+  renderCheckinCalendar();
   document.getElementById('modal-checkin').classList.add('show');
 }
 
-function renderCheckinModalList() {
-  const el = document.getElementById('checkin-modal-list');
-  if (!allCheckins.length) {
-    el.innerHTML = `<div style="text-align:center;color:var(--gray-400);font-size:13px;padding:16px 0">本月還沒有打卡紀錄</div>`;
-    return;
-  }
-  el.innerHTML = `<div class="checkin-log" style="margin-top:0">
-    ${allCheckins.map(c => `
-      <div class="checkin-item">
-        <span>📅 ${c.date}</span>
-        <button class="btn-remove-checkin" onclick="removeCheckinDate('${c.id}','${c.date}')">刪除</button>
-      </div>`).join('')}
-  </div>`;
+function changeCheckinMonth(delta) {
+  const [y, m] = checkinModalYM.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  checkinModalYM = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderCheckinCalendar();
 }
 
-function toggleCheckinAddRow() {
-  document.getElementById('checkin-add-row').classList.toggle('show');
-}
+async function renderCheckinCalendar() {
+  const ym = checkinModalYM;
+  document.getElementById('checkin-modal-month').textContent = ym;
 
-async function addCheckinDate() {
-  const dateVal = document.getElementById('checkin-new-date').value;
-  if (!dateVal) { showToast('請選擇日期'); return; }
-  if (allCheckins.some(c => c.date === dateVal)) { showToast('這天已有打卡紀錄'); return; }
+  // 載入該月打卡資料
+  const monthStart = `${ym}-01`;
+  const [y, m] = ym.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const monthEnd = `${ym}-${String(lastDay).padStart(2,'0')}`;
 
-  const { data, error } = await sb.from('business_days')
-    .upsert({ user_id: currentUser.id, date: dateVal }, { onConflict: 'user_id,date' })
-    .select().single();
-  if (error) { showToast('新增失敗'); return; }
+  const { data } = await sb.from('business_days').select('*')
+    .eq('user_id', currentUser.id)
+    .gte('date', monthStart).lte('date', monthEnd);
 
-  allCheckins = [data, ...allCheckins].sort((a,b) => b.date.localeCompare(a.date));
-  document.getElementById('checkin-modal-month').textContent =
-    `${dateVal.slice(0,7)} 共 ${allCheckins.length} 個營業日`;
-  document.getElementById('checkin-add-row').classList.remove('show');
-  renderCheckinModalList();
-  renderBusinessDay(); // 刷新統計區塊
-  showToast(`已新增 ${dateVal} 為營業日`);
-}
+  const dbCheckins = data || [];
+  calChecked = new Set(dbCheckins.map(c => c.date));
+  // 儲存 id 對應，方便後續刪除
+  window._calCheckinMap = Object.fromEntries(dbCheckins.map(c => [c.date, c.id]));
 
-async function removeCheckinDate(id, date) {
-  if (!confirm(`確定要刪除 ${date} 的打卡紀錄嗎？`)) return;
-  const { error } = await sb.from('business_days').delete().eq('id', id);
-  if (error) { showToast('刪除失敗'); return; }
-
-  // 同步清除 localStorage（避免點餐頁誤判今日已打卡）
   const today = new Date().toISOString().slice(0,10);
-  if (date === today) localStorage.removeItem(`checkin_${currentUser.id}`);
+  const checkedCount = calChecked.size;
+  document.getElementById('checkin-modal-count').textContent = `共 ${checkedCount} 個營業日`;
 
-  allCheckins = allCheckins.filter(c => c.id !== id);
-  document.getElementById('checkin-modal-month').textContent =
-    `${date.slice(0,7)} 共 ${allCheckins.length} 個營業日`;
-  renderCheckinModalList();
-  renderBusinessDay();
-  showToast(`已刪除 ${date} 的打卡`);
+  // 月曆第一天是星期幾（0=日）
+  const firstWeekday = new Date(y, m-1, 1).getDay();
+  const dayNames = ['日','一','二','三','四','五','六'];
+
+  let html = `<div class="cal-grid">`;
+  dayNames.forEach(d => html += `<div class="cal-header">${d}</div>`);
+  // 空白格
+  for (let i = 0; i < firstWeekday; i++) html += `<div class="cal-day empty"></div>`;
+  // 日期格
+  for (let day = 1; day <= lastDay; day++) {
+    const dateStr = `${ym}-${String(day).padStart(2,'0')}`;
+    const isChecked = calChecked.has(dateStr);
+    const isToday = dateStr === today;
+    const isFuture = dateStr > today;
+    let cls = 'cal-day';
+    if (isChecked) cls += ' checked';
+    if (isToday) cls += ' today';
+    if (isFuture) cls += ' future';
+    const onclick = isFuture ? '' : `onclick="toggleCalDay('${dateStr}')"`;
+    html += `<button class="${cls}" ${onclick} id="cal-${dateStr}">${day}</button>`;
+  }
+  html += `</div>`;
+  html += `<div style="display:flex;gap:12px;font-size:11px;color:var(--gray-400);margin-top:4px">
+    <span>🟠 今日</span><span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:var(--accent);border-radius:3px;display:inline-block"></span>已營業</span>
+  </div>`;
+
+  document.getElementById('checkin-calendar').innerHTML = html;
+}
+
+function toggleCalDay(dateStr) {
+  const btn = document.getElementById(`cal-${dateStr}`);
+  if (!btn) return;
+  if (calChecked.has(dateStr)) {
+    calChecked.delete(dateStr);
+    btn.classList.remove('checked');
+  } else {
+    calChecked.add(dateStr);
+    btn.classList.add('checked');
+  }
+  const count = calChecked.size;
+  document.getElementById('checkin-modal-count').textContent = `共 ${count} 個營業日`;
+}
+
+async function saveCheckinMonth() {
+  const ym = checkinModalYM;
+  const [y, m] = ym.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const monthStart = `${ym}-01`;
+  const monthEnd = `${ym}-${String(lastDay).padStart(2,'0')}`;
+
+  // 取現有資料庫紀錄
+  const { data: existing } = await sb.from('business_days').select('*')
+    .eq('user_id', currentUser.id).gte('date', monthStart).lte('date', monthEnd);
+  const existingDates = new Set((existing||[]).map(c => c.date));
+  const existingMap = Object.fromEntries((existing||[]).map(c => [c.date, c.id]));
+
+  // 需要新增的（勾選但 DB 沒有）
+  const toAdd = [...calChecked].filter(d => !existingDates.has(d));
+  // 需要刪除的（DB 有但沒勾選）
+  const toDelete = [...existingDates].filter(d => !calChecked.has(d));
+
+  const tasks = [];
+  if (toAdd.length) tasks.push(sb.from('business_days').insert(
+    toAdd.map(d => ({ user_id: currentUser.id, date: d }))
+  ));
+  if (toDelete.length) tasks.push(...toDelete.map(d =>
+    sb.from('business_days').delete().eq('id', existingMap[d])
+  ));
+
+  await Promise.all(tasks);
+
+  // 清除今日 localStorage（如果今日被取消打卡）
+  const today = new Date().toISOString().slice(0,10);
+  if (toDelete.includes(today)) localStorage.removeItem(`checkin_${currentUser.id}`);
+
+  closeCheckinModal();
+  await renderBusinessDay(); // 重刷統計區塊
+  showToast(`${ym} 營業日已儲存`);
 }
 
 function closeCheckinModal() {

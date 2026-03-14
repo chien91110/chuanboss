@@ -39,7 +39,17 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .btn-add{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--black);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all 0.15s;}
 .btn-add:hover{background:#333;}
 
-.item-card{background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1.5px solid var(--gray-200);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+/* 拖曳排序 */
+.item-card{background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1.5px solid var(--gray-200);display:flex;align-items:center;gap:12px;flex-wrap:wrap;cursor:default;transition:box-shadow 0.15s,opacity 0.15s;}
+.item-card.dragging{opacity:0.4;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+.item-card.drag-over{border-color:var(--accent);background:#fdf6ed;}
+.drag-handle{font-size:16px;color:var(--gray-400);cursor:grab;padding:2px 4px;flex-shrink:0;user-select:none;}
+.drag-handle:active{cursor:grabbing;}
+
+/* 感謝語 */
+.thanks-row{background:var(--gray-50);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start;}
+.thanks-textarea{flex:1;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;resize:vertical;min-height:72px;outline:none;line-height:1.6;}
+.thanks-textarea:focus{border-color:var(--accent);}
 .item-card-img{width:48px;height:48px;border-radius:8px;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;}
 .item-card-info{flex:1;min-width:0;}
 .item-card-name{font-size:14px;font-weight:600;margin-bottom:2px;}
@@ -193,6 +203,7 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
   <button class="admin-tab" onclick="switchTab('categories')">分類管理</button>
   <button class="admin-tab" onclick="switchTab('payments')">付款方式</button>
   <button class="admin-tab" onclick="switchTab('ordertypes')">訂單類型</button>
+  <button class="admin-tab" id="tab-btn-thanks" style="display:none" onclick="switchTab('thanks')">感謝語</button>
 </div>
 
 <!-- 商品管理 -->
@@ -267,8 +278,18 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
   </div>
 </div>
 
-<!-- SIDE NAV -->
-<div id="bottom-nav">
+<!-- 感謝語（高級版） -->
+<div class="tab-content" id="tab-thanks">
+  <div class="card-section">
+    <div style="font-size:14px;font-weight:700;margin-bottom:6px">結帳感謝語</div>
+    <div style="font-size:12px;color:var(--gray-600);margin-bottom:16px;line-height:1.6">結帳完成後隨機顯示一則感謝語，可設定多則輪替。<br>支援換行，適合放 Google 評論邀請、下次優惠提醒等。</div>
+    <div id="thanks-list"></div>
+    <button class="btn-add-ot" style="margin-top:8px" onclick="addThanksRow()">＋ 新增一則</button>
+    <div style="margin-top:16px;text-align:right">
+      <button class="btn-save" style="flex:none;padding:10px 28px" onclick="saveThanks()">儲存感謝語</button>
+    </div>
+  </div>
+</div>
   <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
   <button class="bottom-nav-btn" onclick="go('pos-orders.html')"><span class="icon">📋</span>訂單</button>
   <button class="bottom-nav-btn" onclick="go('pos-stats.html')"><span class="icon">📊</span>統計</button>
@@ -436,6 +457,9 @@ async function init() {
       document.getElementById('csv-section').style.display = 'block';
       document.getElementById('p-img-group').style.display = 'block';
     }
+    if (currentPlan === 'premium') {
+      document.getElementById('tab-btn-thanks').style.display = 'inline-block';
+    }
 
     await loadOTSettings();
     await loadAll();
@@ -458,13 +482,17 @@ async function loadAll() {
 }
 
 function switchTab(tab) {
+  const tabs = ['products','categories','payments','ordertypes','thanks'];
   document.querySelectorAll('.admin-tab').forEach((t, i) =>
-    t.classList.toggle('active', ['products','categories','payments','ordertypes'][i] === tab));
+    t.classList.toggle('active', tabs[i] === tab));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'thanks') renderThanksList();
 }
 
 // ── PRODUCTS ──
+let dragSrcIdx = null;
+
 function renderProducts() {
   const lim = PLAN_LIMITS[currentPlan];
   const count = products.length;
@@ -477,10 +505,35 @@ function renderProducts() {
     el.innerHTML = `<div class="empty-card"><div class="icon">📦</div><p>還沒有商品<br>點右上角「新增商品」開始建立</p></div>`;
     return;
   }
-  el.innerHTML = products.map(p => {
+  el.innerHTML = products.map((p, idx) => {
     const cat = categories.find(c => c.id === p.category_id);
     const groups = new Set((p.product_variants || []).map(v => v.name.split('|')[0]));
-    return `<div class="item-card">
+    return `<div class="item-card" draggable="true"
+        ondragstart="dragStart(${idx})" ondragover="dragOver(event,${idx})"
+        ondrop="dragDrop(event,${idx})" ondragend="dragEnd()" ondragleave="dragLeave(event)">
+      <div class="drag-handle" title="拖曳排序">⠿</div>
+      <div class="item-card-img">${p.image_url ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}</div>
+      <div class="item-card-info">
+        <div class="item-card-name">${p.name}</div>
+        <div class="item-card-sub">${cat ? cat.name : '未分類'}${groups.size > 0 ? ` · ${groups.size} 種規格` : ''} · ${p.unit || '份'}${p.stock_qty != null ? ` · 庫存 ${p.stock_qty}` : ''}${p.is_available === false ? ' · <span style="color:var(--gray-400)">已下架</span>' : ''}</div>
+      </div>
+      <div class="item-card-price">$${p.price}</div>`;
+  }).join('') + products.map((p, idx) => `
+      <div class="item-card-actions" style="display:contents">
+        <button class="btn-sm success" onclick="copyProduct('${p.id}')">複製</button>
+        <button class="btn-sm" onclick="openProductModal('${p.id}')">編輯</button>
+        <button class="btn-sm danger" onclick="deleteProduct('${p.id}')">刪除</button>
+      </div>
+    </div>`).join('');
+
+  // 重新產生（改用正確方式）
+  el.innerHTML = products.map((p, idx) => {
+    const cat = categories.find(c => c.id === p.category_id);
+    const groups = new Set((p.product_variants || []).map(v => v.name.split('|')[0]));
+    return `<div class="item-card" draggable="true"
+        ondragstart="dragStart(${idx})" ondragover="dragOver(event,${idx})"
+        ondrop="dragDrop(event,${idx})" ondragend="dragEnd()" ondragleave="dragLeave(event)">
+      <div class="drag-handle" title="拖曳排序">⠿</div>
       <div class="item-card-img">${p.image_url ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}</div>
       <div class="item-card-info">
         <div class="item-card-name">${p.name}</div>
@@ -494,6 +547,42 @@ function renderProducts() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── 拖曳排序 ──
+function dragStart(idx) {
+  dragSrcIdx = idx;
+  setTimeout(() => {
+    const cards = document.querySelectorAll('#products-list .item-card');
+    if (cards[idx]) cards[idx].classList.add('dragging');
+  }, 0);
+}
+function dragOver(e, idx) {
+  e.preventDefault();
+  document.querySelectorAll('#products-list .item-card').forEach((c, i) =>
+    c.classList.toggle('drag-over', i === idx && i !== dragSrcIdx));
+}
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function dragEnd() {
+  document.querySelectorAll('#products-list .item-card').forEach(c => {
+    c.classList.remove('dragging', 'drag-over');
+  });
+}
+async function dragDrop(e, targetIdx) {
+  e.preventDefault();
+  if (dragSrcIdx === null || dragSrcIdx === targetIdx) { dragEnd(); return; }
+  // 重新排列陣列
+  const moved = products.splice(dragSrcIdx, 1)[0];
+  products.splice(targetIdx, 0, moved);
+  dragSrcIdx = null;
+  renderProducts();
+  // 批次更新 sort_order
+  await Promise.all(products.map((p, i) =>
+    sb.from('products').update({ sort_order: i }).eq('id', p.id)
+  ));
+  showToast('排序已儲存');
 }
 
 function openProductModal(productId = null, copyFromId = null) {
@@ -805,41 +894,55 @@ async function renderThanksList() {
   thanksList = data || [];
   const el = document.getElementById('thanks-list');
   if (!thanksList.length) {
-    el.innerHTML = `<div style="font-size:13px;color:var(--gray-400);padding:12px 0">還沒有感謝語，點下方「新增一則」開始建立</div>`;
+    el.innerHTML = `<div style="font-size:13px;color:var(--gray-400);padding:12px 0;text-align:center">還沒有感謝語，點下方「新增一則」開始建立</div>`;
     return;
   }
   el.innerHTML = thanksList.map((t, i) => `
     <div class="thanks-row">
-      <textarea class="thanks-textarea" oninput="thanksList[${i}].message=this.value">${escHtml(t.message)}</textarea>
+      <textarea class="thanks-textarea" placeholder="輸入感謝語，支援換行..."
+        oninput="thanksList[${i}].message=this.value">${escHtml(t.message)}</textarea>
       <button class="btn-sm danger" onclick="removeThanks(${i})">刪除</button>
     </div>`).join('');
 }
 
 function addThanksRow() {
-  thanksList.push({ message: '', is_active: true, sort_order: thanksList.length });
-  renderThanksList();
+  thanksList.push({ id: null, message: '', is_active: true, sort_order: thanksList.length });
+  const el = document.getElementById('thanks-list');
+  // 移除空狀態訊息
+  if (el.querySelector('div[style*="text-align:center"]')) el.innerHTML = '';
+  el.innerHTML += `
+    <div class="thanks-row">
+      <textarea class="thanks-textarea" placeholder="輸入感謝語，支援換行..."
+        oninput="thanksList[${thanksList.length-1}].message=this.value"></textarea>
+      <button class="btn-sm danger" onclick="removeThanks(${thanksList.length-1})">刪除</button>
+    </div>`;
 }
 
 async function removeThanks(i) {
   const t = thanksList[i];
-  if (t.id) await sb.from('receipt_messages').delete().eq('id', t.id);
+  if (t.id) {
+    await sb.from('receipt_messages').delete().eq('id', t.id);
+  }
   thanksList.splice(i, 1);
   renderThanksList();
   showToast('已刪除');
 }
 
 async function saveThanks() {
+  let saved = 0;
   for (let i = 0; i < thanksList.length; i++) {
     const t = thanksList[i];
     if (!t.message.trim()) continue;
-    const payload = { user_id: currentUser.id, message: t.message, is_active: true, sort_order: i };
-    if (t.id) await sb.from('receipt_messages').update(payload).eq('id', t.id);
-    else {
+    const payload = { user_id: currentUser.id, message: t.message.trim(), is_active: true, sort_order: i };
+    if (t.id) {
+      await sb.from('receipt_messages').update(payload).eq('id', t.id);
+    } else {
       const { data } = await sb.from('receipt_messages').insert(payload).select().single();
-      thanksList[i] = data;
+      if (data) thanksList[i] = data;
     }
+    saved++;
   }
-  showToast('感謝語已儲存');
+  showToast(saved > 0 ? `感謝語已儲存（${saved} 則）` : '沒有可儲存的內容');
 }
 
 // ── Emoji Picker ──

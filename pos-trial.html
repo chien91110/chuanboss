@@ -461,9 +461,10 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 <!-- 折扣 Modal -->
 <div class="modal-overlay" id="modal-discount">
   <div class="modal-box">
-    <div class="modal-title">輸入折扣金額</div>
-    <div class="modal-sub">例如輸入 30，即折抵 $30</div>
-    <input class="modal-input" id="discount-input" type="number" placeholder="0">
+    <div class="modal-title">輸入折扣</div>
+    <div class="modal-sub" id="discount-modal-sub">支援 +、−、× 運算，例如輸入 <strong>8*</strong> 打八折、<strong>-50</strong> 折抵 $50</div>
+    <input class="modal-input" id="discount-input" placeholder="例：50 / 8* / -30" style="font-size:18px" oninput="updateDiscountPreview()">
+    <div style="font-size:13px;color:var(--accent);font-family:'Space Mono',monospace;text-align:center;min-height:20px;margin-bottom:12px" id="discount-preview"></div>
     <div class="modal-btns">
       <button class="modal-btn-cancel" onclick="closeModal('modal-discount')">取消</button>
       <button class="modal-btn-ok" onclick="confirmDiscount()">套用折扣</button>
@@ -491,6 +492,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
     <div class="success-title">結帳完成！</div>
     <div class="success-total" id="success-total"></div>
     <div class="success-change" id="success-change"></div>
+    <div id="success-thank" style="font-size:13px;color:var(--gray-600);margin:12px 0 0;line-height:1.7;display:none"></div>
     <button class="btn-next-order" onclick="nextOrder()">下一筆訂單</button>
   </div>
 </div>
@@ -541,6 +543,7 @@ async function init() {
     await loadOTSettings();
     await loadData();
     await loadOrderNumber();
+    await loadThankMessages();
     document.getElementById('spinner').style.display = 'none';
 
     await checkDailyCheckin();
@@ -919,22 +922,70 @@ function confirmPriceChange() {
 }
 
 // ── 折扣 ──
-function openDiscountModal() {
-  document.getElementById('discount-input').value = discount || '';
-  document.getElementById('modal-discount').classList.add('show');
-  setTimeout(() => document.getElementById('discount-input').select(), 100);
+let thankMessages = []; // 感謝語設定（高級版）
+
+function parseDiscount(raw) {
+  // 支援格式：
+  // "50"    → 折抵 $50
+  // "-50"   → 折抵 $50（負號也接受）
+  // "8*" 或 "8x" 或 "*8" → 打八折（subtotal × 0.8）
+  // "0.8"   → 乘以 0.8
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const s = String(raw).trim().replace(/\s/g, '');
+  if (!s) return null;
+
+  // 乘法折扣：格式如 8* / *8 / 8x / x8 / 0.8
+  const multMatch = s.match(/^(\d+(?:\.\d+)?)[\*xX]$|^[\*xX](\d+(?:\.\d+)?)$|^(0\.\d+)$/);
+  if (multMatch) {
+    const num = parseFloat(multMatch[1] || multMatch[2] || multMatch[3]);
+    let ratio = num;
+    // 8* 解讀為八折（÷10 取折扣率）
+    if (num >= 1 && num <= 9 && !multMatch[3]) ratio = num / 10;
+    const finalTotal = Math.round(subtotal * ratio);
+    const discountAmt = subtotal - finalTotal;
+    return { amount: Math.max(0, discountAmt), label: `${num >= 1 && num <= 9 ? num : (ratio * 10)}折`, finalTotal };
+  }
+
+  // 直接金額折扣
+  const numVal = parseInt(s.replace(/^-/, ''));
+  if (!isNaN(numVal) && numVal > 0) {
+    return { amount: numVal, label: `-$${numVal}`, finalTotal: Math.max(0, subtotal - numVal) };
+  }
+  return null;
 }
+
+function updateDiscountPreview() {
+  const raw = document.getElementById('discount-input').value;
+  const result = parseDiscount(raw);
+  const el = document.getElementById('discount-preview');
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  if (result && raw.trim()) {
+    el.textContent = `小計 $${subtotal} → 折扣 $${result.amount} → 總計 $${result.finalTotal}`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+function openDiscountModal() {
+  document.getElementById('discount-input').value = '';
+  document.getElementById('discount-preview').textContent = '';
+  document.getElementById('modal-discount').classList.add('show');
+  setTimeout(() => document.getElementById('discount-input').focus(), 100);
+}
+
 function confirmDiscount() {
-  const val = parseInt(document.getElementById('discount-input').value);
-  if (!isNaN(val) && val > 0) {
-    discount = val;
-    document.getElementById('btn-discount').textContent = `折扣 -$${val}`;
+  const raw = document.getElementById('discount-input').value;
+  const result = parseDiscount(raw);
+  if (result && result.amount > 0) {
+    discount = result.amount;
+    document.getElementById('btn-discount').textContent = `折扣 ${result.label}`;
     document.getElementById('btn-discount').classList.add('active');
     document.getElementById('btn-discount-clear').style.display = 'inline';
   }
   closeModal('modal-discount');
   updateAmounts();
 }
+
 function clearDiscount() {
   discount = 0;
   document.getElementById('btn-discount').textContent = '＋ 輸入折扣金額';
@@ -942,6 +993,23 @@ function clearDiscount() {
   document.getElementById('btn-discount-clear').style.display = 'none';
   document.getElementById('amt-discount-row').style.display = 'none';
   updateAmounts();
+}
+
+// ── 感謝語 ──
+async function loadThankMessages() {
+  if (currentTrial?.plan !== 'premium') return;
+  const { data } = await sb.from('receipt_messages').select('*')
+    .eq('user_id', currentUser.id).eq('is_active', true).order('sort_order');
+  thankMessages = data || [];
+}
+
+function showThankMessage() {
+  const el = document.getElementById('success-thank');
+  if (!thankMessages.length) { el.style.display = 'none'; return; }
+  // 隨機選一則
+  const msg = thankMessages[Math.floor(Math.random() * thankMessages.length)];
+  el.innerHTML = msg.message.replace(/\n/g, '<br>');
+  el.style.display = 'block';
 }
 
 // ── 付款方式 ──
@@ -997,6 +1065,7 @@ async function checkout() {
 
     document.getElementById('success-total').textContent = `$${total}`;
     document.getElementById('success-change').textContent = change !== null && change >= 0 ? `找零 $${change}` : '';
+    showThankMessage();
     document.getElementById('success-overlay').classList.add('show');
     orderNumber++;
   } catch(e) {
