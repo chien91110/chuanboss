@@ -100,6 +100,16 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .order-card-footer{padding:10px 16px;border-top:1px solid var(--gray-100);display:flex;justify-content:flex-end;gap:8px;}
 .btn-delete-order{padding:6px 12px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;color:var(--gray-400);cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
 .btn-delete-order:hover{border-color:var(--red);color:var(--red);}
+.btn-edit-order{padding:6px 12px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
+.btn-edit-order:hover{border-color:var(--accent);color:var(--accent);}
+
+/* 編輯 Modal */
+.edit-label{font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px;margin-top:14px;display:block;}
+.edit-input{width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;outline:none;}
+.edit-input:focus{border-color:var(--accent);}
+.edit-btn-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.edit-type-btn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--gray-200);background:none;font-size:13px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;color:var(--gray-600);transition:all 0.15s;}
+.edit-type-btn.active{background:var(--black);border-color:var(--black);color:white;}
 
 .empty-state{text-align:center;padding:60px 20px;color:var(--gray-400);}
 .empty-state .icon{font-size:40px;margin-bottom:12px;}
@@ -242,6 +252,36 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   </div>
 </div>
 
+<!-- 訂單編輯 Modal -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px">編輯訂單</div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px" id="edit-order-num"></div>
+
+    <div id="edit-payment-section">
+      <label class="edit-label">付款方式</label>
+      <div class="edit-btn-row" id="edit-payment-row"></div>
+    </div>
+
+    <div id="edit-ot-section" style="display:none">
+      <label class="edit-label">訂單類型</label>
+      <div class="edit-btn-row" id="edit-ot-row"></div>
+    </div>
+
+    <label class="edit-label">折扣金額（0 = 無折扣）</label>
+    <input class="edit-input" id="edit-discount" type="number" min="0" placeholder="0">
+
+    <label class="edit-label">備註</label>
+    <input class="edit-input" id="edit-note" type="text" placeholder="可留空">
+
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button style="flex:1;padding:12px;background:var(--gray-100);border:none;border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer" onclick="closeEditModal()">取消</button>
+      <button style="flex:2;padding:12px;background:var(--black);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer" onclick="saveOrderEdit()">儲存修改</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -277,6 +317,7 @@ async function init() {
 
   // 讀取訂單類型設定（顯示用）
   await loadOTSettings();
+  await loadPaymentMethods();
   // 預設自訂區間為今日
   const today = new Date().toISOString().slice(0,10);
   document.getElementById('range-from').value = today;
@@ -440,6 +481,7 @@ function renderOrderCard(o) {
     </div>
     ${canDelete ? `
     <div class="order-card-footer">
+      <button class="btn-edit-order" onclick="event.stopPropagation();openEditModal('${o.id}')">編輯</button>
       <button class="btn-delete-order" onclick="event.stopPropagation();deleteOrder('${o.id}')">刪除訂單</button>
     </div>` : ''}
   </div>`;
@@ -479,7 +521,100 @@ function openDetail(orderId) {
   document.getElementById('modal-detail').classList.add('show');
 }
 
-async function deleteOrder(id) {
+// ── 訂單編輯 ──
+let editingOrderId = null;
+let editPaymentSelected = null;
+let editOTSelected = null;
+let paymentMethods = [];
+
+async function loadPaymentMethods() {
+  const { data } = await sb.from('payment_methods').select('*').eq('user_id', currentUser.id).order('sort_order');
+  paymentMethods = data?.length ? data : [{ name: '現金' }, { name: '刷卡' }, { name: 'LINE Pay' }];
+}
+
+function openEditModal(orderId) {
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+  editingOrderId = orderId;
+  editPaymentSelected = o.payment_method;
+  editOTSelected = o.order_type || null;
+
+  document.getElementById('edit-order-num').textContent = `訂單 #${o.order_number}`;
+  document.getElementById('edit-discount').value = o.discount || 0;
+  document.getElementById('edit-note').value = o.note || '';
+
+  // 付款方式按鈕
+  const pmRow = document.getElementById('edit-payment-row');
+  pmRow.innerHTML = paymentMethods.map(p =>
+    `<button class="edit-type-btn${p.name === editPaymentSelected ? ' active' : ''}"
+      onclick="selectEditPM('${p.name}',this)">${p.name}</button>`
+  ).join('');
+
+  // 訂單類型按鈕
+  const otSection = document.getElementById('edit-ot-section');
+  const otRow = document.getElementById('edit-ot-row');
+  if (otSettings.enabled && otSettings.types?.length) {
+    otSection.style.display = 'block';
+    otRow.innerHTML = otSettings.types.map(t =>
+      `<button class="edit-type-btn${t.name === editOTSelected ? ' active' : ''}"
+        onclick="selectEditOT('${t.name}',this)">${t.emoji} ${t.name}</button>`
+    ).join('');
+  } else {
+    otSection.style.display = 'none';
+  }
+
+  document.getElementById('modal-edit').classList.add('show');
+}
+
+function selectEditPM(name, btn) {
+  editPaymentSelected = name;
+  document.querySelectorAll('#edit-payment-row .edit-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function selectEditOT(name, btn) {
+  editOTSelected = name;
+  document.querySelectorAll('#edit-ot-row .edit-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function saveOrderEdit() {
+  const o = orders.find(x => x.id === editingOrderId);
+  if (!o) return;
+
+  const discountVal = Math.max(0, parseInt(document.getElementById('edit-discount').value) || 0);
+  const noteVal = document.getElementById('edit-note').value.trim();
+
+  // 重新計算 total（subtotal - discount）
+  const newTotal = Math.max(0, (o.subtotal || 0) - discountVal);
+
+  const updates = {
+    payment_method: editPaymentSelected,
+    order_type: editOTSelected,
+    discount: discountVal,
+    total: newTotal,
+    note: noteVal || null
+  };
+
+  const { error } = await sb.from('orders').update(updates).eq('id', editingOrderId);
+  if (error) { showToast('儲存失敗：' + error.message); return; }
+
+  // 更新本地
+  const idx = orders.findIndex(x => x.id === editingOrderId);
+  if (idx >= 0) orders[idx] = { ...orders[idx], ...updates };
+
+  closeEditModal();
+  renderOrders();
+  renderSummary();
+  showToast('訂單已更新');
+}
+
+function closeEditModal() {
+  document.getElementById('modal-edit').classList.remove('show');
+  editingOrderId = null;
+}
+document.getElementById('modal-edit').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-edit')) closeEditModal();
+});
   if (!confirm('確定要刪除這筆訂單？')) return;
   await sb.from('order_items').delete().eq('order_id', id);
   await sb.from('orders').delete().eq('id', id);

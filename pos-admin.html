@@ -296,6 +296,19 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
         <input class="form-input" id="p-unit" placeholder="杯、份、個">
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">庫存數量 <span style="font-size:10px;color:var(--gray-400)">(可不填)</span></label>
+        <input class="form-input" id="p-stock" type="number" min="0" placeholder="不填 = 無限制">
+      </div>
+      <div class="form-group">
+        <label class="form-label">商品狀態</label>
+        <select class="form-select" id="p-available">
+          <option value="true">上架中</option>
+          <option value="false">已下架</option>
+        </select>
+      </div>
+    </div>
     <div class="form-group">
       <label class="form-label">商品分類</label>
       <select class="form-select" id="p-category"><option value="">不分類</option></select>
@@ -458,7 +471,7 @@ function renderProducts() {
       <div class="item-card-img">${p.image_url ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}</div>
       <div class="item-card-info">
         <div class="item-card-name">${p.name}</div>
-        <div class="item-card-sub">${cat ? cat.name : '未分類'}${groups.size > 0 ? ` · ${groups.size} 種規格` : ''} · ${p.unit || '份'}</div>
+        <div class="item-card-sub">${cat ? cat.name : '未分類'}${groups.size > 0 ? ` · ${groups.size} 種規格` : ''} · ${p.unit || '份'}${p.stock_qty != null ? ` · 庫存 ${p.stock_qty}` : ''}${p.is_available === false ? ' · <span style="color:var(--gray-400)">已下架</span>' : ''}</div>
       </div>
       <div class="item-card-price">$${p.price}</div>
       <div class="item-card-actions">
@@ -492,6 +505,8 @@ function openProductModal(productId = null, copyFromId = null) {
     document.getElementById('p-name').value = copyFromId ? p.name + '（複製）' : p.name;
     document.getElementById('p-price').value = p.price;
     document.getElementById('p-unit').value = p.unit || '';
+    document.getElementById('p-stock').value = p.stock_qty != null ? p.stock_qty : '';
+    document.getElementById('p-available').value = String(p.is_available !== false);
     document.getElementById('p-category').value = p.category_id || '';
     if (p.image_url && currentPlan !== 'basic') {
       document.getElementById('p-img-url').value = p.image_url;
@@ -513,6 +528,8 @@ function openProductModal(productId = null, copyFromId = null) {
     document.getElementById('p-name').value = '';
     document.getElementById('p-price').value = '';
     document.getElementById('p-unit').value = '';
+    document.getElementById('p-stock').value = '';
+    document.getElementById('p-available').value = 'true';
     document.getElementById('p-category').value = '';
   }
   renderSpecGroups();
@@ -590,6 +607,9 @@ async function saveProduct() {
   const category_id = document.getElementById('p-category').value || null;
   const image_url = document.getElementById('p-img-url').value || null;
   const productId = document.getElementById('product-id').value;
+  const stockRaw = document.getElementById('p-stock').value;
+  const stock_qty = stockRaw !== '' ? parseInt(stockRaw) : null;
+  const is_available = document.getElementById('p-available').value === 'true';
   if (!name || isNaN(price)) { showToast('請填寫商品名稱與售價'); return; }
 
   const btn = document.getElementById('btn-save-product');
@@ -597,10 +617,10 @@ async function saveProduct() {
   try {
     let pid = productId;
     if (productId) {
-      await sb.from('products').update({ name, price, unit, category_id, image_url }).eq('id', productId);
+      await sb.from('products').update({ name, price, unit, category_id, image_url, stock_qty, is_available }).eq('id', productId);
       await sb.from('product_variants').delete().eq('product_id', productId);
     } else {
-      const { data } = await sb.from('products').insert({ user_id: currentUser.id, name, price, unit, category_id, image_url }).select().single();
+      const { data } = await sb.from('products').insert({ user_id: currentUser.id, name, price, unit, category_id, image_url, stock_qty, is_available }).select().single();
       pid = data.id;
     }
     const allVariants = [];
@@ -733,9 +753,10 @@ async function loadOTSettings() {
   }
   document.getElementById('ot-enabled').checked = otSettings.enabled;
   document.getElementById('ot-content').style.display = otSettings.enabled ? 'block' : 'none';
-  document.getElementById('ot-enabled').onchange = function() {
+  document.getElementById('ot-enabled').onchange = async function() {
     otSettings.enabled = this.checked;
     document.getElementById('ot-content').style.display = this.checked ? 'block' : 'none';
+    await saveOTSettings(true); // 靜默儲存（不顯示 toast）
   };
   renderOTList();
 }
@@ -756,10 +777,10 @@ function addOTRow() {
 }
 function removeOT(i) { otSettings.types.splice(i, 1); renderOTList(); }
 
-async function saveOTSettings() {
+async function saveOTSettings(silent = false) {
   const payload = `order_type_settings|${JSON.stringify(otSettings)}`;
   await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: payload });
-  showToast('訂單類型設定已儲存');
+  if (!silent) showToast('訂單類型設定已儲存');
 }
 
 // ── Emoji Picker ──

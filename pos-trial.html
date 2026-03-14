@@ -234,17 +234,20 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 .modal-btn-cancel { flex: 1; padding: 11px; background: var(--gray-100); border: none; border-radius: 10px; font-size: 14px; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; }
 .modal-btn-ok { flex: 2; padding: 11px; background: var(--black); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; }
 
-/* 規格選擇 Modal（多層） */
-.spec-step-title { font-size: 12px; color: var(--gray-400); margin-bottom: 4px; letter-spacing: 0.04em; }
-.spec-group-name { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
-.spec-options-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+/* 規格選擇 Modal（全部規格同頁） */
+.spec-group-block { margin-bottom: 18px; }
+.spec-group-title { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 8px; letter-spacing: 0.03em; }
+.spec-options-list { display: flex; flex-direction: column; gap: 8px; }
 .spec-option-btn {
   padding: 12px 16px; border: 1.5px solid var(--gray-200); border-radius: 10px;
   background: none; cursor: pointer; display: flex; justify-content: space-between;
-  align-items: center; font-size: 14px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.15s;
+  align-items: center; font-size: 14px; font-family: 'Noto Sans TC', sans-serif;
+  transition: all 0.15s; text-align: left; width: 100%;
 }
-.spec-option-btn:hover { border-color: var(--accent); background: #fdf6ed; }
-.spec-option-price { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--accent); }
+.spec-option-btn:hover:not(:disabled) { border-color: var(--accent); background: #fdf6ed; }
+.spec-option-btn.selected { border-color: var(--accent); background: #fdf6ed; font-weight: 700; }
+.spec-option-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.spec-option-price { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--accent); flex-shrink: 0; }
 .spec-progress { display: flex; gap: 6px; margin-bottom: 16px; }
 .spec-progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-200); transition: background 0.2s; }
 .spec-progress-dot.done { background: var(--accent); }
@@ -288,8 +291,33 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 @media (max-width: 700px) {
   :root { --cart-w: 100%; }
   #app { flex-direction: column; }
-  #products-panel { height: 50vh; }
-  #cart-panel { position: fixed; bottom: 56px; left: 0; right: 0; height: 50vh; border-left: none; border-top: 1px solid var(--gray-200); }
+  #products-panel { height: calc(100vh - var(--nav-h) - 56px); }
+
+  /* 手機版購物車：預設隱藏，從底部滑上來 */
+  #cart-panel {
+    position: fixed; bottom: 56px; left: 0; right: 0;
+    height: 75vh; border-left: none; border-top: 1px solid var(--gray-200);
+    transform: translateY(100%); transition: transform 0.3s ease;
+    z-index: 150;
+  }
+  #cart-panel.open { transform: translateY(0); }
+
+  /* 購物車開關按鈕（固定在底部導覽列上方） */
+  #cart-toggle-bar {
+    display: flex; position: fixed; bottom: 56px; left: 0; right: 0; z-index: 140;
+    background: var(--black); color: white;
+    padding: 10px 16px; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: background 0.15s;
+  }
+  #cart-toggle-bar:hover { background: #222; }
+  #cart-toggle-label { font-size: 13px; font-weight: 700; }
+  #cart-toggle-count { font-size: 12px; color: rgba(255,255,255,0.6); }
+  #cart-toggle-total { font-size: 15px; font-weight: 700; font-family: 'Space Mono', monospace; color: var(--accent-light); }
+  #cart-close-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 14px; background: var(--gray-100); border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; margin-bottom: 4px; width: 100%; }
+}
+@media (min-width: 701px) {
+  #cart-toggle-bar { display: none; }
+  #cart-close-btn { display: none; }
 }
 </style>
 </head>
@@ -316,6 +344,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   </div>
 
   <div id="cart-panel">
+    <button id="cart-close-btn" onclick="toggleCart()">▼ 收起購物車</button>
     <div id="cart-header">
       <div>
         <div class="cart-title">購物車</div>
@@ -367,14 +396,24 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   <button class="bottom-nav-btn" onclick="go('trial.html')"><span class="icon">🏠</span>返回</button>
 </div>
 
-<!-- 規格選擇 Modal -->
+<!-- 購物車切換 bar（手機版） -->
+<div id="cart-toggle-bar" onclick="toggleCart()">
+  <div>
+    <div class="cart-toggle-label">🛒 購物車 <span id="cart-toggle-count" style="font-size:11px;color:rgba(255,255,255,0.6)"></span></div>
+  </div>
+  <div id="cart-toggle-total" style="font-size:15px;font-weight:700;font-family:'Space Mono',monospace;color:var(--accent-light)">$0</div>
+</div>
+
+<!-- 規格選擇 Modal（全規格同頁） -->
 <div class="modal-overlay" id="modal-spec">
-  <div class="modal-box" style="max-width:400px">
+  <div class="modal-box" style="max-width:420px;max-height:85vh;overflow-y:auto">
     <div class="spec-progress" id="spec-progress"></div>
-    <div class="spec-step-title" id="spec-step-label"></div>
-    <div class="spec-group-name" id="spec-group-name"></div>
-    <div class="spec-options-list" id="spec-options-list"></div>
-    <button class="modal-btn-cancel" onclick="closeModal('modal-spec')">取消</button>
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px" id="spec-product-name"></div>
+    <div id="spec-all-groups"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="modal-btn-cancel" style="flex:1" onclick="closeModal('modal-spec')">取消</button>
+      <button class="modal-btn-ok" style="flex:2" id="btn-spec-confirm" onclick="confirmSpec()" disabled>加入購物車</button>
+    </div>
   </div>
 </div>
 
@@ -528,8 +567,17 @@ async function loadData() {
 }
 
 async function loadOrderNumber() {
-  const { count } = await sb.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
-  orderNumber = 101 + (count || 0);
+  const today = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // "20260314"
+  const prefix = today; // 20260314
+
+  // 查今日已有幾筆訂單
+  const todayStart = `${today.slice(0,4)}-${today.slice(4,6)}-${today.slice(6,8)}T00:00:00`;
+  const todayEnd   = `${today.slice(0,4)}-${today.slice(4,6)}-${today.slice(6,8)}T23:59:59`;
+  const { count } = await sb.from('orders').select('*', { count: 'exact', head: true })
+    .eq('user_id', currentUser.id)
+    .gte('created_at', todayStart).lte('created_at', todayEnd);
+
+  orderNumber = parseInt(prefix + (101 + (count || 0)));
   document.getElementById('cart-order-num').textContent = `#${orderNumber}`;
 }
 
@@ -620,53 +668,91 @@ function addToCart(productId) {
   }
 }
 
-// ── 規格選擇（多層逐步） ──
+// ── 規格選擇（全規格同頁，循序解鎖） ──
+let specSelectionMap = {}; // { groupIndex: optionObj }
+
 function openSpecModal(p, groups) {
   specProduct = p;
   specGroups = groups;
-  specStep = 0;
   specSelections = [];
-  renderSpecStep();
+  specSelectionMap = {};
+
+  document.getElementById('spec-product-name').textContent = p.name;
+
+  // 進度點
+  document.getElementById('spec-progress').innerHTML = groups.map((_, i) =>
+    `<div class="spec-progress-dot${i === 0 ? ' current' : ''}"></div>`
+  ).join('');
+
+  renderAllSpecGroups();
+  document.getElementById('btn-spec-confirm').disabled = true;
   document.getElementById('modal-spec').classList.add('show');
 }
 
-function renderSpecStep() {
-  const g = specGroups[specStep];
-  const totalSteps = specGroups.length;
-
-  // 進度點
-  document.getElementById('spec-progress').innerHTML = specGroups.map((_, i) => {
-    let cls = 'spec-progress-dot';
-    if (i < specStep) cls += ' done';
-    else if (i === specStep) cls += ' current';
-    return `<div class="${cls}"></div>`;
-  }).join('');
-
-  document.getElementById('spec-step-label').textContent = `步驟 ${specStep + 1} / ${totalSteps}`;
-  document.getElementById('spec-group-name').textContent = g.name;
-
-  document.getElementById('spec-options-list').innerHTML = g.options.map(o => {
-    const totalPrice = specProduct.price + specSelections.reduce((s, sel) => s + sel.price_delta, 0) + o.price_delta;
-    const delta = o.price_delta > 0 ? `+$${o.price_delta}` : o.price_delta < 0 ? `-$${Math.abs(o.price_delta)}` : '';
-    return `<button class="spec-option-btn" onclick="selectSpecOption('${g.name}','${o.name}',${o.price_delta})">
-      <span>${o.name}${delta ? ` <span style="font-size:11px;color:var(--gray-400)">(${delta})</span>` : ''}</span>
-      <span class="spec-option-price">$${totalPrice}</span>
-    </button>`;
+function renderAllSpecGroups() {
+  const wrap = document.getElementById('spec-all-groups');
+  wrap.innerHTML = specGroups.map((g, gi) => {
+    const isUnlocked = gi === 0 || specSelectionMap[gi - 1] !== undefined;
+    const selected = specSelectionMap[gi];
+    return `
+    <div class="spec-group-block">
+      <div class="spec-group-title" style="${!isUnlocked ? 'opacity:0.4' : ''}">${g.name}</div>
+      <div class="spec-options-list">
+        ${g.options.map((o, oi) => {
+          // 計算目前這個選項的價格（含前面所有已選規格的加價）
+          let priceSoFar = specProduct.price;
+          for (let k = 0; k < gi; k++) {
+            if (specSelectionMap[k]) priceSoFar += specSelectionMap[k].price_delta || 0;
+          }
+          const thisTotal = priceSoFar + (o.price_delta || 0);
+          const deltaStr = o.price_delta > 0 ? `(+$${o.price_delta})` : o.price_delta < 0 ? `(-$${Math.abs(o.price_delta)})` : '';
+          const isSelected = selected && selected.name === o.name;
+          return `<button class="spec-option-btn${isSelected ? ' selected' : ''}"
+            ${!isUnlocked ? 'disabled' : ''}
+            onclick="selectSpecAll(${gi}, ${oi})">
+            <span>${o.name}${deltaStr ? ` <span style="font-size:11px;color:var(--gray-400)">${deltaStr}</span>` : ''}</span>
+            <span class="spec-option-price">$${thisTotal}</span>
+          </button>`;
+        }).join('')}
+      </div>
+    </div>
+    ${gi < specGroups.length - 1 ? '<hr style="border:none;border-top:1px solid var(--gray-100);margin:4px 0 16px">' : ''}`;
   }).join('');
 }
 
-function selectSpecOption(groupName, optionName, priceDelta) {
-  specSelections.push({ groupName, optionName, price_delta: priceDelta });
-  specStep++;
-  if (specStep >= specGroups.length) {
-    // 所有規格都選完了
-    closeModal('modal-spec');
-    const finalPrice = specProduct.price + specSelections.reduce((s, sel) => s + sel.price_delta, 0);
-    const variantLabel = specSelections.map(s => s.optionName).join(' / ');
-    pushCartItem(specProduct, specSelections, finalPrice, variantLabel);
-  } else {
-    renderSpecStep();
+function selectSpecAll(gi, oi) {
+  specSelectionMap[gi] = specGroups[gi].options[oi];
+  // 清除後面的選擇（因為切換前面規格，後面需重選）
+  for (let k = gi + 1; k < specGroups.length; k++) {
+    delete specSelectionMap[k];
   }
+
+  // 更新進度點
+  const dots = document.querySelectorAll('.spec-progress-dot');
+  dots.forEach((dot, i) => {
+    dot.className = 'spec-progress-dot';
+    if (specSelectionMap[i] !== undefined) dot.classList.add('done');
+    else if (i === Object.keys(specSelectionMap).length) dot.classList.add('current');
+  });
+
+  renderAllSpecGroups();
+
+  // 全部選完才啟用加入按鈕
+  const allDone = specGroups.every((_, i) => specSelectionMap[i] !== undefined);
+  document.getElementById('btn-spec-confirm').disabled = !allDone;
+}
+
+function confirmSpec() {
+  if (!specProduct) return;
+  const selections = specGroups.map((g, i) => ({
+    groupName: g.name,
+    optionName: specSelectionMap[i].name,
+    price_delta: specSelectionMap[i].price_delta || 0
+  }));
+  const finalPrice = specProduct.price + selections.reduce((s, sel) => s + sel.price_delta, 0);
+  const variantLabel = selections.map(s => s.optionName).join(' / ');
+  closeModal('modal-spec');
+  pushCartItem(specProduct, selections, finalPrice, variantLabel);
 }
 
 function pushCartItem(p, selections, price, variantLabel = null) {
@@ -683,12 +769,29 @@ function pushCartItem(p, selections, price, variantLabel = null) {
   renderCart();
 }
 
+// ── 手機版購物車 toggle ──
+function toggleCart() {
+  const panel = document.getElementById('cart-panel');
+  panel.classList.toggle('open');
+}
+
+function updateCartToggleBar() {
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+  const total = Math.max(0, cart.reduce((s, i) => s + i.price * i.qty, 0) - discount);
+  const countEl = document.getElementById('cart-toggle-count');
+  const totalEl = document.getElementById('cart-toggle-total');
+  if (countEl) countEl.textContent = totalQty > 0 ? `${totalQty} 項` : '';
+  if (totalEl) totalEl.textContent = `$${total}`;
+}
+
 // ── 購物車 ──
 function renderCart() {
   const el = document.getElementById('cart-items');
   if (!cart.length) {
     el.innerHTML = `<div class="cart-empty"><div class="icon">🛒</div><p>點選商品加入購物車</p></div>`;
-    updateAmounts(); return;
+    updateAmounts();
+    updateCartToggleBar();
+    return;
   }
   el.innerHTML = cart.map((item, idx) => `
     <div class="cart-item">
@@ -707,6 +810,12 @@ function renderCart() {
       </div>
     </div>`).join('');
   updateAmounts();
+  updateCartToggleBar();
+
+  // 手機版：加入商品後自動開啟購物車
+  if (window.innerWidth <= 700) {
+    document.getElementById('cart-panel').classList.add('open');
+  }
 }
 
 function changeQty(idx, delta) {
@@ -856,9 +965,12 @@ async function checkout() {
 
 function nextOrder() {
   document.getElementById('success-overlay').classList.remove('show');
-  document.getElementById('cart-order-num').textContent = `#${orderNumber}`;
   document.getElementById('btn-checkout').textContent = '結帳';
   clearCart();
+  // 關閉手機版購物車
+  document.getElementById('cart-panel').classList.remove('open');
+  // 重新計算今日訂單號碼
+  loadOrderNumber();
 }
 
 // ── HELPERS ──
