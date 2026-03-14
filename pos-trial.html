@@ -101,12 +101,17 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 }
 .btn-clear-cart:hover { background: var(--gray-100); color: var(--red); }
 
-#cart-note-row { padding: 8px 16px; border-bottom: 1px solid var(--gray-100); }
-#cart-note {
-  width: 100%; padding: 7px 10px; border: 1.5px solid var(--gray-200);
-  border-radius: 8px; font-size: 12px; font-family: 'Noto Sans TC', sans-serif;
-  resize: none; outline: none; color: var(--gray-600);
+/* 感謝語選擇按鈕 */
+.thank-btn {
+  width: 100%; padding: 8px 12px; border: 1.5px solid var(--gray-200);
+  border-radius: 8px; background: none; font-size: 12px; cursor: pointer;
+  text-align: left; font-family: 'Noto Sans TC', sans-serif;
+  color: var(--gray-600); transition: all 0.15s; line-height: 1.4;
 }
+.thank-btn:hover { border-color: var(--accent); color: var(--accent); }
+.thank-btn.active { border-color: var(--accent); background: #fdf6ed; color: var(--accent); font-weight: 600; }
+
+#cart-note { width: 100%; padding: 7px 10px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: 12px; font-family: 'Noto Sans TC', sans-serif; resize: none; outline: none; color: var(--gray-600); }
 #cart-note:focus { border-color: var(--accent); }
 
 #cart-items { flex: 1; overflow-y: auto; padding: 8px 0; }
@@ -380,9 +385,6 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
       </div>
       <button class="btn-clear-cart" onclick="clearCart()">清空</button>
     </div>
-    <div id="cart-note-row">
-      <textarea id="cart-note" rows="1" placeholder="訂單備註（可不填）"></textarea>
-    </div>
     <div id="cart-items">
       <div class="cart-empty"><div class="icon">🛒</div><p>點選商品加入購物車</p></div>
     </div>
@@ -409,6 +411,15 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
       <div id="order-type-section" style="display:none">
         <div style="font-size:12px;color:var(--gray-600);margin-bottom:6px;">訂單類型</div>
         <div class="order-type-row" id="order-type-row"></div>
+      </div>
+      <!-- 備註 -->
+      <div id="cart-note-row" style="margin-bottom:10px">
+        <textarea id="cart-note" rows="1" placeholder="訂單備註（可不填）"></textarea>
+      </div>
+      <!-- 感謝語選擇（進階版以上，有設定才顯示） -->
+      <div id="thank-section" style="display:none;margin-bottom:10px">
+        <div style="font-size:12px;color:var(--gray-600);margin-bottom:6px;">感謝語</div>
+        <div id="thank-select-row" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
       <button class="btn-checkout" id="btn-checkout" onclick="checkout()" disabled>結帳</button>
     </div>
@@ -611,10 +622,12 @@ async function loadData() {
 async function loadOrderNumber() {
   // 用台灣時間（UTC+8）計算今日範圍
   const now = new Date();
-  const tzOffset = 8 * 60; // UTC+8
-  const local = new Date(now.getTime() + (tzOffset - now.getTimezoneOffset()) * 60000);
-  const today = local.toISOString().slice(0, 10); // "2026-03-14"
-  const todayKey = today.replace(/-/g, '');       // "20260314"
+  const twNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  const y = twNow.getFullYear();
+  const m = String(twNow.getMonth()+1).padStart(2,'0');
+  const d = String(twNow.getDate()).padStart(2,'0');
+  const today = `${y}-${m}-${d}`;
+  const todayKey = `${y}${m}${d}`;
 
   const todayStart = `${today}T00:00:00+08:00`;
   const todayEnd   = `${today}T23:59:59+08:00`;
@@ -623,7 +636,8 @@ async function loadOrderNumber() {
     .eq('user_id', currentUser.id)
     .gte('created_at', todayStart).lte('created_at', todayEnd);
 
-  orderNumber = parseInt(todayKey + (101 + (count || 0)));
+  const seq = 101 + (count || 0);
+  orderNumber = parseInt(`${todayKey}${seq}`);
   document.getElementById('cart-order-num').textContent = `#${orderNumber}`;
 }
 
@@ -922,8 +936,6 @@ function confirmPriceChange() {
 }
 
 // ── 折扣 ──
-let thankMessages = []; // 感謝語設定（高級版）
-
 function parseDiscount(raw) {
   // 支援格式：
   // "50"    → 折抵 $50
@@ -996,19 +1008,45 @@ function clearDiscount() {
 }
 
 // ── 感謝語 ──
+let thankMessages = [];
+let selectedThankIdx = null;
+
 async function loadThankMessages() {
-  if (currentTrial?.plan !== 'premium') return;
+  const plan = currentTrial?.plan;
+  if (plan === 'basic') return;
   const { data } = await sb.from('receipt_messages').select('*')
     .eq('user_id', currentUser.id).eq('is_active', true).order('sort_order');
   thankMessages = data || [];
+  renderThankSection();
+}
+
+function renderThankSection() {
+  const section = document.getElementById('thank-section');
+  const row = document.getElementById('thank-select-row');
+  if (!thankMessages.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  selectedThankIdx = null;
+  row.innerHTML = [
+    `<button class="thank-btn active" onclick="selectThank(null,this)">不附感謝語</button>`,
+    ...thankMessages.map((t, i) => {
+      const preview = t.message.replace(/\n/g,' ').slice(0,22) + (t.message.length > 22 ? '…' : '');
+      return `<button class="thank-btn" onclick="selectThank(${i},this)">${preview}</button>`;
+    })
+  ].join('');
+}
+
+function selectThank(idx, btn) {
+  selectedThankIdx = idx;
+  document.querySelectorAll('.thank-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 function showThankMessage() {
   const el = document.getElementById('success-thank');
-  if (!thankMessages.length) { el.style.display = 'none'; return; }
-  // 隨機選一則
-  const msg = thankMessages[Math.floor(Math.random() * thankMessages.length)];
-  el.innerHTML = msg.message.replace(/\n/g, '<br>');
+  if (selectedThankIdx === null || !thankMessages[selectedThankIdx]) {
+    el.style.display = 'none'; return;
+  }
+  el.innerHTML = thankMessages[selectedThankIdx].message.replace(/\n/g,'<br>');
   el.style.display = 'block';
 }
 
@@ -1067,7 +1105,12 @@ async function checkout() {
     document.getElementById('success-change').textContent = change !== null && change >= 0 ? `找零 $${change}` : '';
     showThankMessage();
     document.getElementById('success-overlay').classList.add('show');
-    orderNumber++;
+    // 直接遞增，不重查資料庫（避免快取導致重複）
+    const cur = String(orderNumber);
+    const prefix = cur.slice(0, 8); // YYYYMMDD
+    const seq = parseInt(cur.slice(8)) + 1;
+    orderNumber = parseInt(`${prefix}${seq}`);
+    document.getElementById('cart-order-num').textContent = `#${orderNumber}`;
   } catch(e) {
     alert('結帳失敗：' + e.message);
     document.getElementById('btn-checkout').disabled = false;
@@ -1079,10 +1122,8 @@ function nextOrder() {
   document.getElementById('success-overlay').classList.remove('show');
   document.getElementById('btn-checkout').textContent = '結帳';
   clearCart();
-  // 關閉手機版購物車
   document.getElementById('cart-panel').classList.remove('open');
-  // 重新計算今日訂單號碼
-  loadOrderNumber();
+  // 號碼已在 checkout 裡遞增，不需重查
 }
 
 // ── HELPERS ──
