@@ -138,6 +138,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 #cart-note:focus { border-color: var(--accent); }
 
 #cart-items { flex: 1; overflow-y: auto; padding: 8px 0; }
+.cart-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   height: 100%; color: var(--gray-400); font-size: 13px; gap: 8px;
 }
@@ -278,19 +279,46 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 .spec-progress-dot.done { background: var(--accent); }
 .spec-progress-dot.current { background: var(--black); }
 
-/* 成功畫面 */
+/* 結帳成功 */
 #success-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(10,10,10,0.85); z-index: 300;
+  background: rgba(10,10,10,0.82); z-index: 300;
   align-items: center; justify-content: center;
+  padding: 20px; flex-direction: column; gap: 12px;
 }
 #success-overlay.show { display: flex; }
-.success-box { background: white; border-radius: 24px; padding: 40px 32px; text-align: center; max-width: 320px; }
-.success-icon { font-size: 56px; margin-bottom: 16px; }
-.success-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-.success-total { font-size: 28px; font-weight: 700; color: var(--green); font-family: 'Space Mono', monospace; margin-bottom: 4px; }
-.success-change { font-size: 14px; color: var(--gray-600); margin-bottom: 24px; }
-.btn-next-order { width: 100%; padding: 13px; background: var(--black); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; }
+.success-box {
+  background: white; border-radius: 28px;
+  width: 100%; max-width: 340px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+}
+.success-top {
+  background: linear-gradient(160deg, #1c1c1c 0%, #333 100%);
+  padding: 32px 28px 28px; text-align: center;
+}
+.success-icon { font-size: 48px; margin-bottom: 12px; display: block; }
+.success-title { font-size: 18px; font-weight: 700; color: white; margin-bottom: 16px; letter-spacing: 0.03em; }
+.success-amount-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.success-amount-row:last-child { border-bottom: none; padding-bottom: 0; }
+.success-amount-label { font-size: 12px; color: rgba(255,255,255,0.45); }
+.success-amount-val { font-size: 15px; font-weight: 700; font-family: 'Space Mono', monospace; color: white; }
+.success-amount-val.green { color: #6ee7a8; font-size: 32px; }
+.success-amount-val.muted { color: rgba(255,255,255,0.55); font-size: 13px; }
+.success-bottom { padding: 20px 24px 24px; }
+.btn-next-order {
+  width: 100%; padding: 14px; background: var(--black); color: white;
+  border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif; cursor: pointer; transition: background 0.15s;
+}
+.btn-next-order:hover { background: #333; }
+/* 感謝語：卡片外獨立顯示 */
+.success-thank-outside {
+  background: rgba(255,255,255,0.08); border-radius: 14px;
+  padding: 14px 18px; max-width: 340px; width: 100%;
+  font-size: 13px; color: rgba(255,255,255,0.75);
+  line-height: 1.7; text-align: center;
+}
 
 /* 開店打卡彈窗 */
 #checkin-overlay {
@@ -521,13 +549,24 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 <!-- 結帳成功 -->
 <div id="success-overlay">
   <div class="success-box">
-    <div class="success-icon">✅</div>
-    <div class="success-title">結帳完成！</div>
-    <div class="success-total" id="success-total"></div>
-    <div class="success-change" id="success-change"></div>
-    <div id="success-thank" style="font-size:13px;color:var(--gray-600);margin:12px 0 0;line-height:1.7;display:none"></div>
-    <button class="btn-next-order" onclick="nextOrder()">下一筆訂單</button>
+    <div class="success-top">
+      <span class="success-icon">✅</span>
+      <div class="success-title">結帳完成！</div>
+      <div class="success-amount-row">
+        <span class="success-amount-label">總金額</span>
+        <span class="success-amount-val green" id="success-total"></span>
+      </div>
+      <div class="success-amount-row" id="success-change-row" style="display:none">
+        <span class="success-amount-label">找零</span>
+        <span class="success-amount-val muted" id="success-change"></span>
+      </div>
+    </div>
+    <div class="success-bottom">
+      <button class="btn-next-order" onclick="nextOrder()">下一筆訂單</button>
+    </div>
   </div>
+  <!-- 感謝語：卡片外獨立顯示 -->
+  <div class="success-thank-outside" id="success-thank" style="display:none"></div>
 </div>
 
 <script>
@@ -1128,7 +1167,14 @@ async function checkout() {
     await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: 'checkout' });
 
     document.getElementById('success-total').textContent = `$${total}`;
-    document.getElementById('success-change').textContent = change !== null && change >= 0 ? `找零 $${change}` : '';
+    const changeRow = document.getElementById('success-change-row');
+    const changeEl = document.getElementById('success-change');
+    if (change !== null && change >= 0) {
+      changeEl.textContent = `$${change}`;
+      changeRow.style.display = 'flex';
+    } else {
+      changeRow.style.display = 'none';
+    }
     showThankMessage();
     document.getElementById('success-overlay').classList.add('show');
     // 直接遞增，不重查資料庫（避免快取導致重複）
