@@ -585,7 +585,10 @@ footer {
     <li><a href="#compare">比較</a></li>
     <li><a href="#faq">常見問題</a></li>
   </ul>
-  <a href="#cta" class="nav-cta">LINE 洽詢 →</a>
+  <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
+    <a href="auth.html" style="font-size:13px;color:var(--gray-600);text-decoration:none;padding:7px 14px;border:1.5px solid var(--gray-200);border-radius:8px;font-weight:500;transition:all 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-600)'">登入 / 試用</a>
+    <a href="#cta" class="nav-cta">LINE 洽詢 →</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -598,11 +601,12 @@ footer {
     </h1>
     <p class="hero-subtitle">
       收款、商品管理、營業統計，<strong>一套系統全部搞定</strong>。<br>
+      雲端架構，電腦、平板、手機都能用。<br>
       不收月租，一次買斷永久使用。<br>
-      適合咖啡廳、甜點店、選物店，以及剛創業的小品牌。
+      所有版本提供 20 天免費試用。
     </p>
     <div class="hero-actions">
-      <a href="#cta" class="btn-primary">LINE 免費諮詢 →</a>
+      <a href="auth.html" class="btn-primary">免費試用 20 天 →</a>
       <a href="#plans" class="btn-secondary">查看方案價格</a>
     </div>
     <div class="hero-stats">
@@ -741,19 +745,21 @@ footer {
       <div class="plan-header">
         <div class="plan-name">Basic · 基本版</div>
         <div class="plan-price">$4,800<span> 元</span></div>
-        <div class="plan-desc">剛起步的小店，協助店鋪基本統計</div>
+        <div class="plan-desc">剛起步的小店，快速上線收款統計</div>
       </div>
       <div class="plan-divider"></div>
       <div class="plan-features">
-        <div class="plan-feature"><span class="check">✓</span>商品分類 5 個</div>
-        <div class="plan-feature"><span class="check">✓</span>商品數量 20 個</div>
-        <div class="plan-feature"><span class="check">✓</span>商品規格設定</div>
-        <div class="plan-feature"><span class="check">✓</span>熱感應收據列印</div>
-        <div class="plan-feature"><span class="check">✓</span>自訂日期區間統計</div>
-        <div class="plan-feature"><span class="check">✓</span>Excel 訂單下載</div>
-        <div class="plan-feature"><span class="check">✓</span>提供下載安裝檔＋授權碼</div>
+        <div class="plan-feature"><span class="check">✓</span>商品分類 5 個 / 商品 20 個</div>
+        <div class="plan-feature"><span class="check">✓</span>商品規格設定（1 種 3 選項）</div>
+        <div class="plan-feature"><span class="check">✓</span>自訂付款方式</div>
+        <div class="plan-feature"><span class="check">✓</span>收款 + 找零計算</div>
+        <div class="plan-feature"><span class="check">✓</span>訂單紀錄查詢</div>
+        <div class="plan-feature"><span class="check">✓</span>今日 / 本週 / 本月 / 自訂統計</div>
+        <div class="plan-feature"><span class="check">✓</span>付款方式統計</div>
+        <div class="plan-feature"><span class="dash">—</span>商品圖片、CSV 上傳</div>
+        <div class="plan-feature"><span class="dash">—</span>訂單修改 / 刪除</div>
       </div>
-      <a href="#cta" class="plan-cta">了解更多</a>
+      <a href="auth.html" class="plan-cta">免費試用 20 天</a>
     </div>
 
     <!-- 進階版 -->
@@ -768,16 +774,17 @@ footer {
       <div class="plan-features">
         <div class="plan-feature highlight"><span class="check">✓</span>基本版全功能</div>
         <div class="plan-feature highlight"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">20 個</strong></div>
-        <div class="plan-feature highlight"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">100 個</strong></div>
-        <div class="plan-feature highlight"><span class="check">✓</span>商品圖片上傳</div>
-        <div class="plan-feature"><span class="check">✓</span>套餐組合設定</div>
-        <div class="plan-feature"><span class="check">✓</span>自訂收款方式</div>
-        <div class="plan-feature"><span class="check">✓</span>感謝語設定</div>
-        <div class="plan-feature"><span class="check">✓</span>每日結帳 / 營業日誌</div>
-        <div class="plan-feature"><span class="check">✓</span>付款方式管理</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品規格 <strong style="color:var(--accent)">2 種</strong>（各 3 選項）</div>
+        <div class="plan-feature"><span class="check">✓</span>商品圖片上傳</div>
+        <div class="plan-feature"><span class="check">✓</span>CSV 批量上傳（含規格）</div>
         <div class="plan-feature"><span class="check">✓</span>訂單修改 / 刪除</div>
+        <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
+        <div class="plan-feature"><span class="check">✓</span>感謝語設定（5 則）</div>
+        <div class="plan-feature"><span class="check">✓</span>每日結帳 / 營業日誌</div>
+        <div class="plan-feature"><span class="check">✓</span>打卡營業日管理</div>
+        <div class="plan-feature"><span class="check">✓</span>商品拖曳排序</div>
       </div>
-      <a href="#cta" class="plan-cta">立即諮詢</a>
+      <a href="auth.html" class="plan-cta">免費試用 20 天</a>
     </div>
 
     <!-- 高級版 -->
@@ -785,21 +792,20 @@ footer {
       <div class="plan-header">
         <div class="plan-name">Premium · 高級版</div>
         <div class="plan-price">$15,000<span> 元</span></div>
-        <div class="plan-desc">完整功能，適合商品數有一定規模的店</div>
+        <div class="plan-desc">無限商品，完整功能全開放</div>
       </div>
       <div class="plan-divider"></div>
       <div class="plan-features">
         <div class="plan-feature highlight"><span class="check">✓</span>進階版全功能</div>
-        <div class="plan-feature highlight"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">無限</strong></div>
-        <div class="plan-feature highlight"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">無限</strong></div>
-        <div class="plan-feature"><span class="check">✓</span>桌號點餐</div>
-        <div class="plan-feature"><span class="check">✓</span>收據版面設計</div>
-        <div class="plan-feature"><span class="check">✓</span>多語言感謝語</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品分類 / 數量 <strong style="color:var(--accent)">無限</strong></div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品規格 <strong style="color:var(--accent)">3 種</strong>（各 5 選項）</div>
+        <div class="plan-feature"><span class="check">✓</span>感謝語設定（10 則）</div>
         <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
+        <div class="plan-feature"><span class="check">✓</span>桌號點餐（開發中）</div>
         <div class="plan-feature"><span class="check">✓</span>每月報表 Email 自動寄送</div>
-        <div class="plan-feature"><span class="check">✓</span>多人帳號</div>
+        <div class="plan-feature"><span class="check">✓</span>多人帳號（開發中）</div>
       </div>
-      <a href="#cta" class="plan-cta">了解更多</a>
+      <a href="auth.html" class="plan-cta">免費試用 20 天</a>
     </div>
 
     <!-- 客製化 -->
@@ -811,15 +817,16 @@ footer {
       </div>
       <div class="plan-divider" style="background:rgba(255,255,255,0.08)"></div>
       <div class="plan-features">
-        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>客製化功能</div>
-        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>客製化排版</div>
+        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>客製化功能開發</div>
+        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>客製化介面排版</div>
+        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>專屬需求討論</div>
       </div>
       <a href="#cta" class="plan-cta">聯絡洽詢</a>
     </div>
 
   </div>
   <p style="text-align:center;margin-top:24px;font-size:12px;color:var(--gray-400)">
-    ※ 以上為買斷費用，購買後提供下載連結與授權碼，可自行安裝使用。如需到府安裝與教學，可另外加購。熱感應標籤機亦可加購。
+    ※ 所有版本均提供 20 天免費試用，體驗後再決定購買。正式版為雲端架構，電腦、平板、手機均可使用。
   </p>
 </section>
 
@@ -1212,9 +1219,11 @@ footer {
       但對小店來說，其實負擔很重。<br><br>
       所以川收選擇：<strong style="color:var(--accent-light);font-size:20px">一次買斷</strong><br>
       買了之後，就可以一直使用。<br>
-      不用再擔心每個月被系統扣錢。
+      不用再擔心每個月被系統扣錢。<br><br>
+      而且在決定購買前，你可以先<strong style="color:var(--accent-light)">免費試用 20 天</strong>，<br>
+      確認適合自己的店再出手。
     </p>
-    <a href="#plans" class="btn-primary" style="display:inline-flex">查看方案價格 →</a>
+    <a href="auth.html" class="btn-primary" style="display:inline-flex">免費試用 20 天 →</a>
   </div>
 </section>
 
@@ -1226,28 +1235,32 @@ footer {
   </div>
   <div class="faq-grid fade-in">
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">需要什麼設備？安裝困難嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">只需要一台 Windows 電腦。購買後下載 .exe 安裝檔，點兩下安裝、輸入授權碼即可使用，不需要任何技術背景。如需到府安裝與教學，可另外加購。</div>
+      <div class="faq-q">需要什麼設備？<div class="faq-icon">+</div></div>
+      <div class="faq-a">川收 POS 為雲端架構，只需要有瀏覽器的設備即可使用，包含電腦、平板、手機。不需要下載安裝任何軟體，直接開啟網址就能操作。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">沒有網路可以使用嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">可以。系統是本地端運作，即使沒有網路，也能正常使用收款與統計功能。</div>
+      <div class="faq-q">需要網路才能用嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">是的，川收為雲端 POS，需要網路連線。資料即時同步，可在多台裝置上同時查看訂單與統計。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">資料安全嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">所有資料都存在你的電腦裡，不會上傳到雲端，資料完全由店家掌控。</div>
+      <div class="faq-a">資料儲存在安全的雲端資料庫（Supabase），每位帳號的資料完全隔離，只有本人才能存取。如需匯出資料，可隨時下載備份。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">外縣市可以安裝嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">可以。購買後提供下載安裝檔與授權碼，全台皆可自行安裝使用。如需到府安裝與教學，台中地區免車馬費，外縣市酌收車馬費，歡迎先 LINE 詢問。</div>
+      <div class="faq-q">外縣市也可以使用嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">可以，全台灣都能使用。雲端架構不受地區限制，只要有網路都可以正常操作。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">不會用怎麼辦？<div class="faq-icon">+</div></div>
-      <div class="faq-a">安裝時會提供完整操作教學，之後也可以透過 LINE 詢問使用問題。大部分店家幾分鐘就能上手。</div>
+      <div class="faq-a">介面設計簡單直觀，大多數店家幾分鐘就能上手。如有操作問題，可透過 LINE 聯繫客服，提供遠端協助。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">可以先試用再決定嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">可以！你現在就能在頁面上體驗各行業的 Demo 展示。如需完整說明，歡迎 LINE 洽詢。</div>
+      <div class="faq-a">可以！所有版本均提供 20 天免費試用，不需要信用卡，只需要免費註冊帳號即可開始體驗完整功能，試用後再決定是否購買。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">買斷之後還有費用嗎？<div class="faq-icon">+</div></div>
+      <div class="faq-a">買斷後基本使用不收任何費用。若日後需要進階雲端同步服務（如跨裝置同步、資料備份保障），可選購年費方案；早期購買者享有永久免年費優惠。</div>
     </div>
   </div>
 </section>
@@ -1257,8 +1270,9 @@ footer {
   <div class="fade-in">
     <div class="section-eyebrow" style="color:var(--accent-light)">Get Started</div>
     <h2 class="section-title">想讓店鋪經營<br><em>更輕鬆嗎？</em></h2>
-    <p class="cta-desc">用一套簡單的系統，管理你的店。購買後提供授權碼與安裝檔，全台自行安裝。需要到府服務，台中免車馬費，外縣市酌收。</p>
+    <p class="cta-desc">免費試用 20 天，不需要信用卡。體驗完整功能後再決定購買。<br>有任何問題，也歡迎 LINE 直接詢問。</p>
     <div class="cta-actions">
+      <a href="auth.html" class="btn-primary" style="background:var(--accent);border-color:var(--accent)">免費試用 20 天 →</a>
       <a href="https://line.me" class="btn-line">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
         LINE 免費諮詢
@@ -1272,7 +1286,7 @@ footer {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">川收 <span>Chuan</span>POS</div>
-  <p class="footer-note">© 2026 ChuanPOS · 台中在地小店點餐系統 · 一次買斷，永久使用</p>
+  <p class="footer-note">© 2026 ChuanPOS · 台灣小店專屬雲端 POS · 一次買斷，永久使用</p>
 </footer>
 
 <script>

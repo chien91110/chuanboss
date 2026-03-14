@@ -549,6 +549,12 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
       </div>
     </div>
 
+    <!-- 版本限制說明 -->
+    <div id="plan-limits-card" style="background:var(--white);border:1.5px solid var(--gray-200);border-radius:16px;padding:16px 20px;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">⚠️ 試用版限制說明</div>
+      <div id="plan-limits-content" style="font-size:12px;color:var(--gray-600);line-height:1.8"></div>
+    </div>
+
     <!-- 功能入口 -->
     <div class="features-grid">
       <div class="feature-card">
@@ -684,6 +690,36 @@ function renderTrialDashboard(trial, profile) {
   document.getElementById('date-start').textContent = `開始：${start.toLocaleDateString('zh-TW')}`;
   document.getElementById('date-end').textContent = `到期：${end.toLocaleDateString('zh-TW')}`;
 
+  // 版本限制說明
+  const limitsMap = {
+    basic: [
+      '商品數量上限：10 個',
+      '商品規格：1 種（3 選項）',
+      '商品圖片：不支援',
+      'CSV 批量上傳：不支援',
+      '訂單修改／刪除：不支援',
+      '商品銷售排行：不支援',
+      '感謝語設定：不支援',
+      '每日結帳日誌：不支援',
+      '營業日打卡：不支援',
+    ],
+    advanced: [
+      '商品數量上限：20 個',
+      '商品規格：2 種（各 3 選項）',
+      '感謝語：最多 5 則',
+      '桌號點餐：不支援（開發中）',
+    ],
+    premium: [
+      '商品數量上限：50 個',
+      '商品規格：3 種（各 5 選項）',
+      '感謝語：最多 10 則',
+      '桌號點餐：不支援（開發中）',
+      '多人帳號：不支援（開發中）',
+    ]
+  };
+  const limits = limitsMap[trial.plan] || [];
+  document.getElementById('plan-limits-content').innerHTML =
+    limits.map(l => `<div style="display:flex;gap:6px"><span style="color:var(--orange);flex-shrink:0">⚠</span>${l}</div>`).join('');
   const fill = document.getElementById('progress-fill');
   fill.style.width = progress + '%';
   if (daysLeft <= 3) fill.className = 'progress-fill critical';

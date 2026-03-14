@@ -629,46 +629,53 @@ async function renderDailyLog(orders) {
   const totalOrders = dates.reduce((s, d) => s + byDate[d].orders.length, 0);
 
   el.innerHTML = `<div class="daily-log-wrap">
-    <div class="daily-log-title">📒 每日結帳日誌</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="daily-log-title" style="margin-bottom:0">📒 每日結帳日誌</div>
+      <span style="font-size:12px;color:var(--gray-400)">${dates.length} 天</span>
+    </div>
     <div style="overflow-x:auto">
-      <table class="log-table">
-        <thead>
-          <tr>
-            <th>日期</th>
-            <th>營業額</th>
-            <th>訂單數</th>
-            <th>平均客單</th>
-            <th>備註</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${dates.map(date => {
-            const day = byDate[date];
-            const avg = day.orders.length ? Math.round(day.revenue / day.orders.length) : 0;
-            const weekday = new Date(date).toLocaleDateString('zh-TW', { weekday: 'short', timeZone: 'Asia/Taipei' });
-            const note = noteMap[date] || '';
-            return `<tr>
-              <td class="log-date">${date}<br><span style="font-size:11px;color:var(--gray-400);font-weight:400">${weekday}</span></td>
-              <td class="log-revenue">$${day.revenue.toLocaleString()}</td>
-              <td class="log-orders">${day.orders.length} 筆</td>
-              <td class="log-avg">$${avg.toLocaleString()}</td>
-              <td>
-                <input class="log-note-input" type="text" placeholder="備註（按 Enter 儲存）"
-                  value="${note.replace(/"/g, '&quot;')}"
-                  onkeydown="if(event.key==='Enter'){saveDailyNote('${date}',this);event.preventDefault()}"
-                  onblur="saveDailyNote('${date}',this)">
-              </td>
-            </tr>`;
-          }).join('')}
-          <tr class="log-summary-row">
-            <td>合計</td>
-            <td class="log-revenue">$${totalRevenue.toLocaleString()}</td>
-            <td class="log-orders">${totalOrders} 筆</td>
-            <td class="log-avg">$${totalOrders ? Math.round(totalRevenue/totalOrders).toLocaleString() : 0}</td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
+      <div style="max-height:420px;overflow-y:auto;border-radius:8px;border:1px solid var(--gray-200)">
+        <table class="log-table">
+          <thead style="position:sticky;top:0;z-index:1">
+            <tr>
+              <th>日期</th>
+              <th>營業額</th>
+              <th>訂單數</th>
+              <th>平均客單</th>
+              <th>備註</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dates.map(date => {
+              const day = byDate[date];
+              const avg = day.orders.length ? Math.round(day.revenue / day.orders.length) : 0;
+              const weekday = new Date(date).toLocaleDateString('zh-TW', { weekday: 'short', timeZone: 'Asia/Taipei' });
+              const note = noteMap[date] || '';
+              return `<tr>
+                <td class="log-date">${date}<br><span style="font-size:11px;color:var(--gray-400);font-weight:400">${weekday}</span></td>
+                <td class="log-revenue">$${day.revenue.toLocaleString()}</td>
+                <td class="log-orders">${day.orders.length} 筆</td>
+                <td class="log-avg">$${avg.toLocaleString()}</td>
+                <td>
+                  <input class="log-note-input" type="text" placeholder="備註..."
+                    value="${note.replace(/"/g, '&quot;')}"
+                    onkeydown="if(event.key==='Enter'){saveDailyNote('${date}',this);event.preventDefault()}"
+                    onblur="saveDailyNote('${date}',this)">
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr class="log-summary-row">
+              <td>合計</td>
+              <td class="log-revenue">$${totalRevenue.toLocaleString()}</td>
+              <td class="log-orders">${totalOrders} 筆</td>
+              <td class="log-avg">$${totalOrders ? Math.round(totalRevenue/totalOrders).toLocaleString() : 0}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
   </div>`;
 }
