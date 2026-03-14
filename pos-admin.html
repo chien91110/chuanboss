@@ -213,6 +213,13 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
     <button class="btn-add" onclick="openProductModal()">＋ 新增商品</button>
   </div>
   <div id="product-limit-badge"></div>
+  <!-- 搜尋 + 分類篩選 -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <input id="product-search" class="form-input" placeholder="🔍 搜尋商品名稱..." style="flex:1;min-width:160px;padding:8px 12px;font-size:13px" oninput="filterProducts()">
+    <select id="product-cat-filter" class="form-select" style="flex:0 0 auto;width:auto;padding:8px 12px;font-size:13px" onchange="filterProducts()">
+      <option value="">全部分類</option>
+    </select>
+  </div>
   <div class="csv-section" id="csv-section" style="display:none">
     <div class="csv-title">📥 批量上傳商品</div>
     <div class="csv-desc">下載範本 CSV 填寫後上傳，可一次匯入多筆商品（含規格）。<br>格式：商品名稱、價格、分類名稱、單位、規格1名稱、規格1選項（選項1:加價,選項2:加價）、規格2名稱、規格2選項、...</div>
@@ -501,6 +508,12 @@ function switchTab(tab) {
 // ── PRODUCTS ──
 let dragSrcIdx = null;
 
+function filterProducts() {
+  const keyword = (document.getElementById('product-search')?.value || '').toLowerCase();
+  const catFilter = document.getElementById('product-cat-filter')?.value || '';
+  renderProductList(keyword, catFilter);
+}
+
 function renderProducts() {
   const lim = PLAN_LIMITS[currentPlan];
   const count = products.length;
@@ -508,34 +521,42 @@ function renderProducts() {
   document.getElementById('product-limit-badge').innerHTML =
     `<span class="limit-badge${pct >= 0.8 ? ' warning' : ''}">商品數量：${count} / ${PLAN_LABELS[currentPlan].products}</span>`;
 
+  // 更新分類篩選下拉
+  const catFilter = document.getElementById('product-cat-filter');
+  if (catFilter) {
+    const current = catFilter.value;
+    catFilter.innerHTML = '<option value="">全部分類</option>' +
+      categories.map(c => `<option value="${c.id}"${c.id === current ? ' selected' : ''}>${c.name}</option>`).join('') +
+      '<option value="none"' + (current === 'none' ? ' selected' : '') + '>未分類</option>';
+  }
+
+  renderProductList('', '');
+}
+
+function renderProductList(keyword = '', catId = '') {
   const el = document.getElementById('products-list');
   if (!products.length) {
     el.innerHTML = `<div class="empty-card"><div class="icon">📦</div><p>還沒有商品<br>點右上角「新增商品」開始建立</p></div>`;
     return;
   }
-  el.innerHTML = products.map((p, idx) => {
-    const cat = categories.find(c => c.id === p.category_id);
-    const groups = new Set((p.product_variants || []).map(v => v.name.split('|')[0]));
-    return `<div class="item-card" draggable="true"
-        ondragstart="dragStart(${idx})" ondragover="dragOver(event,${idx})"
-        ondrop="dragDrop(event,${idx})" ondragend="dragEnd()" ondragleave="dragLeave(event)">
-      <div class="drag-handle" title="拖曳排序">⠿</div>
-      <div class="item-card-img">${p.image_url ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}</div>
-      <div class="item-card-info">
-        <div class="item-card-name">${p.name}</div>
-        <div class="item-card-sub">${cat ? cat.name : '未分類'}${groups.size > 0 ? ` · ${groups.size} 種規格` : ''} · ${p.unit || '份'}${p.stock_qty != null ? ` · 庫存 ${p.stock_qty}` : ''}${p.is_available === false ? ' · <span style="color:var(--gray-400)">已下架</span>' : ''}</div>
-      </div>
-      <div class="item-card-price">$${p.price}</div>`;
-  }).join('') + products.map((p, idx) => `
-      <div class="item-card-actions" style="display:contents">
-        <button class="btn-sm success" onclick="copyProduct('${p.id}')">複製</button>
-        <button class="btn-sm" onclick="openProductModal('${p.id}')">編輯</button>
-        <button class="btn-sm danger" onclick="deleteProduct('${p.id}')">刪除</button>
-      </div>
-    </div>`).join('');
 
-  // 重新產生（改用正確方式）
-  el.innerHTML = products.map((p, idx) => {
+  const filtered = products.filter((p, idx) => {
+    const matchKeyword = !keyword || p.name.toLowerCase().includes(keyword);
+    const matchCat = !catId
+      ? true
+      : catId === 'none'
+        ? !p.category_id
+        : p.category_id === catId;
+    return matchKeyword && matchCat;
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-card"><div class="icon">🔍</div><p>找不到符合的商品</p></div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(p => {
+    const idx = products.indexOf(p);
     const cat = categories.find(c => c.id === p.category_id);
     const groups = new Set((p.product_variants || []).map(v => v.name.split('|')[0]));
     return `<div class="item-card" draggable="true"
