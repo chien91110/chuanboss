@@ -350,7 +350,11 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   #app { flex-direction: column; }
 
   /* 商品區：扣掉 nav(52) + toggle-bar(48) + bottom-nav(56) */
-  #products-panel { height: calc(100vh - var(--nav-h) - var(--toggle-h) - 56px); }
+  #products-panel {
+    height: calc(100vh - var(--nav-h) - var(--toggle-h) - 56px);
+    /* 底部加 padding 讓最後一個商品不被 toggle-bar 蓋住 */
+    padding-bottom: 8px;
+  }
 
   /* 購物車：從 toggle-bar 上方滑出，高度同商品區 */
   #cart-panel {
@@ -360,7 +364,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
     height: calc(100vh - var(--nav-h) - var(--toggle-h) - 56px);
     border-left: none; border-top: 1px solid var(--gray-200);
     transform: translateY(100%); transition: transform 0.3s ease;
-    z-index: 150;
+    z-index: 130; /* 低於 bottom-nav(160) */
   }
   #cart-panel.open { transform: translateY(0); }
 
@@ -368,12 +372,18 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   #cart-toggle-bar {
     display: flex; position: fixed;
     bottom: 56px; left: 0; right: 0; height: var(--toggle-h);
-    z-index: 140;
+    z-index: 145; /* 低於 bottom-nav，高於 cart-panel */
     background: var(--black); color: white;
     padding: 0 16px; align-items: center; justify-content: space-between;
     cursor: pointer;
   }
   #cart-toggle-bar:active { background: #222; }
+
+  /* bottom-nav：最高層，永遠在最上面 */
+  #bottom-nav {
+    z-index: 160 !important;
+  }
+
   #cart-close-btn {
     display: flex; align-items: center; justify-content: center;
     gap: 8px; padding: 8px 14px;

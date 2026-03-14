@@ -537,6 +537,7 @@ function openDetail(orderId) {
     document.getElementById('detail-note-section').style.display = 'none';
   }
   document.getElementById('modal-detail').classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
 // ── 訂單編輯 ──
@@ -582,6 +583,7 @@ function openEditModal(orderId) {
   }
 
   document.getElementById('modal-edit').classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
 function selectEditPM(name, btn) {
@@ -628,10 +630,19 @@ async function saveOrderEdit() {
 
 function closeEditModal() {
   document.getElementById('modal-edit').classList.remove('show');
+  document.body.style.overflow = '';
   editingOrderId = null;
 }
 document.getElementById('modal-edit').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-edit')) closeEditModal();
+});
+
+function closeModal() {
+  document.getElementById('modal-detail').classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.getElementById('modal-detail').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-detail')) closeModal();
 });
 
 async function deleteOrder(id) {
@@ -643,11 +654,6 @@ async function deleteOrder(id) {
   renderSummary();
   showToast('訂單已刪除');
 }
-
-function closeModal() { document.getElementById('modal-detail').classList.remove('show'); }
-document.getElementById('modal-detail').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal-detail')) closeModal();
-});
 
 function showToast(msg) {
   const t = document.getElementById('toast');

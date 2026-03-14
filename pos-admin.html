@@ -637,11 +637,11 @@ function dragEnd() {
 async function dragDrop(e, targetIdx) {
   e.preventDefault();
   if (dragSrcIdx === null || dragSrcIdx === targetIdx) { dragEnd(); return; }
-  // 重新排列陣列
   const moved = products.splice(dragSrcIdx, 1)[0];
   products.splice(targetIdx, 0, moved);
   dragSrcIdx = null;
-  renderProducts();
+  // 保持當前搜尋/分類篩選狀態
+  filterProducts();
   // 批次更新 sort_order
   await Promise.all(products.map((p, i) =>
     sb.from('products').update({ sort_order: i }).eq('id', p.id)
