@@ -108,7 +108,26 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .checkin-date-input:focus{border-color:var(--accent);}
 .btn-checkin-save{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;}
 
-/* 月曆打卡 */
+/* 每日結帳日誌 */
+.daily-log-wrap{background:var(--white);border-radius:16px;padding:16px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
+.daily-log-title{font-size:14px;font-weight:700;margin-bottom:12px;}
+.log-table{width:100%;border-collapse:collapse;font-size:13px;}
+.log-table th{background:var(--gray-50);padding:8px 10px;text-align:left;border-bottom:2px solid var(--gray-200);color:var(--gray-600);font-size:11px;font-weight:700;letter-spacing:0.04em;}
+.log-table td{padding:9px 10px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+.log-table tr:last-child td{border-bottom:none;}
+.log-table tr:hover td{background:var(--gray-50);}
+.log-date{font-weight:600;color:var(--black);}
+.log-revenue{font-family:'Space Mono',monospace;font-weight:700;color:var(--green);}
+.log-orders{color:var(--gray-600);}
+.log-avg{font-family:'Space Mono',monospace;color:var(--accent);}
+.log-note-input{width:100%;padding:5px 8px;border:1.5px solid transparent;border-radius:6px;font-size:12px;font-family:'Noto Sans TC',sans-serif;background:none;outline:none;color:var(--gray-600);}
+.log-note-input:hover{border-color:var(--gray-200);}
+.log-note-input:focus{border-color:var(--accent);background:var(--white);}
+.log-note-saved{font-size:10px;color:var(--green);margin-left:4px;opacity:0;transition:opacity 0.3s;}
+.log-summary-row td{background:var(--gray-50);font-weight:700;border-top:2px solid var(--gray-200);}
+@media(max-width:480px){
+  .log-table th:nth-child(4),.log-table td:nth-child(4){display:none;}
+}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;}
 .cal-header{font-size:11px;color:var(--gray-400);text-align:center;padding:4px 0;font-weight:600;}
 .cal-day{border-radius:8px;border:1.5px solid var(--gray-200);background:none;cursor:pointer;
@@ -245,6 +264,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
   <!-- 商品銷售排行（進階版以上） -->
   <div id="rank-section"></div>
+
+  <!-- 每日結帳 / 營業日誌（進階版以上） -->
+  <div id="daily-log-section"></div>
 
   <!-- 營業日記錄（進階版以上） -->
   <div id="business-day-section"></div>
@@ -392,6 +414,7 @@ async function loadStats() {
   renderOrderTypes(data);
   renderPayments(data);
   renderRankSection(data);
+  await renderDailyLog(data);
   await renderBusinessDay();
 }
 
@@ -557,7 +580,113 @@ function renderRankSection(orders) {
   </div>`;
 }
 
-// ── 營業日（進階版以上） ──
+// ── 每日結帳 / 營業日誌（進階版以上）──
+async function renderDailyLog(orders) {
+  const el = document.getElementById('daily-log-section');
+  if (currentPlan === 'basic') {
+    el.innerHTML = `<div class="locked-section"><div class="lock-icon">🔒</div><p><strong>每日結帳 / 營業日誌</strong><br>進階版以上功能<br>可查看每日收支明細、添加備註，方便對帳。</p></div>`;
+    return;
+  }
+
+  // 按日期分組
+  const byDate = {};
+  orders.forEach(o => {
+    // 台灣時間日期
+    const d = new Date(o.created_at).toLocaleDateString('zh-TW', {
+      timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit'
+    }); // "2026/03/15"
+    const dateKey = d.replace(/\//g, '-'); // "2026-03-15"
+    if (!byDate[dateKey]) byDate[dateKey] = { orders: [], revenue: 0, discount: 0 };
+    byDate[dateKey].orders.push(o);
+    byDate[dateKey].revenue += o.total || 0;
+    byDate[dateKey].discount += o.discount || 0;
+  });
+
+  const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+
+  if (!dates.length) {
+    el.innerHTML = '';
+    return;
+  }
+
+  // 載入既有備註
+  const { data: noteRows } = await sb.from('feature_logs')
+    .select('feature, used_at')
+    .eq('user_id', currentUser.id)
+    .like('feature', 'daily_note|%')
+    .order('used_at', { ascending: false });
+
+  // 每個日期只取最新備註
+  const noteMap = {};
+  (noteRows || []).forEach(r => {
+    const parts = r.feature.split('|');
+    const date = parts[1];
+    const note = parts.slice(2).join('|');
+    if (!noteMap[date]) noteMap[date] = note;
+  });
+
+  const totalRevenue = dates.reduce((s, d) => s + byDate[d].revenue, 0);
+  const totalOrders = dates.reduce((s, d) => s + byDate[d].orders.length, 0);
+
+  el.innerHTML = `<div class="daily-log-wrap">
+    <div class="daily-log-title">📒 每日結帳日誌</div>
+    <div style="overflow-x:auto">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>營業額</th>
+            <th>訂單數</th>
+            <th>平均客單</th>
+            <th>備註</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dates.map(date => {
+            const day = byDate[date];
+            const avg = day.orders.length ? Math.round(day.revenue / day.orders.length) : 0;
+            const weekday = new Date(date).toLocaleDateString('zh-TW', { weekday: 'short', timeZone: 'Asia/Taipei' });
+            const note = noteMap[date] || '';
+            return `<tr>
+              <td class="log-date">${date}<br><span style="font-size:11px;color:var(--gray-400);font-weight:400">${weekday}</span></td>
+              <td class="log-revenue">$${day.revenue.toLocaleString()}</td>
+              <td class="log-orders">${day.orders.length} 筆</td>
+              <td class="log-avg">$${avg.toLocaleString()}</td>
+              <td>
+                <input class="log-note-input" type="text" placeholder="備註（按 Enter 儲存）"
+                  value="${note.replace(/"/g, '&quot;')}"
+                  onkeydown="if(event.key==='Enter'){saveDailyNote('${date}',this);event.preventDefault()}"
+                  onblur="saveDailyNote('${date}',this)">
+              </td>
+            </tr>`;
+          }).join('')}
+          <tr class="log-summary-row">
+            <td>合計</td>
+            <td class="log-revenue">$${totalRevenue.toLocaleString()}</td>
+            <td class="log-orders">${totalOrders} 筆</td>
+            <td class="log-avg">$${totalOrders ? Math.round(totalRevenue/totalOrders).toLocaleString() : 0}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+async function saveDailyNote(date, input) {
+  const note = input.value.trim();
+  const payload = `daily_note|${date}|${note}`;
+  await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: payload });
+  // 顯示已儲存提示
+  const saved = document.createElement('span');
+  saved.className = 'log-note-saved';
+  saved.textContent = '已儲存';
+  input.parentNode.appendChild(saved);
+  requestAnimationFrame(() => { saved.style.opacity = '1'; });
+  setTimeout(() => { saved.style.opacity = '0'; setTimeout(() => saved.remove(), 300); }, 1500);
+}
+
+// ── 營業日（進階版以上）──
 let allCheckins = []; // 保存本月打卡資料供 modal 使用
 
 async function renderBusinessDay() {
