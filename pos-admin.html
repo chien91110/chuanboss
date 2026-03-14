@@ -796,6 +796,52 @@ async function saveOTSettings(silent = false) {
   if (!silent) showToast('訂單類型設定已儲存');
 }
 
+// ── 感謝語（高級版）──
+let thanksList = [];
+
+async function renderThanksList() {
+  const { data } = await sb.from('receipt_messages').select('*')
+    .eq('user_id', currentUser.id).order('sort_order');
+  thanksList = data || [];
+  const el = document.getElementById('thanks-list');
+  if (!thanksList.length) {
+    el.innerHTML = `<div style="font-size:13px;color:var(--gray-400);padding:12px 0">還沒有感謝語，點下方「新增一則」開始建立</div>`;
+    return;
+  }
+  el.innerHTML = thanksList.map((t, i) => `
+    <div class="thanks-row">
+      <textarea class="thanks-textarea" oninput="thanksList[${i}].message=this.value">${escHtml(t.message)}</textarea>
+      <button class="btn-sm danger" onclick="removeThanks(${i})">刪除</button>
+    </div>`).join('');
+}
+
+function addThanksRow() {
+  thanksList.push({ message: '', is_active: true, sort_order: thanksList.length });
+  renderThanksList();
+}
+
+async function removeThanks(i) {
+  const t = thanksList[i];
+  if (t.id) await sb.from('receipt_messages').delete().eq('id', t.id);
+  thanksList.splice(i, 1);
+  renderThanksList();
+  showToast('已刪除');
+}
+
+async function saveThanks() {
+  for (let i = 0; i < thanksList.length; i++) {
+    const t = thanksList[i];
+    if (!t.message.trim()) continue;
+    const payload = { user_id: currentUser.id, message: t.message, is_active: true, sort_order: i };
+    if (t.id) await sb.from('receipt_messages').update(payload).eq('id', t.id);
+    else {
+      const { data } = await sb.from('receipt_messages').insert(payload).select().single();
+      thanksList[i] = data;
+    }
+  }
+  showToast('感謝語已儲存');
+}
+
 // ── Emoji Picker ──
 function openEmojiPicker(idx, e) {
   e.stopPropagation();
