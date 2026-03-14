@@ -352,8 +352,12 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   /* 商品區：扣掉 nav(52) + toggle-bar(48) + bottom-nav(56) */
   #products-panel {
     height: calc(100vh - var(--nav-h) - var(--toggle-h) - 56px);
-    /* 底部加 padding 讓最後一個商品不被 toggle-bar 蓋住 */
-    padding-bottom: 8px;
+    overflow: hidden;
+  }
+
+  /* products-grid 底部留出足夠空間，讓最後商品完整顯示 */
+  #products-grid {
+    padding-bottom: 24px;
   }
 
   /* 購物車：從 toggle-bar 上方滑出，高度同商品區 */
