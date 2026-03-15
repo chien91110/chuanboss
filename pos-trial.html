@@ -355,9 +355,9 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
     overflow: hidden;
   }
 
-  /* products-grid 底部留出足夠空間，讓最後商品完整顯示 */
+  /* products-grid 底部留出足夠空間，讓最後商品完整顯示（toggle-bar 48px + 緩衝 16px） */
   #products-grid {
-    padding-bottom: 24px;
+    padding-bottom: 64px;
   }
 
   /* 購物車：從 toggle-bar 上方滑出，高度同商品區 */
@@ -699,21 +699,19 @@ async function loadData() {
 }
 
 async function loadOrderNumber() {
-  // 用台灣時間（UTC+8）計算今日範圍
-  const now = new Date();
-  const twNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  // 台灣時間日期
+  const twNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
   const y = twNow.getFullYear();
   const m = String(twNow.getMonth()+1).padStart(2,'0');
   const d = String(twNow.getDate()).padStart(2,'0');
-  const today = `${y}-${m}-${d}`;
   const todayKey = `${y}${m}${d}`;
 
-  const todayStart = `${today}T00:00:00+08:00`;
-  const todayEnd   = `${today}T23:59:59+08:00`;
-
-  const { count } = await sb.from('orders').select('*', { count: 'exact', head: true })
+  // 查今日台灣時間的訂單數（order_number 前8碼 = 今日 todayKey）
+  // 用 like 查詢當日前綴，避免時區問題
+  const { count } = await sb.from('orders')
+    .select('*', { count: 'exact', head: true })
     .eq('user_id', currentUser.id)
-    .gte('created_at', todayStart).lte('created_at', todayEnd);
+    .like('order_number::text', `${todayKey}%`);
 
   const seq = 101 + (count || 0);
   orderNumber = parseInt(`${todayKey}${seq}`);
@@ -756,9 +754,11 @@ function skipCheckin() {
 // ── 分類 ──
 function renderCategories() {
   const tab = document.getElementById('category-tabs');
-  tab.innerHTML = `<button class="cat-tab active" onclick="filterCat('all',this)">全部</button>`;
+  const allCount = products.length;
+  tab.innerHTML = `<button class="cat-tab active" onclick="filterCat('all',this)">全部 <span style="font-size:11px;opacity:0.6">${allCount}</span></button>`;
   categories.forEach(c => {
-    tab.innerHTML += `<button class="cat-tab" onclick="filterCat('${c.id}',this)">${c.name}</button>`;
+    const count = products.filter(p => p.category_id === c.id).length;
+    tab.innerHTML += `<button class="cat-tab" onclick="filterCat('${c.id}',this)">${c.name} <span style="font-size:11px;opacity:0.6">${count}</span></button>`;
   });
 }
 function filterCat(id, btn) {

@@ -553,9 +553,12 @@ function renderProducts() {
   const catFilter = document.getElementById('product-cat-filter');
   if (catFilter) {
     const current = catFilter.value;
-    catFilter.innerHTML = '<option value="">全部分類</option>' +
-      categories.map(c => `<option value="${c.id}"${c.id === current ? ' selected' : ''}>${c.name}</option>`).join('') +
-      '<option value="none"' + (current === 'none' ? ' selected' : '') + '>未分類</option>';
+    catFilter.innerHTML = '<option value="">全部分類（' + products.length + '）</option>' +
+      categories.map(c => {
+        const cnt = products.filter(p => p.category_id === c.id).length;
+        return `<option value="${c.id}"${c.id === current ? ' selected' : ''}>${c.name}（${cnt}）</option>`;
+      }).join('') +
+      '<option value="none"' + (current === 'none' ? ' selected' : '') + '>未分類（' + products.filter(p => !p.category_id).length + '）</option>';
   }
 
   renderProductList('', '');
@@ -1170,26 +1173,21 @@ function handleCSV(e) {
       if (!cols[0] || !cols[1]) continue;
       const name = cols[0], price = parseInt(cols[1]);
       const catName = cols[2] || '', unit = cols[3] || '份';
-
-      // 解析規格（col 4-5: 規格1, col 6-7: 規格2, col 8-9: 規格3）
       const specGroups = [];
       for (let s = 0; s < 3; s++) {
         const gIdx = 4 + s * 2;
         const g = parseSpecCol(cols[gIdx], cols[gIdx + 1]);
         if (g) specGroups.push(g);
       }
-
-      const isDup = products.some(p => p.name === name);
-      const specLabel = specGroups.length ? specGroups.map(g => g.groupName).join('＋') : '無';
-      csvData.push({ name, price, catName, unit, specGroups, isDup });
-      tbody.innerHTML += `<tr>
-        <td>${name}</td><td>$${price}</td>
-        <td>${catName||'未分類'}</td><td>${unit}</td>
-        <td style="font-size:11px">${specLabel}</td>
-        <td style="color:${isDup?'var(--red)':'var(--green)'}">${isDup?'重複略過':'可匯入'}</td>
-      </tr>`;
+      const existingProduct = products.find(p => p.name === name);
+      const isDup = !!existingProduct;
+      const specLabel = specGroups.length ? specGroups.map(g => g.groupName).join('+') : '無';
+      csvData.push({ name, price, catName, unit, specGroups, isDup, existingId: existingProduct?.id || null });
+      const dupColor = isDup ? 'var(--accent)' : 'var(--green)';
+      const dupText = isDup ? '覆蓋更新' : '新增';
+      tbody.innerHTML += `<tr><td>${name}</td><td>$${price}</td><td>${catName||'未分類'}</td><td>${unit}</td><td style="font-size:11px">${specLabel}</td><td style="color:${dupColor}">${dupText}</td></tr>`;
     }
-    document.getElementById('csv-count').textContent = csvData.filter(r => !r.isDup).length;
+    document.getElementById('csv-count').textContent = csvData.length;
     document.getElementById('csv-preview').style.display = 'block';
   };
   reader.readAsText(file, 'UTF-8'); e.target.value = '';
@@ -1197,10 +1195,38 @@ function handleCSV(e) {
 
 async function importCSV() {
   const lim = PLAN_LIMITS[currentPlan];
-  const toImport = csvData.filter(r => !r.isDup && !isNaN(r.price));
-  if (!toImport.length) { showToast('沒有可匯入的商品'); return; }
-  const importing = toImport.slice(0, lim.products - products.length);
-  for (const row of importing) {
+  const newRows = csvData.filter(r => !r.existingId && !isNaN(r.price));
+  const updateRows = csvData.filter(r => r.existingId && !isNaN(r.price));
+  if (!csvData.length) { showToast('沒有可匯入的商品'); return; }
+  const canAdd = lim.products - products.length;
+  const toAdd = newRows.slice(0, Math.max(0, canAdd));
+  const maxSortOrder = products.reduce((max, p) => Math.max(max, p.sort_order || 0), -1);
+  let sortIdx = maxSortOrder + 1;
+  // 覆蓋更新
+  for (const row of updateRows) {
+    let catId = null;
+    if (row.catName) {
+      let cat = categories.find(c => c.name === row.catName);
+      if (!cat) {
+        const { data } = await sb.from('categories').insert({ user_id: currentUser.id, name: row.catName }).select().single();
+        cat = data;
+      }
+      catId = cat?.id || null;
+    }
+    await sb.from('products').update({ price: row.price, unit: row.unit, category_id: catId }).eq('id', row.existingId);
+    if (row.specGroups?.length) {
+      await sb.from('product_variants').delete().eq('product_id', row.existingId);
+      const variants = [];
+      row.specGroups.slice(0, lim.specGroups).forEach(g => {
+        g.options.slice(0, lim.specOptions).forEach(o => {
+          variants.push({ product_id: row.existingId, name: `${g.groupName}|${o.name}`, price_delta: o.price_delta });
+        });
+      });
+      if (variants.length) await sb.from('product_variants').insert(variants);
+    }
+  }
+  // 新增（按 CSV 順序設 sort_order）
+  for (const row of toAdd) {
     let catId = null;
     if (row.catName) {
       let cat = categories.find(c => c.name === row.catName);
@@ -1212,14 +1238,11 @@ async function importCSV() {
     }
     const { data: prod } = await sb.from('products').insert({
       user_id: currentUser.id, name: row.name, price: row.price,
-      unit: row.unit, category_id: catId
+      unit: row.unit, category_id: catId, sort_order: sortIdx++
     }).select().single();
-
-    // 匯入規格
     if (prod && row.specGroups?.length) {
       const variants = [];
-      const maxGroups = lim.specGroups;
-      row.specGroups.slice(0, maxGroups).forEach(g => {
+      row.specGroups.slice(0, lim.specGroups).forEach(g => {
         g.options.slice(0, lim.specOptions).forEach(o => {
           variants.push({ product_id: prod.id, name: `${g.groupName}|${o.name}`, price_delta: o.price_delta });
         });
@@ -1230,7 +1253,11 @@ async function importCSV() {
   document.getElementById('csv-preview').style.display = 'none';
   csvData = [];
   await loadAll();
-  showToast(`成功匯入 ${importing.length} 筆商品`);
+  const msgs = [];
+  if (toAdd.length) msgs.push(`新增 ${toAdd.length} 筆`);
+  if (updateRows.length) msgs.push(`更新 ${updateRows.length} 筆`);
+  if (newRows.length > toAdd.length) msgs.push(`${newRows.length - toAdd.length} 筆超過上限略過`);
+  showToast('匯入完成：' + msgs.join('、'));
 }
 
 // ── HELPERS ──
