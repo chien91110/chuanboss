@@ -358,8 +358,8 @@ async function init() {
     document.getElementById('range-from').value = today;
     document.getElementById('range-to').value = today;
 
-    await loadOrders();
     document.getElementById('spinner').style.display = 'none';
+    loadOrders();
   } catch(e) { showInitError(e); }
 }
 

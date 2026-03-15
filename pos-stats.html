@@ -371,11 +371,9 @@ async function init() {
     document.getElementById('date-from').value = today;
     document.getElementById('date-to').value = today;
 
-    await loadOTSettings();
-    await loadStats();
-
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
+    Promise.all([loadOTSettings().then(() => loadStats())]);
   } catch(e) { showInitError(e); }
 }
 

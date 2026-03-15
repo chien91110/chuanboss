@@ -649,10 +649,9 @@ async function init() {
     document.getElementById('nav-days-left').textContent = `試用剩 ${daysLeft} 天`;
 
     await loadOTSettings();
-    await loadData();
-    await loadOrderNumber();
-    await loadThankMessages();
+    // spinner 先隱藏，資料並行載入邊顯示
     document.getElementById('spinner').style.display = 'none';
+    Promise.all([loadData(), loadOrderNumber(), loadThankMessages()]);
 
     await checkDailyCheckin();
   } catch(e) {

@@ -499,14 +499,17 @@ async function init() {
     if (!session) { window.location.href = 'auth.html'; return; }
     currentUser = session.user;
 
-    const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
+    // trial 和 profile 並行查詢
+    const [{ data: trial }, { data: profile }] = await Promise.all([
+      sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
+      sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
+    ]);
     if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
       window.location.href = 'trial.html'; return;
     }
     currentTrial = trial;
     currentPlan = trial.plan;
 
-    const { data: profile } = await sb.from('profiles').select('brand_name').eq('id', currentUser.id).single();
     if (profile?.brand_name) {
       document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 後台管理 &nbsp;·&nbsp; 試用版`;
     }
@@ -522,9 +525,9 @@ async function init() {
       document.getElementById('thanks-plan-note').textContent = `此版本最多 ${lim} 則`;
     }
 
-    await loadOTSettings();
-    await loadAll();
+    // spinner 先隱藏，OTSettings 和 loadAll 並行載入
     document.getElementById('spinner').style.display = 'none';
+    Promise.all([loadOTSettings(), loadAll()]);
   } catch(e) { showInitError(e); }
 }
 
