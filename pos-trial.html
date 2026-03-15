@@ -355,9 +355,9 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
     overflow: hidden;
   }
 
-  /* products-grid 底部留出足夠空間，讓最後商品完整顯示（toggle-bar 48px + 緩衝 16px） */
+  /* products-grid 底部留出足夠空間，讓最後商品完整顯示（toggle-bar 56px + bottom-nav 56px） */
   #products-grid {
-    padding-bottom: 64px;
+    padding-bottom: 120px;
   }
 
   /* 購物車：從 toggle-bar 上方滑出，高度同商品區 */
@@ -402,7 +402,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 @media (max-width: 390px) {
   #products-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px; padding: 10px;
+    gap: 8px; padding: 10px; padding-bottom: 120px;
   }
   .product-name { font-size: 12px; }
   .product-price { font-size: 13px; }
