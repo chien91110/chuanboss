@@ -187,7 +187,25 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 /* TOAST */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:white;padding:10px 20px;border-radius:100px;font-size:13px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
+
+/* 頁面切換過場 */
+#page-transition{
+  display:none;position:fixed;inset:0;background:var(--white);z-index:9999;
+  align-items:center;justify-content:center;flex-direction:column;gap:10px;
+}
+#page-transition.show{display:flex;}
+#page-transition .pt-spinner{
+  width:28px;height:28px;border:3px solid var(--gray-200);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.6s linear infinite;
+}
+#page-transition .pt-label{font-size:12px;color:var(--gray-400);}
+
 </style>
+<link rel="prefetch" href="pos-trial.html">
+<link rel="prefetch" href="pos-orders.html">
+<link rel="prefetch" href="pos-admin.html">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 </head>
 <body>
 
@@ -896,7 +914,12 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-function go(url) { window.location.href = url; }
+function go(url) {
+  const pt = document.getElementById('page-transition');
+  if (pt) { pt.classList.add('show'); }
+  // 短暫延遲讓過場動畫先顯示
+  setTimeout(() => { window.location.href = url; }, 50);
+}
 
 init();
 </script>

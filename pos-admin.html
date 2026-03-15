@@ -201,7 +201,25 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
   .csv-actions{flex-direction:column;}
   .btn-outline,.btn-filled{width:100%;text-align:center;}
 }
+
+/* 頁面切換過場 */
+#page-transition{
+  display:none;position:fixed;inset:0;background:var(--white);z-index:9999;
+  align-items:center;justify-content:center;flex-direction:column;gap:10px;
+}
+#page-transition.show{display:flex;}
+#page-transition .pt-spinner{
+  width:28px;height:28px;border:3px solid var(--gray-200);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.6s linear infinite;
+}
+#page-transition .pt-label{font-size:12px;color:var(--gray-400);}
+
 </style>
+<link rel="prefetch" href="pos-trial.html">
+<link rel="prefetch" href="pos-orders.html">
+<link rel="prefetch" href="pos-stats.html">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 </head>
 <body>
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
@@ -1270,7 +1288,12 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-function go(url) { window.location.href = url; }
+function go(url) {
+  const pt = document.getElementById('page-transition');
+  if (pt) { pt.classList.add('show'); }
+  // 短暫延遲讓過場動畫先顯示
+  setTimeout(() => { window.location.href = url; }, 50);
+}
 init();
 </script>
 </body>
