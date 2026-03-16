@@ -204,11 +204,14 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
 
 <!-- 編輯用戶 Modal -->
 <div class="modal-overlay" id="modal-edit">
-  <div class="modal-box">
-    <div class="modal-title">編輯試用設定</div>
+  <div class="modal-box" style="max-width:480px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title">編輯帳號設定</div>
     <div class="modal-sub" id="edit-modal-sub"></div>
     <input type="hidden" id="edit-trial-id">
     <input type="hidden" id="edit-user-id">
+
+    <!-- 試用版設定 -->
+    <div style="font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.05em;margin-bottom:10px">試用版設定</div>
     <div class="modal-form-row">
       <label class="modal-label">試用版本</label>
       <select class="modal-select" id="edit-plan">
@@ -228,8 +231,11 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
         <option value="true">已凍結</option>
       </select>
     </div>
+
     <hr style="border:none;border-top:1px solid var(--gray-200);margin:16px 0">
-    <div style="font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.05em;margin-bottom:12px">正式版設定</div>
+
+    <!-- 正式版設定 -->
+    <div style="font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.05em;margin-bottom:10px">正式版設定</div>
     <div class="modal-form-row">
       <label class="modal-label">付費狀態</label>
       <select class="modal-select" id="edit-paid">
@@ -247,16 +253,44 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
       </select>
     </div>
     <div class="modal-form-row">
-      <label class="modal-label">年費到期日（留空=無年費）</label>
-      <input class="modal-input" type="date" id="edit-sub-expires">
+      <label class="modal-label">
+        年費到期日
+        <span style="font-size:11px;color:var(--gray-400);font-weight:400">（留空 = 只買斷無年費）</span>
+      </label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="modal-input" type="date" id="edit-sub-expires" style="flex:1">
+        <button type="button" onclick="setSubExpiresOneYear()"
+          style="padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Noto Sans TC',sans-serif">
+          +1年
+        </button>
+      </div>
     </div>
     <div class="modal-form-row">
       <label class="modal-label">早期支持者（永久免年費）</label>
       <select class="modal-select" id="edit-early">
         <option value="false">否</option>
-        <option value="true">是</option>
+        <option value="true">是 ⭐</option>
       </select>
     </div>
+
+    <hr style="border:none;border-top:1px solid var(--gray-200);margin:16px 0">
+
+    <!-- 帳號管理 -->
+    <div style="font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.05em;margin-bottom:10px">帳號管理</div>
+    <div class="modal-form-row">
+      <label class="modal-label">
+        更換 Email
+        <span style="font-size:11px;color:var(--gray-400);font-weight:400">（留空 = 不變更）</span>
+      </label>
+      <input class="modal-input" type="email" id="edit-new-email" placeholder="輸入新 Email">
+    </div>
+    <div class="modal-form-row">
+      <label class="modal-label">管理員備註</label>
+      <textarea class="modal-input" id="edit-admin-note" rows="3"
+        placeholder="例：2026/03/16 收到進階版款項 $8800，LINE:@xxx"
+        style="resize:vertical;font-family:'Noto Sans TC',sans-serif;font-size:13px"></textarea>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
       <button class="btn-confirm" onclick="saveEdit()">儲存</button>
@@ -352,6 +386,64 @@ async function loadData() {
 
   renderStats();
   renderTable();
+  // 每次載入時自動檢查年費到期
+  checkSubscriptionExpiry();
+}
+
+async function checkSubscriptionExpiry() {
+  const now = new Date();
+  const expiring = []; // 即將到期（14天內）
+  const expired = [];  // 已到期但還沒降級
+
+  for (const u of allUsers) {
+    const p = u.profile;
+    if (!p.is_paid || p.is_early_adopter || !p.subscription_expires_at) continue;
+
+    const expiresAt = new Date(p.subscription_expires_at);
+    const daysLeft = Math.ceil((expiresAt - now) / 86400000);
+
+    // 已到期超過7天寬限期 → 自動降級（停用年費）
+    if (daysLeft < -7 && p.subscription_active) {
+      await sb.from('profiles').update({
+        subscription_active: false
+      }).eq('id', p.id);
+      console.log(`年費降級：${p.email}（到期 ${daysLeft} 天前）`);
+      expired.push(p.email);
+    }
+    // 14天內到期 → 加入提醒名單
+    else if (daysLeft > 0 && daysLeft <= 14) {
+      expiring.push({ ...p, daysLeft });
+    }
+  }
+
+  // 顯示提醒通知
+  if (expiring.length > 0) {
+    const names = expiring.map(p => `${p.brand_name}（${p.daysLeft}天）`).join('、');
+    showExpiringBanner(`⚠️ 以下客戶年費即將到期：${names}`);
+  }
+  if (expired.length > 0) {
+    await loadData(); // 重新載入反映降級狀態
+  }
+}
+
+function showExpiringBanner(msg) {
+  let banner = document.getElementById('expiring-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'expiring-banner';
+    banner.style.cssText = `
+      position:fixed;top:52px;left:0;right:0;z-index:90;
+      background:#fff8e6;border-bottom:1px solid #f0c040;
+      padding:10px 20px;font-size:13px;color:#7a5c00;
+      display:flex;justify-content:space-between;align-items:center;
+    `;
+    document.body.appendChild(banner);
+    // main 下移
+    document.querySelector('main').style.paddingTop = '110px';
+  }
+  banner.innerHTML = `<span>${msg}</span>
+    <button onclick="this.parentElement.remove();document.querySelector('main').style.paddingTop='68px'"
+      style="border:none;background:none;cursor:pointer;font-size:16px;color:#7a5c00">✕</button>`;
 }
 
 function getDaysLeft(expiresAt) {
@@ -497,7 +589,7 @@ function _openEditModalCore(u) {
   document.getElementById('edit-modal-sub').textContent = `${p.brand_name} · ${p.email}`;
   document.getElementById('edit-trial-id').value = t?.id || '';
   document.getElementById('edit-user-id').value = p.id;
-  // 試用欄位（有 trial 才有意義）
+  // 試用欄位
   document.getElementById('edit-plan').value = t?.plan || 'basic';
   document.getElementById('edit-expires').value = t?.expires_at ? new Date(t.expires_at).toISOString().slice(0, 10) : '';
   document.getElementById('edit-frozen').value = String(t?.is_frozen || false);
@@ -507,8 +599,18 @@ function _openEditModalCore(u) {
   document.getElementById('edit-sub-expires').value = p.subscription_expires_at
     ? new Date(p.subscription_expires_at).toISOString().slice(0, 10) : '';
   document.getElementById('edit-early').value = String(p.is_early_adopter || false);
+  // 帳號管理
+  document.getElementById('edit-new-email').value = '';
+  document.getElementById('edit-admin-note').value = p.admin_note || '';
   document.getElementById('modal-edit').classList.add('show');
   document.body.style.overflow = 'hidden';
+}
+
+// 年費快速設定 +1年
+function setSubExpiresOneYear() {
+  const today = new Date();
+  today.setFullYear(today.getFullYear() + 1);
+  document.getElementById('edit-sub-expires').value = today.toISOString().slice(0, 10);
 }
 
 async function saveEdit() {
@@ -519,36 +621,56 @@ async function saveEdit() {
   const paidPlan = document.getElementById('edit-paid-plan').value || null;
   const subExpires = document.getElementById('edit-sub-expires').value;
   const isEarly = document.getElementById('edit-early').value === 'true';
+  const adminNote = document.getElementById('edit-admin-note').value.trim();
+  const newEmail = document.getElementById('edit-new-email').value.trim();
 
-  // 有 trial 才更新 trials 表
-  if (trialId) {
-    const plan = document.getElementById('edit-plan').value;
-    const expiresAt = document.getElementById('edit-expires').value;
-    const { error: trialErr } = await sb.from('trials').update({
-      plan,
-      expires_at: new Date(expiresAt + 'T23:59:59+08:00').toISOString(),
-      is_frozen: isFrozen,
-      frozen_at: isFrozen ? new Date().toISOString() : null
-    }).eq('id', trialId);
-    if (trialErr) { showToast('試用設定儲存失敗：' + trialErr.message); return; }
+  const btn = document.querySelector('#modal-edit .btn-confirm');
+  btn.disabled = true; btn.textContent = '儲存中...';
+
+  try {
+    // 1. 有 trial 才更新 trials 表
+    if (trialId) {
+      const plan = document.getElementById('edit-plan').value;
+      const expiresAt = document.getElementById('edit-expires').value;
+      const { error: trialErr } = await sb.from('trials').update({
+        plan,
+        expires_at: new Date(expiresAt + 'T23:59:59+08:00').toISOString(),
+        is_frozen: isFrozen,
+        frozen_at: isFrozen ? new Date().toISOString() : null
+      }).eq('id', trialId);
+      if (trialErr) throw new Error('試用設定失敗：' + trialErr.message);
+    }
+
+    // 2. 更新 profiles 表
+    const u = allUsers.find(u => u.profile.id === userId);
+    const profileUpdates = {
+      is_paid: isPaid,
+      plan: isPaid ? paidPlan : null,
+      is_early_adopter: isEarly,
+      subscription_active: isPaid && (isEarly || !!subExpires),
+      subscription_expires_at: subExpires ? new Date(subExpires + 'T23:59:59+08:00').toISOString() : null,
+      paid_at: isPaid && !u?.profile?.paid_at ? new Date().toISOString() : u?.profile?.paid_at || null,
+      admin_note: adminNote || null
+    };
+    const { error: profileErr } = await sb.from('profiles').update(profileUpdates).eq('id', userId);
+    if (profileErr) throw new Error('正式版設定失敗：' + profileErr.message);
+
+    // 3. 換 Email（有填才執行）
+    if (newEmail && newEmail !== u?.profile?.email) {
+      // 更新 profiles 表的 email
+      const { error: emailErr } = await sb.from('profiles').update({ email: newEmail }).eq('id', userId);
+      if (emailErr) throw new Error('Email 更新失敗：' + emailErr.message);
+      showToast(`⚠️ profiles.email 已更新，請到 Supabase Auth 手動更改登入 Email`);
+    }
+
+    closeModal();
+    await loadData();
+    showToast('✅ 已儲存');
+  } catch(e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '儲存';
   }
-
-  // 更新 profiles 表（正式版設定）
-  const u = allUsers.find(u => u.profile.id === userId);
-  const profileUpdates = {
-    is_paid: isPaid,
-    plan: isPaid ? paidPlan : null,
-    is_early_adopter: isEarly,
-    subscription_active: isPaid && !!subExpires,
-    subscription_expires_at: subExpires ? new Date(subExpires + 'T23:59:59+08:00').toISOString() : null,
-    paid_at: isPaid && !u?.profile?.paid_at ? new Date().toISOString() : u?.profile?.paid_at || null
-  };
-  const { error: profileErr } = await sb.from('profiles').update(profileUpdates).eq('id', userId);
-  if (profileErr) { showToast('正式版設定儲存失敗：' + profileErr.message); return; }
-
-  closeModal();
-  await loadData();
-  showToast('已更新');
 }
 
 function closeModal() {
