@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川收 ChuanPOS｜尚未啟用</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root { --accent:#c17f3e; --black:#0a0a0a; --white:#fff; --gray-50:#f8f8f6; --gray-200:#e2e0da; --gray-400:#9c9890; --gray-600:#5a5750; }
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Noto Sans TC',sans-serif; background:var(--gray-50); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+.card { background:var(--white); border-radius:24px; padding:48px 36px; max-width:400px; width:100%; text-align:center; box-shadow:0 8px 40px rgba(0,0,0,0.08); }
+.icon { font-size:56px; margin-bottom:20px; }
+.title { font-family:'DM Serif Display',serif; font-size:28px; margin-bottom:10px; }
+.desc { font-size:14px; color:var(--gray-600); line-height:1.8; margin-bottom:32px; }
+.plan-box { background:var(--gray-50); border-radius:14px; padding:20px; margin-bottom:28px; text-align:left; }
+.plan-box-title { font-size:11px; font-weight:700; color:var(--gray-400); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:12px; }
+.plan-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--gray-200); font-size:13px; }
+.plan-row:last-child { border-bottom:none; }
+.plan-row span:last-child { font-weight:700; color:var(--accent); }
+.btn-line { display:inline-flex; align-items:center; gap:10px; padding:14px 28px; background:#06C755; color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Noto Sans TC',sans-serif; text-decoration:none; transition:all 0.15s; width:100%; justify-content:center; margin-bottom:12px; }
+.btn-line:hover { background:#05a847; transform:translateY(-1px); }
+.btn-secondary { display:block; font-size:13px; color:var(--gray-400); text-align:center; cursor:pointer; padding:8px; }
+.btn-secondary:hover { color:var(--gray-600); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="icon">🔓</div>
+  <h1 class="title">尚未啟用</h1>
+  <p class="desc">
+    感謝你的試用！<br>
+    如需使用正式版，請聯絡我們取得授權。<br>
+    購買後將由我們為你開通帳號。
+  </p>
+
+  <div class="plan-box">
+    <div class="plan-box-title">正式版方案</div>
+    <div class="plan-row"><span>基本版</span><span>$4,800 元</span></div>
+    <div class="plan-row"><span>進階版</span><span>$8,800 元</span></div>
+    <div class="plan-row"><span>高級版</span><span>$15,000 元</span></div>
+    <div class="plan-row"><span>買斷制</span><span>永久使用</span></div>
+  </div>
+
+  <a href="https://line.me" class="btn-line">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+    LINE 聯繫購買
+  </a>
+  <span class="btn-secondary" onclick="goBack()">← 返回</span>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function goBack() {
+  // 如果有試用紀錄就回試用中心，否則回首頁
+  window.location.href = 'trial.html';
+}
+</script>
+</body>
+</html>

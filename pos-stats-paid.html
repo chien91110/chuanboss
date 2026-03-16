@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>川收 ChuanPOS｜營業統計</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --black:#0a0a0a;--white:#fff;--gray-50:#f8f8f6;--gray-100:#f0efec;
+  --gray-200:#e2e0da;--gray-400:#9c9890;--gray-600:#5a5750;
+  --accent:#c17f3e;--accent-light:#e8c99a;--green:#3d7a5c;--red:#c0392b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-top:52px;padding-bottom:16px;padding-left:72px;}
+@media(max-width:700px){body{padding-left:0;padding-bottom:72px;}}
+
+/* NAV */
+#top-nav{position:fixed;top:0;left:72px;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
+@media(max-width:700px){#top-nav{left:0;}}
+.nav-logo-small{color:white;font-weight:700;font-size:15px;}
+.nav-logo-small span{color:var(--accent-light);}
+.nav-brand{color:rgba(255,255,255,0.5);font-size:12px;flex:1;}
+.nav-brand em{color:var(--accent-light);font-style:normal;font-weight:600;}
+
+/* STICKY HEADER WRAPPER */
+#sticky-header{
+  position:sticky;top:52px;z-index:50;
+  background:var(--white);
+  border-bottom:1px solid var(--gray-200);
+}
+
+/* PERIOD TABS */
+#period-tabs{display:flex;overflow-x:auto;scrollbar-width:none;}
+#period-tabs::-webkit-scrollbar{display:none;}
+.period-tab{padding:13px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
+.period-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* 自訂區間 */
+#custom-range{
+  display:none;padding:10px 16px;background:var(--white);
+  border-top:1px solid var(--gray-100);gap:8px;align-items:center;flex-wrap:wrap;
+}
+#custom-range.show{display:flex;}
+.date-input{padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;}
+.date-input:focus{border-color:var(--accent);}
+.btn-apply{padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
+
+.content{padding:20px 16px 16px;}
+
+/* KPI 卡 — 改為 2x2，上方兩個大一點 */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.kpi-card{background:var(--white);border-radius:16px;padding:16px;border:1.5px solid var(--gray-200);}
+.kpi-label{font-size:11px;color:var(--gray-400);font-weight:600;letter-spacing:0.05em;margin-bottom:6px;}
+.kpi-val{font-size:20px;font-weight:700;font-family:'Space Mono',monospace;line-height:1.2;word-break:break-all;}
+.kpi-val.green{color:var(--green);}
+.kpi-val.accent{color:var(--accent);}
+.kpi-sub{font-size:11px;color:var(--gray-400);margin-top:4px;}
+
+/* 圖表卡 */
+.chart-card{background:var(--white);border-radius:16px;padding:16px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
+.chart-title{font-size:14px;font-weight:700;margin-bottom:14px;}
+.chart-wrap{position:relative;height:200px;}
+.chart-wrap-pie{position:relative;height:180px;max-width:280px;margin:0 auto;}
+
+/* 商品排行 */
+.rank-list{display:flex;flex-direction:column;gap:8px;}
+.rank-item{display:flex;align-items:center;gap:10px;}
+.rank-num{font-size:12px;font-weight:700;color:var(--gray-400);width:20px;text-align:center;flex-shrink:0;}
+.rank-num.top{color:var(--accent);}
+.rank-bar-wrap{flex:1;}
+.rank-name{font-size:13px;font-weight:500;margin-bottom:4px;}
+.rank-bar{height:6px;background:var(--gray-100);border-radius:100px;overflow:hidden;}
+.rank-bar-fill{height:100%;background:var(--accent);border-radius:100px;transition:width 0.5s ease;}
+.rank-qty{font-size:12px;color:var(--gray-400);}
+.rank-val{font-size:13px;font-weight:700;font-family:'Space Mono',monospace;color:var(--black);}
+
+/* 訂單類型 */
+.type-grid{display:grid;gap:10px;}
+.type-card{background:var(--gray-50);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;}
+.type-icon{font-size:22px;flex-shrink:0;}
+.type-info{flex:1;}
+.type-name{font-size:12px;color:var(--gray-600);margin-bottom:2px;}
+.type-val{font-size:16px;font-weight:700;}
+.type-pct{font-size:11px;color:var(--gray-400);}
+
+/* 營業日區塊 */
+.business-day-wrap{background:var(--white);border-radius:16px;padding:16px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
+.business-day-title{font-size:14px;font-weight:700;margin-bottom:12px;}
+.business-day-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.bd-card{background:var(--gray-50);border-radius:12px;padding:12px;text-align:center;}
+.bd-label{font-size:11px;color:var(--gray-400);margin-bottom:4px;}
+.bd-val{font-size:18px;font-weight:700;font-family:'Space Mono',monospace;}
+.checkin-log{margin-top:12px;}
+.checkin-log-label{font-size:11px;color:var(--gray-400);font-weight:600;letter-spacing:0.05em;margin-bottom:8px;}
+.checkin-item{font-size:13px;color:var(--gray-600);padding:7px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;}
+.checkin-item:last-child{border-bottom:none;}
+.btn-remove-checkin{padding:3px 8px;border:1.5px solid var(--gray-200);border-radius:6px;background:none;font-size:11px;color:var(--gray-400);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;}
+.btn-remove-checkin:hover{border-color:var(--red);color:var(--red);}
+.btn-add-checkin{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border:1.5px dashed var(--gray-200);border-radius:8px;background:none;font-size:12px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;margin-top:10px;transition:all 0.15s;}
+.btn-add-checkin:hover{border-color:var(--accent);color:var(--accent);}
+.checkin-add-row{display:none;margin-top:8px;gap:8px;flex-wrap:wrap;}
+.checkin-add-row.show{display:flex;}
+.checkin-date-input{flex:1;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;min-width:130px;}
+.checkin-date-input:focus{border-color:var(--accent);}
+.btn-checkin-save{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;}
+
+/* 每日結帳日誌 */
+.daily-log-wrap{background:var(--white);border-radius:16px;padding:16px;margin-bottom:16px;border:1.5px solid var(--gray-200);}
+.daily-log-title{font-size:14px;font-weight:700;margin-bottom:12px;}
+.log-table{width:100%;border-collapse:collapse;font-size:13px;}
+.log-table th{background:var(--gray-50);padding:8px 10px;text-align:left;border-bottom:2px solid var(--gray-200);color:var(--gray-600);font-size:11px;font-weight:700;letter-spacing:0.04em;}
+.log-table td{padding:9px 10px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+.log-table tr:last-child td{border-bottom:none;}
+.log-table tr:hover td{background:var(--gray-50);}
+.log-date{font-weight:600;color:var(--black);}
+.log-revenue{font-family:'Space Mono',monospace;font-weight:700;color:var(--green);}
+.log-orders{color:var(--gray-600);}
+.log-avg{font-family:'Space Mono',monospace;color:var(--accent);}
+.log-note-input{width:100%;padding:5px 8px;border:1.5px solid transparent;border-radius:6px;font-size:12px;font-family:'Noto Sans TC',sans-serif;background:none;outline:none;color:var(--gray-600);}
+.log-note-input:hover{border-color:var(--gray-200);}
+.log-note-input:focus{border-color:var(--accent);background:var(--white);}
+.log-note-saved{font-size:10px;color:var(--green);margin-left:4px;opacity:0;transition:opacity 0.3s;}
+.log-summary-row td{background:var(--gray-50);font-weight:700;border-top:2px solid var(--gray-200);}
+@media(max-width:480px){
+  .log-table th:nth-child(4),.log-table td:nth-child(4){display:none;}
+}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;}
+.cal-header{font-size:11px;color:var(--gray-400);text-align:center;padding:4px 0;font-weight:600;}
+.cal-day{border-radius:8px;border:1.5px solid var(--gray-200);background:none;cursor:pointer;
+  font-size:13px;font-family:'Noto Sans TC',sans-serif;padding:8px 4px;text-align:center;
+  transition:all 0.15s;color:var(--gray-600);position:relative;}
+.cal-day:hover{border-color:var(--accent);}
+.cal-day.checked{background:var(--accent);border-color:var(--accent);color:white;font-weight:700;}
+.cal-day.today{box-shadow:0 0 0 2px var(--green);}
+.cal-day.empty{border:none;cursor:default;background:none;}
+.cal-day.future{opacity:0.35;cursor:not-allowed;}
+
+/* MODAL 月曆 */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:100px;margin:0 auto 20px;}
+
+/* LOCKED */
+.locked-section{background:var(--white);border-radius:16px;padding:24px;margin-bottom:16px;border:1.5px dashed var(--gray-200);text-align:center;color:var(--gray-400);}
+.locked-section .lock-icon{font-size:28px;margin-bottom:8px;}
+.locked-section p{font-size:13px;line-height:1.6;}
+
+/* SIDE NAV */
+#bottom-nav{position:fixed;top:52px;left:0;bottom:0;z-index:100;width:72px;background:var(--white);border-right:1px solid var(--gray-200);display:flex;flex-direction:column;padding:8px 0;}
+.bottom-nav-btn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;font-size:10px;color:var(--gray-400);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans TC',sans-serif;padding:12px 0;}
+.bottom-nav-btn .icon{font-size:22px;}
+.bottom-nav-btn.active{color:var(--accent);background:var(--gray-50);}
+.bottom-nav-btn:hover{background:var(--gray-50);color:var(--gray-600);}
+@media(max-width:700px){
+  #bottom-nav{top:auto;bottom:0;left:0;right:0;width:auto;height:56px;flex-direction:row;border-right:none;border-top:1px solid var(--gray-200);padding:0;}
+  .bottom-nav-btn{padding:0;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:480px){
+  .kpi-val{font-size:22px;}
+  .period-tabs{gap:4px;}
+  .period-tab{padding:6px 10px;font-size:12px;}
+  .custom-range{gap:4px;}
+  .custom-range input[type=date]{flex:1;min-width:0;font-size:12px;}
+  .chart-card,.business-day-wrap{padding:12px;}
+}
+@media(max-width:390px){
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .kpi-val{font-size:18px;}
+  .kpi-label{font-size:10px;}
+  .period-tab{padding:5px 8px;font-size:11px;}
+  .business-day-grid{grid-template-columns:1fr;}
+  .rank-item{flex-wrap:wrap;gap:4px;}
+  .modal-sheet{padding:16px;}
+}
+
+/* SPINNER */
+.full-spinner{position:fixed;inset:0;background:var(--gray-50);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:500;}
+.spinner{width:36px;height:36px;border:3px solid var(--gray-200);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:white;padding:10px 20px;border-radius:100px;font-size:13px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* 頁面切換過場 */
+#page-transition{
+  display:none;position:fixed;inset:0;background:var(--white);z-index:9999;
+  align-items:center;justify-content:center;flex-direction:column;gap:10px;
+}
+#page-transition.show{display:flex;}
+#page-transition .pt-spinner{
+  width:28px;height:28px;border:3px solid var(--gray-200);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.6s linear infinite;
+}
+#page-transition .pt-label{font-size:12px;color:var(--gray-400);}
+
+
+/* Skeleton Loading */
+.skeleton{background:linear-gradient(90deg,var(--gray-100) 25%,var(--gray-50) 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:8px;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-product{background:var(--white);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--gray-200);}
+.skeleton-product .sk-img{height:80px;width:100%;}
+.skeleton-product .sk-name{height:14px;width:75%;}
+.skeleton-product .sk-price{height:14px;width:40%;}
+.skeleton-item{background:var(--white);border-radius:14px;padding:16px;margin-bottom:10px;border:1.5px solid var(--gray-200);display:flex;flex-direction:column;gap:8px;}
+.skeleton-item .sk-title{height:14px;width:45%;}
+.skeleton-item .sk-sub{height:12px;width:65%;}
+.skeleton-item .sk-amount{height:20px;width:25%;align-self:flex-end;}
+.skeleton-kpi{border-radius:16px;padding:16px 20px;border:1.5px solid var(--gray-200);background:var(--white);display:flex;flex-direction:column;gap:10px;}
+.skeleton-kpi .sk-label{height:11px;width:50%;}
+.skeleton-kpi .sk-val{height:28px;width:70%;}
+
+</style>
+<link rel="prefetch" href="pos-trial.html">
+<link rel="prefetch" href="pos-orders.html">
+<link rel="prefetch" href="pos-admin.html">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+</head>
+<body>
+
+<div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
+
+<div id="top-nav">
+  <div class="nav-logo-small">川收 <span>Chuan</span>POS</div>
+  <div class="nav-brand" id="nav-brand">營業統計</div>
+</div>
+
+<div id="sticky-header">
+  <div id="period-tabs">
+    <button class="period-tab active" onclick="setPeriod('today',this)">今日</button>
+    <button class="period-tab" onclick="setPeriod('week',this)">本週</button>
+    <button class="period-tab" onclick="setPeriod('month',this)">本月</button>
+    <button class="period-tab" onclick="setPeriod('custom',this)">自訂區間</button>
+  </div>
+  <div id="custom-range">
+    <span style="color:var(--gray-600);font-size:13px">從</span>
+    <input class="date-input" type="date" id="date-from">
+    <span style="color:var(--gray-400);font-size:13px">到</span>
+    <input class="date-input" type="date" id="date-to">
+    <button class="btn-apply" onclick="loadStats()">查詢</button>
+  </div>
+</div>
+
+<div class="content" id="main-content" style="display:none">
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">總營業額</div>
+      <div class="kpi-val green" id="kpi-revenue">$0</div>
+      <div class="kpi-sub" id="kpi-revenue-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">訂單數</div>
+      <div class="kpi-val" id="kpi-orders">0</div>
+      <div class="kpi-sub" id="kpi-orders-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">平均客單</div>
+      <div class="kpi-val accent" id="kpi-avg">$0</div>
+      <div class="kpi-sub">每筆訂單平均</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">總折扣</div>
+      <div class="kpi-val" id="kpi-discount">$0</div>
+      <div class="kpi-sub">折扣合計金額</div>
+    </div>
+  </div>
+
+  <!-- 趨勢圖 -->
+  <div class="chart-card" id="trend-card" style="display:none">
+    <div class="chart-title" id="trend-title">每日營業額</div>
+    <div class="chart-wrap">
+      <canvas id="trend-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- 訂單類型（後台啟用才顯示） -->
+  <div class="chart-card" id="order-type-card" style="display:none">
+    <div class="chart-title">訂單類型分佈</div>
+    <div class="type-grid" id="type-grid"></div>
+  </div>
+
+  <!-- 付款方式 -->
+  <div class="chart-card">
+    <div class="chart-title">付款方式分佈</div>
+    <div class="chart-wrap-pie">
+      <canvas id="payment-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- 商品銷售排行（進階版以上） -->
+  <div id="rank-section"></div>
+
+  <!-- 每日結帳 / 營業日誌（進階版以上） -->
+  <div id="daily-log-section"></div>
+
+  <!-- 營業日記錄（進階版以上） -->
+  <div id="business-day-section"></div>
+
+</div>
+
+</div>
+
+<!-- 打卡管理 Modal（月曆選擇） -->
+<div class="modal-overlay" id="modal-checkin">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-size:16px;font-weight:700">營業日管理</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="changeCheckinMonth(-1)" style="padding:4px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;cursor:pointer;font-size:14px">‹</button>
+        <span style="font-size:13px;font-weight:600;min-width:64px;text-align:center" id="checkin-modal-month"></span>
+        <button onclick="changeCheckinMonth(1)" style="padding:4px 10px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;cursor:pointer;font-size:14px">›</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:14px" id="checkin-modal-count"></div>
+    <div id="checkin-calendar"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button style="flex:1;padding:11px;background:var(--gray-100);border:none;border-radius:10px;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer" onclick="closeCheckinModal()">關閉</button>
+      <button style="flex:2;padding:11px;background:var(--black);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer" onclick="saveCheckinMonth()">儲存本月營業日</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDE NAV -->
+<div id="bottom-nav">
+  <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
+  <button class="bottom-nav-btn" onclick="go('pos-orders.html')"><span class="icon">📋</span>訂單</button>
+  <button class="bottom-nav-btn active"><span class="icon">📊</span>統計</button>
+  <button class="bottom-nav-btn" onclick="go('pos-admin.html')"><span class="icon">⚙️</span>後台</button>
+  <button class="bottom-nav-btn" onclick="go('trial.html')"><span class="icon">🏠</span>返回</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null, currentTrial = null, currentPlan = 'basic';
+let currentPeriod = 'today';
+let trendChart = null, paymentChart = null;
+let otSettings = { enabled: false, types: [] };
+
+function showInitError(e) {
+  console.error('init error:', e);
+  document.getElementById('spinner').innerHTML =
+    `<div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:14px;color:#5a5750;margin-bottom:6px;font-weight:700">載入失敗</div>
+      <div style="font-size:12px;color:#9c9890;margin-bottom:20px;max-width:260px;line-height:1.5">${e?.message || '請確認網路連線後重試'}</div>
+      <button onclick="location.reload()" style="padding:10px 24px;background:#0a0a0a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">重新載入</button>
+    </div>`;
+}
+
+async function init() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+    currentUser = session.user;
+
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (!profile || !profile.is_paid) { window.location.href = 'not-activated.html'; return; }
+    currentPlan = profile.plan || 'basic';
+
+    if (profile.brand_name) {
+      document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 營業統計`;
+    }
+
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('date-from').value = today;
+    document.getElementById('date-to').value = today;
+
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    Promise.all([loadOTSettings().then(() => loadStats())]);
+  } catch(e) { showInitError(e); }
+}
+
+
+async function loadOTSettings() {
+  const { data } = await sb.from('feature_logs')
+    .select('feature').eq('user_id', currentUser.id)
+    .like('feature', 'order_type_settings|%')
+    .order('used_at', { ascending: false }).limit(1);
+  if (data?.[0]) {
+    try { otSettings = JSON.parse(data[0].feature.replace(/^order_type_settings\|/, '')); } catch {}
+  }
+  if (!otSettings.types?.length) {
+    otSettings = { enabled: false, types: [
+      { emoji: '🏠', name: '內用' },
+      { emoji: '🛍', name: '外帶' },
+      { emoji: '🎁', name: '外送' }
+    ]};
+  }
+}
+
+function getRange() {
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  if (currentPeriod === 'today') return { from:`${today}T00:00:00`, to:`${today}T23:59:59` };
+  if (currentPeriod === 'week') {
+    const day = now.getDay() || 7;
+    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+    return { from:`${mon.toISOString().slice(0,10)}T00:00:00`, to:`${today}T23:59:59` };
+  }
+  if (currentPeriod === 'month') return { from:`${today.slice(0,7)}-01T00:00:00`, to:`${today}T23:59:59` };
+  if (currentPeriod === 'custom') {
+    const f = document.getElementById('date-from').value;
+    const t = document.getElementById('date-to').value;
+    if (!f || !t) return null;
+    return { from:`${f}T00:00:00`, to:`${t}T23:59:59` };
+  }
+  return null;
+}
+
+async function loadStats() {
+  // KPI 顯示 skeleton
+  ['kpi-revenue','kpi-orders','kpi-avg','kpi-discount'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<div class="skeleton" style="height:24px;width:80%;border-radius:6px"></div>';
+  });
+  const range = getRange();
+  if (!range) { showToast('請選擇日期區間'); return; }
+
+  const { data: orders } = await sb.from('orders')
+    .select('*, order_items(*)')
+    .eq('user_id', currentUser.id)
+    .gte('created_at', range.from)
+    .lte('created_at', range.to)
+    .order('created_at');
+
+  const data = orders || [];
+  renderKPI(data);
+  renderTrend(data, range);
+  renderOrderTypes(data);
+  renderPayments(data);
+  renderRankSection(data);
+  await renderDailyLog(data);
+  await renderBusinessDay();
+}
+
+// ── KPI ──
+function renderKPI(orders) {
+  const revenue = orders.reduce((s,o) => s + (o.total||0), 0);
+  const discount = orders.reduce((s,o) => s + (o.discount||0), 0);
+  const avg = orders.length ? Math.round(revenue / orders.length) : 0;
+  const label = { today:'今日', week:'本週', month:'本月', custom:'區間' }[currentPeriod];
+
+  document.getElementById('kpi-revenue').textContent = `$${revenue.toLocaleString()}`;
+  document.getElementById('kpi-orders').textContent = orders.length;
+  document.getElementById('kpi-avg').textContent = `$${avg.toLocaleString()}`;
+  document.getElementById('kpi-discount').textContent = `$${discount.toLocaleString()}`;
+  document.getElementById('kpi-revenue-sub').textContent = label + '累計';
+  document.getElementById('kpi-orders-sub').textContent = label + '合計';
+}
+
+// ── 趨勢圖 ──
+function renderTrend(orders, range) {
+  const card = document.getElementById('trend-card');
+  if (currentPeriod === 'today') { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const map = {};
+  orders.forEach(o => {
+    const d = o.created_at.slice(0,10);
+    map[d] = (map[d]||0) + (o.total||0);
+  });
+
+  const from = new Date(range.from.slice(0,10));
+  const to = new Date(range.to.slice(0,10));
+  const labels = [], values = [];
+  for (let d = new Date(from); d <= to; d.setDate(d.getDate()+1)) {
+    const key = d.toISOString().slice(0,10);
+    labels.push(key.slice(5));
+    values.push(map[key] || 0);
+  }
+
+  document.getElementById('trend-title').textContent =
+    currentPeriod === 'month' ? '每日營業額（本月）' :
+    currentPeriod === 'week' ? '每日營業額（本週）' : '每日營業額';
+
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trend-chart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: values, backgroundColor:'rgba(193,127,62,0.7)', borderRadius:6, borderSkipped:false }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { grid:{ display:false }, ticks:{ font:{ size:10 }, maxRotation:0 } },
+        y: { grid:{ color:'#f0efec' }, ticks:{ font:{ size:10 }, callback: v=>`$${v}` } }
+      }
+    }
+  });
+}
+
+// ── 訂單類型（後台有啟用才顯示） ──
+function renderOrderTypes(orders) {
+  const card = document.getElementById('order-type-card');
+
+  if (!otSettings.enabled || !otSettings.types?.length) {
+    card.style.display = 'none'; return;
+  }
+  card.style.display = 'block';
+
+  const totalOrders = orders.length || 1;
+  // 統計各類型訂單數
+  const counts = {};
+  orders.forEach(o => {
+    const key = o.order_type || '未分類';
+    counts[key] = (counts[key]||0) + 1;
+  });
+
+  const grid = document.getElementById('type-grid');
+  // 動態根據後台設定的類型顯示
+  grid.style.gridTemplateColumns = otSettings.types.length <= 3
+    ? `repeat(${otSettings.types.length}, 1fr)`
+    : 'repeat(2, 1fr)';
+
+  grid.innerHTML = otSettings.types.map(t => {
+    const count = counts[t.name] || 0;
+    const pct = Math.round(count / totalOrders * 100);
+    return `<div class="type-card">
+      <div class="type-icon">${t.emoji}</div>
+      <div class="type-info">
+        <div class="type-name">${t.name}</div>
+        <div class="type-val">${count} 筆</div>
+        <div class="type-pct">${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 付款方式 ──
+function renderPayments(orders) {
+  const map = {};
+  orders.forEach(o => { map[o.payment_method] = (map[o.payment_method]||0) + (o.total||0); });
+  const labels = Object.keys(map);
+  const values = Object.values(map);
+  const colors = ['#c17f3e','#3d7a5c','#5a8fc7','#9c6bbf','#c05a5a','#7a7a3d'];
+
+  if (paymentChart) paymentChart.destroy();
+  if (!labels.length) return;
+
+  paymentChart = new Chart(document.getElementById('payment-chart'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data:values, backgroundColor:colors.slice(0,labels.length), borderWidth:0 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{ size:12 }, padding:12 } },
+        tooltip: { callbacks:{ label: ctx => ` $${ctx.raw.toLocaleString()}` } }
+      },
+      cutout:'60%'
+    }
+  });
+}
+
+// ── 商品排行（高級版才顯示，進階版顯示鎖定提示） ──
+function renderRankSection(orders) {
+  const el = document.getElementById('rank-section');
+
+  if (currentPlan === 'basic') {
+    el.innerHTML = `<div class="locked-section"><div class="lock-icon">🔒</div><p><strong>商品銷售排行</strong><br>進階版以上功能</p></div>`;
+    return;
+  }
+
+  const map = {};
+  orders.forEach(o => {
+    (o.order_items || []).forEach(i => {
+      if (!map[i.product_name]) map[i.product_name] = { qty:0, revenue:0 };
+      map[i.product_name].qty += i.quantity;
+      map[i.product_name].revenue += i.subtotal;
+    });
+  });
+
+  const sorted = Object.entries(map).sort((a,b) => b[1].qty - a[1].qty).slice(0, 8);
+  const maxQty = sorted[0]?.[1].qty || 1;
+
+  if (!sorted.length) {
+    el.innerHTML = `<div class="chart-card"><div class="chart-title">商品銷售排行</div><div style="text-align:center;color:var(--gray-400);font-size:13px;padding:20px">尚無銷售資料</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="chart-card">
+    <div class="chart-title">商品銷售排行</div>
+    <div class="rank-list">
+      ${sorted.map(([name, stat], i) => `
+        <div class="rank-item">
+          <div class="rank-num ${i<3?'top':''}">${i+1}</div>
+          <div class="rank-bar-wrap">
+            <div class="rank-name">${name}</div>
+            <div class="rank-bar"><div class="rank-bar-fill" style="width:${Math.round(stat.qty/maxQty*100)}%"></div></div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="rank-qty">${stat.qty} 份</div>
+            <div class="rank-val">$${stat.revenue.toLocaleString()}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── 每日結帳 / 營業日誌（進階版以上）──
+async function renderDailyLog(orders) {
+  const el = document.getElementById('daily-log-section');
+  if (currentPlan === 'basic') {
+    el.innerHTML = `<div class="locked-section"><div class="lock-icon">🔒</div><p><strong>每日結帳 / 營業日誌</strong><br>進階版以上功能<br>可查看每日收支明細、添加備註，方便對帳。</p></div>`;
+    return;
+  }
+
+  // 按日期分組
+  const byDate = {};
+  orders.forEach(o => {
+    // 台灣時間日期
+    const d = new Date(o.created_at).toLocaleDateString('zh-TW', {
+      timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit'
+    }); // "2026/03/15"
+    const dateKey = d.replace(/\//g, '-'); // "2026-03-15"
+    if (!byDate[dateKey]) byDate[dateKey] = { orders: [], revenue: 0, discount: 0 };
+    byDate[dateKey].orders.push(o);
+    byDate[dateKey].revenue += o.total || 0;
+    byDate[dateKey].discount += o.discount || 0;
+  });
+
+  const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+
+  if (!dates.length) {
+    el.innerHTML = '';
+    return;
+  }
+
+  // 載入既有備註
+  const { data: noteRows } = await sb.from('feature_logs')
+    .select('feature, used_at')
+    .eq('user_id', currentUser.id)
+    .like('feature', 'daily_note|%')
+    .order('used_at', { ascending: false });
+
+  // 每個日期只取最新備註
+  const noteMap = {};
+  (noteRows || []).forEach(r => {
+    const parts = r.feature.split('|');
+    const date = parts[1];
+    const note = parts.slice(2).join('|');
+    if (!noteMap[date]) noteMap[date] = note;
+  });
+
+  const totalRevenue = dates.reduce((s, d) => s + byDate[d].revenue, 0);
+  const totalOrders = dates.reduce((s, d) => s + byDate[d].orders.length, 0);
+
+  el.innerHTML = `<div class="daily-log-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="daily-log-title" style="margin-bottom:0">📒 每日結帳日誌</div>
+      <span style="font-size:12px;color:var(--gray-400)">${dates.length} 天</span>
+    </div>
+    <div style="overflow-x:auto">
+      <div style="max-height:420px;overflow-y:auto;border-radius:8px;border:1px solid var(--gray-200)">
+        <table class="log-table">
+          <thead style="position:sticky;top:0;z-index:1">
+            <tr>
+              <th>日期</th>
+              <th>營業額</th>
+              <th>訂單數</th>
+              <th>平均客單</th>
+              <th>備註</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dates.map(date => {
+              const day = byDate[date];
+              const avg = day.orders.length ? Math.round(day.revenue / day.orders.length) : 0;
+              const weekday = new Date(date).toLocaleDateString('zh-TW', { weekday: 'short', timeZone: 'Asia/Taipei' });
+              const note = noteMap[date] || '';
+              return `<tr>
+                <td class="log-date">${date}<br><span style="font-size:11px;color:var(--gray-400);font-weight:400">${weekday}</span></td>
+                <td class="log-revenue">$${day.revenue.toLocaleString()}</td>
+                <td class="log-orders">${day.orders.length} 筆</td>
+                <td class="log-avg">$${avg.toLocaleString()}</td>
+                <td>
+                  <input class="log-note-input" type="text" placeholder="備註..."
+                    value="${note.replace(/"/g, '&quot;')}"
+                    onkeydown="if(event.key==='Enter'){saveDailyNote('${date}',this);event.preventDefault()}"
+                    onblur="saveDailyNote('${date}',this)">
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr class="log-summary-row">
+              <td>合計</td>
+              <td class="log-revenue">$${totalRevenue.toLocaleString()}</td>
+              <td class="log-orders">${totalOrders} 筆</td>
+              <td class="log-avg">$${totalOrders ? Math.round(totalRevenue/totalOrders).toLocaleString() : 0}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function saveDailyNote(date, input) {
+  const note = input.value.trim();
+  const payload = `daily_note|${date}|${note}`;
+  await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: payload });
+  // 顯示已儲存提示
+  const saved = document.createElement('span');
+  saved.className = 'log-note-saved';
+  saved.textContent = '已儲存';
+  input.parentNode.appendChild(saved);
+  requestAnimationFrame(() => { saved.style.opacity = '1'; });
+  setTimeout(() => { saved.style.opacity = '0'; setTimeout(() => saved.remove(), 300); }, 1500);
+}
+
+// ── 營業日（進階版以上）──
+let allCheckins = []; // 保存本月打卡資料供 modal 使用
+
+async function renderBusinessDay() {
+  const el = document.getElementById('business-day-section');
+
+  if (currentPlan === 'basic') {
+    el.innerHTML = `<div class="locked-section"><div class="lock-icon">🔒</div><p><strong>營業日紀錄</strong><br>進階版以上功能<br>升級後可記錄每日開店打卡，計算平均每營業日營業額</p></div>`;
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0,10);
+  const monthStart = `${today.slice(0,7)}-01`;
+
+  const [{ data: logs }, { data: monthOrders }] = await Promise.all([
+    sb.from('business_days').select('*').eq('user_id', currentUser.id)
+      .gte('date', monthStart).order('date', { ascending: false }),
+    sb.from('orders').select('total').eq('user_id', currentUser.id)
+      .gte('created_at', `${monthStart}T00:00:00`).lte('created_at', `${today}T23:59:59`)
+  ]);
+
+  allCheckins = logs || [];
+  const monthRevenue = (monthOrders||[]).reduce((s,o) => s+(o.total||0), 0);
+  const avgPerDay = allCheckins.length > 0 ? Math.round(monthRevenue / allCheckins.length) : 0;
+
+  el.innerHTML = `<div class="business-day-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="business-day-title" style="margin-bottom:0">📅 營業日紀錄（本月）</div>
+      <button onclick="openCheckinModal()" style="padding:5px 12px;border:1.5px solid var(--gray-200);border-radius:8px;background:none;font-size:12px;color:var(--gray-600);cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-600)'">管理打卡</button>
+    </div>
+    <div class="business-day-grid">
+      <div class="bd-card">
+        <div class="bd-label">本月營業天數</div>
+        <div class="bd-val">${allCheckins.length} 天</div>
+      </div>
+      <div class="bd-card">
+        <div class="bd-label">平均每日營業額</div>
+        <div class="bd-val">$${avgPerDay.toLocaleString()}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--gray-600);margin-bottom:10px;">
+      每日開店前在「點餐頁」打卡，統計才會準確。
+    </div>
+    ${allCheckins.length > 0 ? `
+    <div class="checkin-log">
+      <div class="checkin-log-label">本月打卡紀錄</div>
+      ${allCheckins.slice(0,5).map(c => `<div class="checkin-item"><span>📅 ${c.date}</span></div>`).join('')}
+      ${allCheckins.length > 5 ? `<div style="font-size:11px;color:var(--gray-400);padding:6px 0;cursor:pointer;text-decoration:underline" onclick="openCheckinModal()">查看全部 ${allCheckins.length} 筆 →</div>` : ''}
+    </div>` : `
+    <div style="text-align:center;color:var(--gray-400);font-size:13px;padding:12px 0;">
+      本月還沒有打卡紀錄<br>每天開店時在點餐頁打卡即可
+    </div>`}
+  </div>`;
+}
+
+// ── 打卡管理 Modal（月曆版）──
+let checkinModalYM = ''; // "2026-03"
+let calChecked = new Set(); // 本月勾選的日期 Set
+
+function openCheckinModal() {
+  const today = new Date().toISOString().slice(0,10);
+  checkinModalYM = today.slice(0,7);
+  renderCheckinCalendar();
+  document.getElementById('modal-checkin').classList.add('show');
+}
+
+function changeCheckinMonth(delta) {
+  const [y, m] = checkinModalYM.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  checkinModalYM = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderCheckinCalendar();
+}
+
+async function renderCheckinCalendar() {
+  const ym = checkinModalYM;
+  document.getElementById('checkin-modal-month').textContent = ym;
+
+  // 載入該月打卡資料
+  const monthStart = `${ym}-01`;
+  const [y, m] = ym.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const monthEnd = `${ym}-${String(lastDay).padStart(2,'0')}`;
+
+  const { data } = await sb.from('business_days').select('*')
+    .eq('user_id', currentUser.id)
+    .gte('date', monthStart).lte('date', monthEnd);
+
+  const dbCheckins = data || [];
+  calChecked = new Set(dbCheckins.map(c => c.date));
+  // 儲存 id 對應，方便後續刪除
+  window._calCheckinMap = Object.fromEntries(dbCheckins.map(c => [c.date, c.id]));
+
+  const today = new Date().toISOString().slice(0,10);
+  const checkedCount = calChecked.size;
+  document.getElementById('checkin-modal-count').textContent = `共 ${checkedCount} 個營業日`;
+
+  // 月曆第一天是星期幾（0=日）
+  const firstWeekday = new Date(y, m-1, 1).getDay();
+  const dayNames = ['日','一','二','三','四','五','六'];
+
+  let html = `<div class="cal-grid">`;
+  dayNames.forEach(d => html += `<div class="cal-header">${d}</div>`);
+  // 空白格
+  for (let i = 0; i < firstWeekday; i++) html += `<div class="cal-day empty"></div>`;
+  // 日期格
+  for (let day = 1; day <= lastDay; day++) {
+    const dateStr = `${ym}-${String(day).padStart(2,'0')}`;
+    const isChecked = calChecked.has(dateStr);
+    const isToday = dateStr === today;
+    const isFuture = dateStr > today;
+    let cls = 'cal-day';
+    if (isChecked) cls += ' checked';
+    if (isToday) cls += ' today';
+    if (isFuture) cls += ' future';
+    const onclick = isFuture ? '' : `onclick="toggleCalDay('${dateStr}')"`;
+    html += `<button class="${cls}" ${onclick} id="cal-${dateStr}">${day}</button>`;
+  }
+  html += `</div>`;
+  html += `<div style="display:flex;gap:12px;font-size:11px;color:var(--gray-400);margin-top:4px">
+    <span>🟠 今日</span><span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:var(--accent);border-radius:3px;display:inline-block"></span>已營業</span>
+  </div>`;
+
+  document.getElementById('checkin-calendar').innerHTML = html;
+}
+
+function toggleCalDay(dateStr) {
+  const btn = document.getElementById(`cal-${dateStr}`);
+  if (!btn) return;
+  if (calChecked.has(dateStr)) {
+    calChecked.delete(dateStr);
+    btn.classList.remove('checked');
+  } else {
+    calChecked.add(dateStr);
+    btn.classList.add('checked');
+  }
+  const count = calChecked.size;
+  document.getElementById('checkin-modal-count').textContent = `共 ${count} 個營業日`;
+}
+
+async function saveCheckinMonth() {
+  const ym = checkinModalYM;
+  const [y, m] = ym.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const monthStart = `${ym}-01`;
+  const monthEnd = `${ym}-${String(lastDay).padStart(2,'0')}`;
+
+  // 取現有資料庫紀錄
+  const { data: existing } = await sb.from('business_days').select('*')
+    .eq('user_id', currentUser.id).gte('date', monthStart).lte('date', monthEnd);
+  const existingDates = new Set((existing||[]).map(c => c.date));
+  const existingMap = Object.fromEntries((existing||[]).map(c => [c.date, c.id]));
+
+  // 需要新增的（勾選但 DB 沒有）
+  const toAdd = [...calChecked].filter(d => !existingDates.has(d));
+  // 需要刪除的（DB 有但沒勾選）
+  const toDelete = [...existingDates].filter(d => !calChecked.has(d));
+
+  const tasks = [];
+  if (toAdd.length) tasks.push(sb.from('business_days').insert(
+    toAdd.map(d => ({ user_id: currentUser.id, date: d }))
+  ));
+  if (toDelete.length) tasks.push(...toDelete.map(d =>
+    sb.from('business_days').delete().eq('id', existingMap[d])
+  ));
+
+  await Promise.all(tasks);
+
+  // 清除今日 localStorage（如果今日被取消打卡）
+  const today = new Date().toISOString().slice(0,10);
+  if (toDelete.includes(today)) localStorage.removeItem(`checkin_${currentUser.id}`);
+
+  closeCheckinModal();
+  await renderBusinessDay(); // 重刷統計區塊
+  showToast(`${ym} 營業日已儲存`);
+}
+
+function closeCheckinModal() {
+  document.getElementById('modal-checkin').classList.remove('show');
+}
+document.addEventListener('click', e => {
+  const modal = document.getElementById('modal-checkin');
+  if (e.target === modal) closeCheckinModal();
+});
+
+// ── 切換期間 ──
+function setPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const customRange = document.getElementById('custom-range');
+  if (period === 'custom') {
+    customRange.classList.add('show');
+    return; // 等使用者按查詢
+  }
+  customRange.classList.remove('show');
+  loadStats();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function go(url) {
+  const pt = document.getElementById('page-transition');
+  if (pt) { pt.classList.add('show'); }
+  // 短暫延遲讓過場動畫先顯示
+  setTimeout(() => { window.location.href = url; }, 50);
+}
+
+init();
+</script>
+</body>
+</html>

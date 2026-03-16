@@ -228,6 +228,35 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
         <option value="true">已凍結</option>
       </select>
     </div>
+    <hr style="border:none;border-top:1px solid var(--gray-200);margin:16px 0">
+    <div style="font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.05em;margin-bottom:12px">正式版設定</div>
+    <div class="modal-form-row">
+      <label class="modal-label">付費狀態</label>
+      <select class="modal-select" id="edit-paid">
+        <option value="false">未購買</option>
+        <option value="true">已購買</option>
+      </select>
+    </div>
+    <div class="modal-form-row">
+      <label class="modal-label">正式版版本</label>
+      <select class="modal-select" id="edit-paid-plan">
+        <option value="">（未設定）</option>
+        <option value="basic">基本版</option>
+        <option value="advanced">進階版</option>
+        <option value="premium">高級版</option>
+      </select>
+    </div>
+    <div class="modal-form-row">
+      <label class="modal-label">年費到期日（留空=無年費）</label>
+      <input class="modal-input" type="date" id="edit-sub-expires">
+    </div>
+    <div class="modal-form-row">
+      <label class="modal-label">早期支持者（永久免年費）</label>
+      <select class="modal-select" id="edit-early">
+        <option value="false">否</option>
+        <option value="true">是</option>
+      </select>
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
       <button class="btn-confirm" onclick="saveEdit()">儲存</button>
@@ -413,25 +442,49 @@ function openEditModal(trialId) {
   document.getElementById('edit-plan').value = u.trial.plan;
   document.getElementById('edit-expires').value = new Date(u.trial.expires_at).toISOString().slice(0, 10);
   document.getElementById('edit-frozen').value = String(u.trial.is_frozen);
+  // 正式版欄位
+  document.getElementById('edit-paid').value = String(u.profile.is_paid || false);
+  document.getElementById('edit-paid-plan').value = u.profile.plan || '';
+  document.getElementById('edit-sub-expires').value = u.profile.subscription_expires_at
+    ? new Date(u.profile.subscription_expires_at).toISOString().slice(0, 10) : '';
+  document.getElementById('edit-early').value = String(u.profile.is_early_adopter || false);
   document.getElementById('modal-edit').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
 
 async function saveEdit() {
   const trialId = document.getElementById('edit-trial-id').value;
+  const userId = document.getElementById('edit-user-id').value;
   const plan = document.getElementById('edit-plan').value;
   const expiresAt = document.getElementById('edit-expires').value;
   const isFrozen = document.getElementById('edit-frozen').value === 'true';
+  const isPaid = document.getElementById('edit-paid').value === 'true';
+  const paidPlan = document.getElementById('edit-paid-plan').value || null;
+  const subExpires = document.getElementById('edit-sub-expires').value;
+  const isEarly = document.getElementById('edit-early').value === 'true';
 
-  const updates = {
+  // 更新 trials 表
+  const { error: trialErr } = await sb.from('trials').update({
     plan,
     expires_at: new Date(expiresAt + 'T23:59:59+08:00').toISOString(),
     is_frozen: isFrozen,
     frozen_at: isFrozen ? new Date().toISOString() : null
-  };
+  }).eq('id', trialId);
+  if (trialErr) { showToast('試用設定儲存失敗：' + trialErr.message); return; }
 
-  const { error } = await sb.from('trials').update(updates).eq('id', trialId);
-  if (error) { showToast('儲存失敗：' + error.message); return; }
+  // 更新 profiles 表（正式版設定）
+  const profileUpdates = {
+    is_paid: isPaid,
+    plan: isPaid ? paidPlan : null,
+    is_early_adopter: isEarly,
+    subscription_active: isPaid && !!subExpires,
+    subscription_expires_at: subExpires ? new Date(subExpires + 'T23:59:59+08:00').toISOString() : null,
+  };
+  if (isPaid && !allUsers.find(u => u.profile.id === userId)?.profile.paid_at) {
+    profileUpdates.paid_at = new Date().toISOString();
+  }
+  const { error: profileErr } = await sb.from('profiles').update(profileUpdates).eq('id', userId);
+  if (profileErr) { showToast('正式版設定儲存失敗：' + profileErr.message); return; }
 
   closeModal();
   await loadData();
