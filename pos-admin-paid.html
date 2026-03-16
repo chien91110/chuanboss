@@ -232,9 +232,9 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 .skeleton-kpi .sk-val{height:28px;width:70%;}
 
 </style>
-<link rel="prefetch" href="pos-trial.html">
-<link rel="prefetch" href="pos-orders.html">
-<link rel="prefetch" href="pos-stats.html">
+<link rel="prefetch" href="pos-trial-paid.html">
+<link rel="prefetch" href="pos-orders-paid.html">
+<link rel="prefetch" href="pos-stats-paid.html">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 </head>
 <body>
@@ -364,9 +364,9 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 
 <!-- SIDE NAV -->
 <div id="bottom-nav">
-  <button class="bottom-nav-btn" onclick="go('pos-trial.html')"><span class="icon">🧾</span>點餐</button>
-  <button class="bottom-nav-btn" onclick="go('pos-orders.html')"><span class="icon">📋</span>訂單</button>
-  <button class="bottom-nav-btn" onclick="go('pos-stats.html')"><span class="icon">📊</span>統計</button>
+  <button class="bottom-nav-btn" onclick="go('pos-trial-paid.html')"><span class="icon">🧾</span>點餐</button>
+  <button class="bottom-nav-btn" onclick="go('pos-orders-paid.html')"><span class="icon">📋</span>訂單</button>
+  <button class="bottom-nav-btn" onclick="go('pos-stats-paid.html')"><span class="icon">📊</span>統計</button>
   <button class="bottom-nav-btn active"><span class="icon">⚙️</span>後台</button>
   <button class="bottom-nav-btn" onclick="go('trial.html')"><span class="icon">🏠</span>返回</button>
 </div>
@@ -1342,7 +1342,7 @@ init();
     </div>
     <div id="admin-pw-error" style="color:var(--red);font-size:12px;margin-bottom:8px;display:none">密碼錯誤，請重試</div>
     <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn-cancel" onclick="window.location.href='pos-trial.html'">返回點餐</button>
+      <button class="btn-cancel" onclick="window.location.href='pos-trial-paid.html'">返回點餐</button>
       <button class="btn-save" style="flex:2" onclick="verifyAdminPassword()">確認進入</button>
     </div>
   </div>

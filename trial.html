@@ -586,6 +586,48 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
   </div>
 </div>
 
+<!-- 正式版畫面 -->
+<div class="screen" id="screen-paid">
+  <div class="trial-dashboard">
+    <div class="trial-welcome">
+      <h1 id="paid-brand-name">歡迎回來</h1>
+      <p id="paid-plan-name" style="font-size:15px;color:var(--accent);font-weight:700;margin-top:4px"></p>
+    </div>
+
+    <!-- 年費狀態 -->
+    <div style="background:var(--white);border-radius:16px;padding:16px 20px;margin-bottom:20px;border:1.5px solid var(--gray-200);font-size:13px" id="paid-sub-status"></div>
+
+    <!-- 功能入口 -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card-icon">🖥️</div>
+        <div class="feature-card-title">進入 POS 系統</div>
+        <div class="feature-card-desc">開始點餐收款，體驗完整正式版功能。</div>
+        <button onclick="window.location.href='pos-trial-paid.html'" style="margin-top:12px;padding:9px 16px;background:var(--black);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%;transition:all 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">進入系統 →</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">📊</div>
+        <div class="feature-card-title">營業統計</div>
+        <div class="feature-card-desc">查看今日、本月營業額與訂單統計數據。</div>
+        <button onclick="window.location.href='pos-stats-paid.html'" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%;transition:all 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">查看統計</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">📦</div>
+        <div class="feature-card-title">商品管理</div>
+        <div class="feature-card-desc">新增、編輯商品與分類，設定規格與圖片。</div>
+        <button onclick="window.location.href='pos-admin-paid.html'" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%;transition:all 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">管理商品</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">📋</div>
+        <div class="feature-card-title">訂單紀錄</div>
+        <div class="feature-card-desc">查詢歷史訂單，修改或刪除訂單記錄。</div>
+        <button onclick="window.location.href='pos-orders-paid.html'" style="margin-top:12px;padding:9px 16px;background:var(--gray-100);color:var(--black);border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;width:100%;transition:all 0.15s;" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">查看訂單</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- 凍結畫面 -->
 <div class="screen" id="screen-frozen">
   <div class="frozen-screen">
@@ -654,22 +696,50 @@ async function init() {
   currentProfile = profile;
   document.getElementById('nav-brand').textContent = profile.brand_name;
 
-  // 查詢是否有試用紀錄
+  // ── 正式版判斷（優先）──
+  if (profile.is_paid && profile.plan) {
+    renderPaidDashboard(profile);
+    showScreen('screen-paid');
+    return;
+  }
+
+  // ── 試用版判斷 ──
   const { data: trial } = await sb.from('trials').select('*').eq('user_id', currentUser.id).single();
 
   if (!trial) {
-    // 沒有試用紀錄 → 選版本
     showScreen('screen-select');
   } else if (trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-    // 已凍結或已到期 → 凍結畫面
     if (!trial.is_frozen) {
       await sb.from('trials').update({ is_frozen: true, frozen_at: new Date().toISOString() }).eq('id', trial.id);
     }
     showScreen('screen-frozen');
   } else {
-    // 試用中
     renderTrialDashboard(trial, profile);
     showScreen('screen-trial');
+  }
+}
+
+function renderPaidDashboard(profile) {
+  const PLAN_NAMES = { basic: '基本版', advanced: '進階版', premium: '高級版' };
+  const planName = PLAN_NAMES[profile.plan] || profile.plan;
+
+  document.getElementById('paid-plan-name').textContent = planName;
+  document.getElementById('paid-brand-name').textContent = profile.brand_name;
+
+  // 年費狀態
+  const subEl = document.getElementById('paid-sub-status');
+  if (profile.is_early_adopter) {
+    subEl.innerHTML = `<span style="color:var(--accent);font-weight:700">⭐ 早期支持者・永久免年費</span>`;
+  } else if (profile.subscription_active && profile.subscription_expires_at) {
+    const days = Math.max(0, Math.ceil((new Date(profile.subscription_expires_at) - new Date()) / 86400000));
+    const expiresStr = new Date(profile.subscription_expires_at).toLocaleDateString('zh-TW');
+    if (days <= 30) {
+      subEl.innerHTML = `<span style="color:var(--orange)">⚠ 雲端年費剩 ${days} 天（${expiresStr} 到期）</span>`;
+    } else {
+      subEl.innerHTML = `<span style="color:var(--green)">✓ 雲端服務使用中・${expiresStr} 到期</span>`;
+    }
+  } else {
+    subEl.innerHTML = `<span style="color:var(--gray-400)">— 未訂閱年費（僅限單一裝置）</span>`;
   }
 }
 
