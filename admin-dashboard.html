@@ -318,14 +318,16 @@ async function init() {
 }
 
 async function loadData() {
-  // 拿所有 profiles + trials（JOIN）
-  const { data: trials } = await sb.from('trials')
-    .select('*, profiles(*)')
-    .order('started_at', { ascending: false });
+  // 從 profiles 出發（含沒有試用紀錄的帳號）
+  const [{ data: profiles }, { data: trials }] = await Promise.all([
+    sb.from('profiles').select('*').order('created_at', { ascending: false }),
+    sb.from('trials').select('*').order('started_at', { ascending: false })
+  ]);
 
-  allUsers = (trials || []).map(t => ({
-    trial: t,
-    profile: t.profiles
+  // 合併：每個 profile 找對應的 trial
+  allUsers = (profiles || []).map(p => ({
+    profile: p,
+    trial: (trials || []).find(t => t.user_id === p.id) || null
   }));
 
   renderStats();
@@ -333,27 +335,33 @@ async function loadData() {
 }
 
 function getDaysLeft(expiresAt) {
+  if (!expiresAt) return -1;
   return Math.ceil((new Date(expiresAt) - new Date()) / 86400000);
 }
 
-function getStatus(trial) {
+function getStatus(trial, profile) {
+  if (!trial) return profile?.is_paid ? 'paid' : 'no-trial';
   if (trial.is_frozen) return 'frozen';
   const days = getDaysLeft(trial.expires_at);
-  if (days < 0) return 'frozen'; // 到期未凍結也當凍結處理
+  if (days < 0) return 'frozen';
   if (days <= 5) return 'expiring';
   return 'active';
 }
 
 function renderStats() {
   const total = allUsers.length;
-  const active = allUsers.filter(u => getStatus(u.trial) === 'active').length;
-  const expiring = allUsers.filter(u => getStatus(u.trial) === 'expiring').length;
-  const frozen = allUsers.filter(u => getStatus(u.trial) === 'frozen').length;
+  const active = allUsers.filter(u => getStatus(u.trial, u.profile) === 'active').length;
+  const expiring = allUsers.filter(u => getStatus(u.trial, u.profile) === 'expiring').length;
+  const frozen = allUsers.filter(u => getStatus(u.trial, u.profile) === 'frozen').length;
+  const paid = allUsers.filter(u => u.profile?.is_paid).length;
 
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-active').textContent = active;
   document.getElementById('stat-expiring').textContent = expiring;
   document.getElementById('stat-frozen').textContent = frozen;
+  // 正式版付費人數顯示在 stat-frozen 旁邊（或可加第五張卡）
+  const frozenEl = document.getElementById('stat-frozen');
+  if (frozenEl) frozenEl.closest('.stat-card').querySelector('.stat-label').textContent = `已凍結（正式版 ${paid} 人）`;
 }
 
 function renderTable() {
@@ -364,10 +372,10 @@ function renderTable() {
   const filtered = allUsers.filter(u => {
     const p = u.profile;
     const t = u.trial;
-    const status = getStatus(t);
+    const status = getStatus(t, p);
     if (search && !p.brand_name?.toLowerCase().includes(search) && !p.email?.toLowerCase().includes(search)) return false;
     if (statusFilter && status !== statusFilter) return false;
-    if (planFilter && t.plan !== planFilter) return false;
+    if (planFilter && t?.plan !== planFilter) return false;
     return true;
   });
 
@@ -382,72 +390,103 @@ function renderTable() {
   tbody.innerHTML = filtered.map(u => {
     const p = u.profile;
     const t = u.trial;
-    const status = getStatus(t);
-    const daysLeft = getDaysLeft(t.expires_at);
-    const progress = Math.max(0, Math.min(100, Math.round((1 - daysLeft / 20) * 100)));
+    const status = getStatus(t, p);
 
+    // 狀態 badge
     const statusBadge = {
-      active: `<span class="badge badge-active">✓ 試用中</span>`,
-      expiring: `<span class="badge badge-warning">⚠ 剩 ${daysLeft} 天</span>`,
-      frozen: `<span class="badge badge-frozen">🔒 已凍結</span>`
-    }[status];
+      active:    `<span class="badge badge-active">✓ 試用中</span>`,
+      expiring:  `<span class="badge badge-warning">⚠ 剩 ${getDaysLeft(t?.expires_at)} 天</span>`,
+      frozen:    `<span class="badge badge-frozen">🔒 已凍結</span>`,
+      paid:      `<span class="badge badge-premium">✓ 正式版</span>`,
+      'no-trial':`<span class="badge badge-basic">— 未試用</span>`
+    }[status] || `<span class="badge badge-basic">${status}</span>`;
 
-    const planBadge = {
-      basic: `<span class="badge badge-basic">基本</span>`,
+    // 正式版 badge
+    const paidBadge = p.is_paid
+      ? `<span class="badge badge-premium" style="margin-left:4px">正式 ${PLAN_NAMES[p.plan] || ''}</span>`
+      : '';
+
+    // 試用版本 badge
+    const planBadge = t ? ({
+      basic:    `<span class="badge badge-basic">基本</span>`,
       advanced: `<span class="badge badge-advanced">進階</span>`,
-      premium: `<span class="badge badge-premium">高級</span>`
-    }[t.plan];
+      premium:  `<span class="badge badge-premium">高級</span>`
+    }[t.plan] || '') : '<span style="color:var(--gray-400);font-size:12px">—</span>';
 
-    const progressColor = daysLeft <= 3 ? 'var(--red)' : daysLeft <= 5 ? 'var(--orange)' : 'var(--green)';
+    // 剩餘天數進度
+    const daysLeft = t ? getDaysLeft(t.expires_at) : null;
+    const progress = t ? Math.max(0, Math.min(100, Math.round((1 - daysLeft / 20) * 100))) : 100;
+    const progressColor = !t ? 'var(--gray-200)' : daysLeft <= 3 ? 'var(--red)' : daysLeft <= 5 ? 'var(--orange)' : 'var(--green)';
 
-    const startDate = new Date(t.started_at).toLocaleDateString('zh-TW', { month:'2-digit', day:'2-digit' });
+    const startDate = t ? new Date(t.started_at).toLocaleDateString('zh-TW', { month:'2-digit', day:'2-digit' }) : '—';
+
+    // 操作按鈕
+    const editBtn = t
+      ? `<button class="btn-action" onclick="openEditModal('${t.id}')">編輯</button>`
+      : `<button class="btn-action" onclick="openEditModalByProfile('${p.id}')">設定</button>`;
+
+    const freezeBtn = t && status !== 'frozen' && status !== 'paid'
+      ? `<button class="btn-action danger" onclick="freezeUser('${t.id}', '${p.brand_name}')">凍結</button>`
+      : t && (status === 'frozen')
+        ? `<button class="btn-action success" onclick="unfreezeUser('${t.id}', '${p.brand_name}')">解凍</button>`
+        : '';
+
+    const emailBtn = status !== 'frozen' && status !== 'paid' && t
+      ? `<button class="btn-send-email" onclick="openEmailModal('${t.id}')">寄提醒</button>`
+      : '';
 
     return `<tr>
       <td>
-        <div style="font-weight:600">${p.brand_name || '—'}</div>
+        <div style="font-weight:600">${p.brand_name || '—'}${p.is_admin ? ' <span style="font-size:10px;color:var(--red)">ADMIN</span>' : ''}</div>
         <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${startDate} 開始</div>
       </td>
       <td style="font-size:12px;color:var(--gray-600)">${p.email}</td>
-      <td>${planBadge}</td>
+      <td>${planBadge}${paidBadge}</td>
       <td>${statusBadge}</td>
       <td>
-        <div style="font-size:12px;margin-bottom:4px;font-family:'Space Mono',monospace">${status === 'frozen' ? '—' : daysLeft + ' 天'}</div>
+        <div style="font-size:12px;margin-bottom:4px;font-family:'Space Mono',monospace">${daysLeft !== null && status !== 'frozen' ? daysLeft + ' 天' : '—'}</div>
         <div class="progress-mini"><div class="progress-mini-fill" style="width:${progress}%;background:${progressColor}"></div></div>
       </td>
       <td style="font-size:12px;color:var(--gray-600)">${p.city || '—'} / ${p.industry || '—'}</td>
       <td>
         <div class="action-row">
-          <button class="btn-action" onclick="openEditModal('${t.id}')">編輯</button>
-          ${status !== 'frozen'
-            ? `<button class="btn-action danger" onclick="freezeUser('${t.id}', '${p.brand_name}')">凍結</button>`
-            : `<button class="btn-action success" onclick="unfreezeUser('${t.id}', '${p.brand_name}')">解凍</button>`
-          }
-          ${status !== 'frozen'
-            ? `<button class="btn-send-email" onclick="openEmailModal('${t.id}')">寄提醒</button>`
-            : ''
-          }
+          ${editBtn}${freezeBtn}${emailBtn}
         </div>
       </td>
     </tr>`;
   }).join('');
 }
 
-// ── 編輯 Modal ──
+// 有 trial 的帳號
 function openEditModal(trialId) {
-  const u = allUsers.find(u => u.trial.id === trialId);
+  const u = allUsers.find(u => u.trial?.id === trialId);
   if (!u) return;
-  document.getElementById('edit-modal-sub').textContent = `${u.profile.brand_name} · ${u.profile.email}`;
-  document.getElementById('edit-trial-id').value = trialId;
-  document.getElementById('edit-user-id').value = u.profile.id;
-  document.getElementById('edit-plan').value = u.trial.plan;
-  document.getElementById('edit-expires').value = new Date(u.trial.expires_at).toISOString().slice(0, 10);
-  document.getElementById('edit-frozen').value = String(u.trial.is_frozen);
+  _openEditModalCore(u);
+}
+
+// 沒有 trial 的帳號（純正式版客戶）
+function openEditModalByProfile(profileId) {
+  const u = allUsers.find(u => u.profile.id === profileId);
+  if (!u) return;
+  _openEditModalCore(u);
+}
+
+function _openEditModalCore(u) {
+  const p = u.profile;
+  const t = u.trial;
+  document.getElementById('edit-modal-sub').textContent = `${p.brand_name} · ${p.email}`;
+  document.getElementById('edit-trial-id').value = t?.id || '';
+  document.getElementById('edit-user-id').value = p.id;
+  // 試用欄位（有 trial 才有意義）
+  document.getElementById('edit-plan').value = t?.plan || 'basic';
+  document.getElementById('edit-expires').value = t?.expires_at ? new Date(t.expires_at).toISOString().slice(0, 10) : '';
+  document.getElementById('edit-frozen').value = String(t?.is_frozen || false);
   // 正式版欄位
-  document.getElementById('edit-paid').value = String(u.profile.is_paid || false);
-  document.getElementById('edit-paid-plan').value = u.profile.plan || '';
-  document.getElementById('edit-sub-expires').value = u.profile.subscription_expires_at
-    ? new Date(u.profile.subscription_expires_at).toISOString().slice(0, 10) : '';
-  document.getElementById('edit-early').value = String(u.profile.is_early_adopter || false);
+  document.getElementById('edit-paid').value = String(p.is_paid || false);
+  document.getElementById('edit-paid-plan').value = p.plan || '';
+  document.getElementById('edit-sub-expires').value = p.subscription_expires_at
+    ? new Date(p.subscription_expires_at).toISOString().slice(0, 10) : '';
+  document.getElementById('edit-early').value = String(p.is_early_adopter || false);
   document.getElementById('modal-edit').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
@@ -455,34 +494,35 @@ function openEditModal(trialId) {
 async function saveEdit() {
   const trialId = document.getElementById('edit-trial-id').value;
   const userId = document.getElementById('edit-user-id').value;
-  const plan = document.getElementById('edit-plan').value;
-  const expiresAt = document.getElementById('edit-expires').value;
   const isFrozen = document.getElementById('edit-frozen').value === 'true';
   const isPaid = document.getElementById('edit-paid').value === 'true';
   const paidPlan = document.getElementById('edit-paid-plan').value || null;
   const subExpires = document.getElementById('edit-sub-expires').value;
   const isEarly = document.getElementById('edit-early').value === 'true';
 
-  // 更新 trials 表
-  const { error: trialErr } = await sb.from('trials').update({
-    plan,
-    expires_at: new Date(expiresAt + 'T23:59:59+08:00').toISOString(),
-    is_frozen: isFrozen,
-    frozen_at: isFrozen ? new Date().toISOString() : null
-  }).eq('id', trialId);
-  if (trialErr) { showToast('試用設定儲存失敗：' + trialErr.message); return; }
+  // 有 trial 才更新 trials 表
+  if (trialId) {
+    const plan = document.getElementById('edit-plan').value;
+    const expiresAt = document.getElementById('edit-expires').value;
+    const { error: trialErr } = await sb.from('trials').update({
+      plan,
+      expires_at: new Date(expiresAt + 'T23:59:59+08:00').toISOString(),
+      is_frozen: isFrozen,
+      frozen_at: isFrozen ? new Date().toISOString() : null
+    }).eq('id', trialId);
+    if (trialErr) { showToast('試用設定儲存失敗：' + trialErr.message); return; }
+  }
 
   // 更新 profiles 表（正式版設定）
+  const u = allUsers.find(u => u.profile.id === userId);
   const profileUpdates = {
     is_paid: isPaid,
     plan: isPaid ? paidPlan : null,
     is_early_adopter: isEarly,
     subscription_active: isPaid && !!subExpires,
     subscription_expires_at: subExpires ? new Date(subExpires + 'T23:59:59+08:00').toISOString() : null,
+    paid_at: isPaid && !u?.profile?.paid_at ? new Date().toISOString() : u?.profile?.paid_at || null
   };
-  if (isPaid && !allUsers.find(u => u.profile.id === userId)?.profile.paid_at) {
-    profileUpdates.paid_at = new Date().toISOString();
-  }
   const { error: profileErr } = await sb.from('profiles').update(profileUpdates).eq('id', userId);
   if (profileErr) { showToast('正式版設定儲存失敗：' + profileErr.message); return; }
 
