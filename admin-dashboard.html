@@ -297,15 +297,29 @@ let emailTarget = null;
 
 async function init() {
   try {
+    // 等待 Supabase session 從 localStorage 恢復
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = 'auth.html'; return; }
-    currentUser = session.user;
+
+    if (!session) {
+      // 再等一下，避免 session 還沒恢復就跳走
+      await new Promise(r => setTimeout(r, 500));
+      const { data: { session: session2 } } = await sb.auth.getSession();
+      if (!session2) { window.location.href = 'auth.html'; return; }
+      currentUser = session2.user;
+    } else {
+      currentUser = session.user;
+    }
 
     // 確認是管理員
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
     if (!profile?.is_admin) {
-      alert('此頁面僅限管理員存取');
-      window.location.href = 'trial.html';
+      document.getElementById('spinner').innerHTML =
+        `<div style="text-align:center;padding:40px">
+          <div style="font-size:32px;margin-bottom:12px">🔒</div>
+          <div style="font-weight:700;margin-bottom:8px">無存取權限</div>
+          <div style="font-size:13px;color:var(--gray-400);margin-bottom:16px">此頁面僅限管理員存取</div>
+          <button onclick="window.location.href='trial.html'" style="padding:10px 20px;background:var(--black);color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer">返回試用中心</button>
+        </div>`;
       return;
     }
     document.getElementById('nav-user').textContent = profile.email;
@@ -313,7 +327,13 @@ async function init() {
     document.getElementById('spinner').style.display = 'none';
   } catch(e) {
     console.error(e);
-    alert('載入失敗：' + e.message);
+    document.getElementById('spinner').innerHTML =
+      `<div style="text-align:center;padding:40px">
+        <div style="font-size:24px;margin-bottom:12px">⚠️</div>
+        <div style="font-weight:700;margin-bottom:8px">載入失敗</div>
+        <div style="font-size:13px;color:var(--gray-400);margin-bottom:16px">${e.message}</div>
+        <button onclick="location.reload()" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer">重新載入</button>
+      </div>`;
   }
 }
 
