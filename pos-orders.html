@@ -200,6 +200,43 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .skeleton-kpi .sk-label{height:11px;width:50%;}
 .skeleton-kpi .sk-val{height:28px;width:70%;}
 
+
+/* 凍結橫幅 */
+#frozen-banner {
+  position: fixed; top: 52px; left: 0; right: 0; z-index: 90;
+  background: #fdecea; border-bottom: 2px solid #e57373;
+  padding: 10px 16px; font-size: 13px; color: #7a1f1f;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+#frozen-banner a { color: #c0392b; font-weight: 700; text-decoration: none; }
+body.frozen-mode #frozen-banner ~ main,
+body.frozen-mode #frozen-banner ~ #app { margin-top: 44px; }
+/* 凍結模式：停用所有操作按鈕 */
+body.frozen-mode .btn-checkout,
+body.frozen-mode .btn-save,
+body.frozen-mode .btn-add,
+body.frozen-mode .btn-confirm-import,
+body.frozen-mode .btn-sm.danger,
+body.frozen-mode .btn-sm:not(.view-only),
+body.frozen-mode #btn-checkout,
+body.frozen-mode button[onclick*="checkout"],
+body.frozen-mode button[onclick*="save"],
+body.frozen-mode button[onclick*="delete"],
+body.frozen-mode button[onclick*="Delete"],
+body.frozen-mode button[onclick*="openProductModal"],
+body.frozen-mode button[onclick*="openCategoryModal"],
+body.frozen-mode button[onclick*="openPaymentModal"],
+body.frozen-mode button[onclick*="saveOT"],
+body.frozen-mode button[onclick*="saveThanks"],
+body.frozen-mode button[onclick*="addThanks"],
+body.frozen-mode button[onclick*="addOTRow"],
+body.frozen-mode button[onclick*="toggleBatchMode"],
+body.frozen-mode button[onclick*="batchDelete"],
+body.frozen-mode .btn-delete-order,
+body.frozen-mode .btn-edit-order { 
+  opacity: 0.35; pointer-events: none; cursor: not-allowed;
+}
+
 </style>
 <link rel="prefetch" href="pos-trial.html">
 <link rel="prefetch" href="pos-stats.html">
@@ -207,6 +244,12 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 </head>
 <body>
+
+<div id="frozen-banner" style="display:none">
+  <span>🔒 <strong>試用期已結束</strong>｜目前為唯讀模式，所有操作已停用。如需繼續使用，請聯繫購買正式版。</span>
+  <a href="https://line.me" target="_blank">LINE 聯繫 →</a>
+</div>
+
 
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
@@ -335,6 +378,7 @@ let currentUser = null, currentTrial = null;
 let orders = [];
 let currentFilter = 'today';
 let canDelete = false;
+let canEdit = false;
 let otSettings = { enabled: false, types: [] };
 
 function showInitError(e) {
@@ -358,11 +402,16 @@ async function init() {
       sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
       sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
     ]);
-    if (!trial || trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+    if (!trial) {
       window.location.href = 'trial.html'; return;
     }
+    if (trial.is_frozen || new Date(trial.expires_at) < new Date()) {
+      document.getElementById('frozen-banner').style.display = 'flex';
+      document.body.classList.add('frozen-mode');
+    }
     currentTrial = trial;
-    canDelete = trial.plan !== 'basic';
+    canDelete = true;                        // 所有版本都可刪除
+    canEdit = trial.plan !== 'basic';        // 基本版不可編輯
 
     if (profile?.brand_name) {
       document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 訂單紀錄 &nbsp;·&nbsp; 試用版`;
@@ -541,10 +590,10 @@ function renderOrderCard(o) {
         </div>`).join('')}
       ${more}
     </div>
-    ${canDelete ? `
+    ${(canDelete || canEdit) ? `
     <div class="order-card-footer">
-      <button class="btn-edit-order" onclick="event.stopPropagation();openEditModal('${o.id}')">編輯</button>
-      <button class="btn-delete-order" onclick="event.stopPropagation();deleteOrder('${o.id}')">刪除訂單</button>
+      ${canEdit ? `<button class="btn-edit-order" onclick="event.stopPropagation();openEditModal('${o.id}')">編輯</button>` : ''}
+      ${canDelete ? `<button class="btn-delete-order" onclick="event.stopPropagation();deleteOrder('${o.id}')">刪除訂單</button>` : ''}
     </div>` : ''}
   </div>`;
 }

@@ -306,13 +306,27 @@ input::placeholder { color: var(--gray-400); }
       <div class="form-section active" id="section-login">
         <div class="form-group">
           <label>電子信箱<span class="required">*</span></label>
-          <input type="email" id="login-email" placeholder="your@email.com">
+          <input type="email" id="login-email" placeholder="your@email.com"
+            autocomplete="email">
         </div>
         <div class="form-group">
           <label>密碼<span class="required">*</span></label>
-          <input type="password" id="login-password" placeholder="請輸入密碼">
+          <div style="position:relative">
+            <input type="password" id="login-password" placeholder="請輸入密碼"
+              autocomplete="current-password" style="padding-right:40px;width:100%">
+            <button type="button" onclick="togglePw('login-password','eye-login')"
+              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;padding:4px;color:var(--gray-400)">
+              <span id="eye-login">👁</span>
+            </button>
+          </div>
         </div>
         <button class="btn-submit" id="btn-login" onclick="handleLogin()">登入</button>
+        <div style="text-align:center;margin-top:14px">
+          <button type="button" onclick="showForgotPassword()"
+            style="border:none;background:none;font-size:13px;color:var(--gray-400);cursor:pointer;text-decoration:underline;font-family:'Noto Sans TC',sans-serif">
+            忘記密碼？
+          </button>
+        </div>
       </div>
 
       <!-- 註冊 -->
@@ -326,11 +340,25 @@ input::placeholder { color: var(--gray-400); }
         <div class="form-row">
           <div class="form-group">
             <label>密碼<span class="required">*</span></label>
-            <input type="password" id="reg-password" placeholder="至少 8 個字元">
+            <div style="position:relative">
+              <input type="password" id="reg-password" placeholder="至少 8 個字元"
+                autocomplete="new-password" style="padding-right:40px;width:100%">
+              <button type="button" onclick="togglePw('reg-password','eye-reg1')"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;padding:4px;color:var(--gray-400)">
+                <span id="eye-reg1">👁</span>
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label>確認密碼<span class="required">*</span></label>
-            <input type="password" id="reg-password2" placeholder="再輸入一次">
+            <div style="position:relative">
+              <input type="password" id="reg-password2" placeholder="再輸入一次"
+                autocomplete="new-password" style="padding-right:40px;width:100%">
+              <button type="button" onclick="togglePw('reg-password2','eye-reg2')"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;padding:4px;color:var(--gray-400)">
+                <span id="eye-reg2">👁</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -412,6 +440,39 @@ input::placeholder { color: var(--gray-400); }
           <span class="verify-email" id="verify-email-display"></span><br><br>
           請點擊信中的連結完成驗證，<br>驗證完成後即可回到登入頁面登入！<br><br>
           <span style="font-size:12px;color:var(--gray-400)">未驗證信箱無法登入</span>
+        </div>
+      </div>
+
+      <!-- 忘記密碼畫面 -->
+      <div class="verify-screen" id="forgot-screen" style="display:none">
+        <div class="verify-icon">🔑</div>
+        <div class="verify-title">重設密碼</div>
+        <div id="forgot-form">
+          <div class="verify-desc" style="margin-bottom:16px">
+            輸入你的登入 Email，我們會寄送重設密碼的連結。
+          </div>
+          <div class="form-group">
+            <label>電子信箱<span class="required">*</span></label>
+            <input type="email" id="forgot-email" placeholder="your@email.com"
+              autocomplete="email"
+              onkeydown="if(event.key==='Enter')sendResetEmail()">
+          </div>
+          <button class="btn-submit" id="btn-forgot" onclick="sendResetEmail()">寄送重設連結</button>
+          <div style="text-align:center;margin-top:14px">
+            <button type="button" onclick="hideForgotPassword()"
+              style="border:none;background:none;font-size:13px;color:var(--gray-400);cursor:pointer;text-decoration:underline;font-family:'Noto Sans TC',sans-serif">
+              ← 返回登入
+            </button>
+          </div>
+        </div>
+        <div id="forgot-success" style="display:none">
+          <div class="verify-desc">
+            重設密碼連結已寄送到<br>
+            <strong id="forgot-email-display"></strong><br><br>
+            請到信箱點擊連結，依照步驟設定新密碼。
+          </div>
+          <button type="button" onclick="hideForgotPassword()"
+            class="btn-submit" style="margin-top:16px">返回登入</button>
         </div>
       </div>
 
@@ -558,6 +619,7 @@ async function handleRegister() {
 // Enter 鍵送出
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
+    if (document.getElementById('forgot-screen').style.display !== 'none') return;
     const loginActive = document.getElementById('section-login').classList.contains('active');
     if (loginActive) handleLogin();
     else handleRegister();
@@ -568,6 +630,65 @@ document.addEventListener('keydown', e => {
 sb.auth.getSession().then(({ data }) => {
   if (data.session) window.location.href = 'trial.html';
 });
+
+// ── 眼睛 icon：顯示/隱藏密碼 ──
+function togglePw(inputId, eyeId) {
+  const input = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    eye.textContent = '👁';
+  }
+}
+
+// ── 忘記密碼 ──
+function showForgotPassword() {
+  // 預填已輸入的 Email
+  const email = document.getElementById('login-email').value;
+  document.getElementById('forgot-email').value = email;
+  // 隱藏主要 card 內容，顯示忘記密碼畫面
+  document.getElementById('section-login').style.display = 'none';
+  document.getElementById('section-register').style.display = 'none';
+  document.querySelector('.auth-tabs').style.display = 'none';
+  document.getElementById('forgot-screen').style.display = 'block';
+  document.getElementById('forgot-form').style.display = 'block';
+  document.getElementById('forgot-success').style.display = 'none';
+  hideAlert();
+}
+
+function hideForgotPassword() {
+  document.getElementById('forgot-screen').style.display = 'none';
+  document.getElementById('section-login').style.display = 'block';
+  document.querySelector('.auth-tabs').style.display = 'flex';
+  // 確保登入 tab 是 active
+  const loginActive = document.getElementById('section-login').classList.contains('active');
+  if (!loginActive) switchTab('login');
+}
+
+async function sendResetEmail() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showAlert('請輸入電子信箱'); return; }
+
+  const btn = document.getElementById('btn-forgot');
+  btn.disabled = true; btn.textContent = '寄送中...';
+
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth.html`
+    });
+    if (error) throw error;
+
+    document.getElementById('forgot-email-display').textContent = email;
+    document.getElementById('forgot-form').style.display = 'none';
+    document.getElementById('forgot-success').style.display = 'block';
+  } catch(e) {
+    showAlert('寄送失敗：' + e.message);
+    btn.disabled = false; btn.textContent = '寄送重設連結';
+  }
+}
 </script>
 </body>
 </html>

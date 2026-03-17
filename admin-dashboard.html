@@ -35,7 +35,7 @@ nav {
 main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
 
 /* STATS ROW */
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
 .stat-card { background: var(--white); border-radius: 14px; padding: 16px 20px; border: 1.5px solid var(--gray-200); }
 .stat-label { font-size: 11px; color: var(--gray-400); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
 .stat-val { font-size: 28px; font-weight: 700; font-family: 'Space Mono', monospace; }
@@ -112,7 +112,7 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
 
 /* RWD */
 @media (max-width: 900px) {
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .stats-row { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 600px) {
   .stats-row { grid-template-columns: 1fr 1fr; }
@@ -141,7 +141,7 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
   <!-- 統計卡 -->
   <div class="stats-row" id="stats-row">
     <div class="stat-card">
-      <div class="stat-label">總試用人數</div>
+      <div class="stat-label">總用戶數</div>
       <div class="stat-val accent" id="stat-total">—</div>
     </div>
     <div class="stat-card">
@@ -155,6 +155,10 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
     <div class="stat-card">
       <div class="stat-label">已凍結</div>
       <div class="stat-val red" id="stat-frozen">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">正式版客戶</div>
+      <div class="stat-val" style="color:#1a73e8" id="stat-paid">—</div>
     </div>
   </div>
 
@@ -452,7 +456,9 @@ function getDaysLeft(expiresAt) {
 }
 
 function getStatus(trial, profile) {
-  if (!trial) return profile?.is_paid ? 'paid' : 'no-trial';
+  // 正式版優先
+  if (profile?.is_paid) return 'paid';
+  if (!trial) return 'no-trial';
   if (trial.is_frozen) return 'frozen';
   const days = getDaysLeft(trial.expires_at);
   if (days < 0) return 'frozen';
@@ -471,9 +477,7 @@ function renderStats() {
   document.getElementById('stat-active').textContent = active;
   document.getElementById('stat-expiring').textContent = expiring;
   document.getElementById('stat-frozen').textContent = frozen;
-  // 正式版付費人數顯示在 stat-frozen 旁邊（或可加第五張卡）
-  const frozenEl = document.getElementById('stat-frozen');
-  if (frozenEl) frozenEl.closest('.stat-card').querySelector('.stat-label').textContent = `已凍結（正式版 ${paid} 人）`;
+  document.getElementById('stat-paid').textContent = paid;
 }
 
 function renderTable() {
@@ -539,13 +543,15 @@ function renderTable() {
 
     const freezeBtn = t && status !== 'frozen' && status !== 'paid'
       ? `<button class="btn-action danger" onclick="freezeUser('${t.id}', '${p.brand_name}')">凍結</button>`
-      : t && (status === 'frozen')
+      : t && status === 'frozen'
         ? `<button class="btn-action success" onclick="unfreezeUser('${t.id}', '${p.brand_name}')">解凍</button>`
         : '';
 
     const emailBtn = status !== 'frozen' && status !== 'paid' && t
       ? `<button class="btn-send-email" onclick="openEmailModal('${t.id}')">寄提醒</button>`
       : '';
+
+    const deleteBtn = `<button class="btn-action danger" onclick="deleteAccount('${p.id}', '${p.email}', '${p.brand_name}')">刪除帳號</button>`;
 
     return `<tr>
       <td>
@@ -562,7 +568,7 @@ function renderTable() {
       <td style="font-size:12px;color:var(--gray-600)">${p.city || '—'} / ${p.industry || '—'}</td>
       <td>
         <div class="action-row">
-          ${editBtn}${freezeBtn}${emailBtn}
+          ${editBtn}${freezeBtn}${emailBtn}${deleteBtn}
         </div>
       </td>
     </tr>`;
@@ -608,9 +614,18 @@ function _openEditModalCore(u) {
 
 // 年費快速設定 +1年
 function setSubExpiresOneYear() {
-  const today = new Date();
-  today.setFullYear(today.getFullYear() + 1);
-  document.getElementById('edit-sub-expires').value = today.toISOString().slice(0, 10);
+  const current = document.getElementById('edit-sub-expires').value;
+  let baseDate;
+  if (current) {
+    const currentDate = new Date(current);
+    // 如果原到期日還沒到期，從原到期日加一年（不損失剩餘天數）
+    // 如果已過期，從今天加一年
+    baseDate = currentDate > new Date() ? currentDate : new Date();
+  } else {
+    baseDate = new Date();
+  }
+  baseDate.setFullYear(baseDate.getFullYear() + 1);
+  document.getElementById('edit-sub-expires').value = baseDate.toISOString().slice(0, 10);
 }
 
 async function saveEdit() {
@@ -786,6 +801,23 @@ document.getElementById('modal-edit').addEventListener('click', e => {
 document.getElementById('modal-email').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-email')) closeEmailModal();
 });
+
+async function deleteAccount(profileId, email, brandName) {
+  if (!confirm(`⚠️ 確定要永久刪除「${brandName}」的帳號嗎？\n\nEmail：${email}\n\n此操作無法復原，該帳號的所有資料（商品、訂單、試用紀錄）將一併刪除。`)) return;
+  const second = prompt(`請再次輸入品牌名稱「${brandName}」確認刪除：`);
+  if (second !== brandName) { showToast('品牌名稱不符，已取消'); return; }
+
+  try {
+    // 刪除 profiles（CASCADE 會自動刪除相關資料）
+    const { error } = await sb.from('profiles').delete().eq('id', profileId);
+    if (error) throw new Error(error.message);
+    // Auth 用戶需到 Supabase 後台手動刪除，或用 Service Role Key
+    showToast(`✅ 已刪除 ${brandName}。提醒：請到 Supabase Auth 手動刪除登入帳號。`);
+    await loadData();
+  } catch(e) {
+    showToast('❌ 刪除失敗：' + e.message);
+  }
+}
 
 async function logout() {
   await sb.auth.signOut();
