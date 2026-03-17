@@ -108,7 +108,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
-.modal-overlay.show{display:flex;}
+.modal-overlay.show{display:flex;align-items:center}
 .modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
 .modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:100px;margin:0 auto 20px;}
 .modal-title{font-size:16px;font-weight:700;margin-bottom:20px;}
@@ -1344,7 +1344,7 @@ init();
 </script>
 
 <!-- 後台密碼驗證（高級版） -->
-<div class="modal-overlay show" id="modal-admin-pw" style="display:none">
+<div class="modal-overlay show" id="modal-admin-pw" style="display:none;">
   <div class="modal-box" style="max-width:340px;text-align:center">
     <div style="font-size:32px;margin-bottom:12px">🔒</div>
     <div style="font-size:16px;font-weight:700;margin-bottom:6px">後台管理驗證</div>
