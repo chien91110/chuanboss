@@ -35,6 +35,17 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .tab-content.active{display:block;}
 .tab-inner{padding:16px;}
 
+/* 後台管理驗證（高級版） */
+
+.modal-box{
+  width: 100%;
+  max-width: 480px;
+  background: var(--white);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+}
+
 /* 商品搜尋 sticky */
 .product-search-bar{
   position:sticky;top:101px;z-index:40;
@@ -1047,6 +1058,8 @@ async function saveOTSettings(silent = false) {
   await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: payload });
   if (!silent) showToast('訂單類型設定已儲存');
 }
+
+
 
 // ── 感謝語（高級版）──
 let thanksList = [];
