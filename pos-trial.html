@@ -708,8 +708,21 @@ async function init() {
     }
     // 凍結或到期：進入唯讀模式而非跳轉
     if (trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-      document.getElementById('frozen-banner').style.display = 'flex';
-      document.body.classList.add('frozen-mode');
+
+    // 凍結橫幅顯示時調整 layout
+    const banner = document.getElementById('frozen-banner');
+    banner.style.display = 'flex';
+    document.body.classList.add('frozen-mode');
+    const bannerH = 44;
+    // nav 往下推
+    const nav = document.getElementById('top-nav') || document.querySelector('nav');
+    if (nav) nav.style.top = (52 + bannerH) + 'px';
+    // app 往下推
+    const app = document.getElementById('app');
+    if (app) app.style.paddingTop = (52 + bannerH) + 'px';
+    // 手機版 bottom-nav（側邊欄）往下推
+    const bottomNav = document.getElementById('bottom-nav');
+    if (bottomNav && window.innerWidth > 700) bottomNav.style.top = (52 + bannerH) + 'px';
     }
     currentTrial = trial;
 

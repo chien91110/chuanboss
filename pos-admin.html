@@ -574,8 +574,19 @@ async function init() {
       window.location.href = 'trial.html'; return;
     }
     if (trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-      document.getElementById('frozen-banner').style.display = 'flex';
-      document.body.classList.add('frozen-mode');
+
+    document.getElementById('frozen-banner').style.display = 'flex';
+    document.body.classList.add('frozen-mode');
+    const bannerH = 44;
+    const nav = document.getElementById('top-nav') || document.querySelector('nav');
+    if (nav) nav.style.top = (52 + bannerH) + 'px';
+    const tabs = document.querySelector('.admin-tabs');
+    if (tabs) tabs.style.top = (52 + bannerH) + 'px';
+    document.querySelectorAll('.tab-content').forEach(el => {
+      el.style.marginTop = (101 + bannerH) + 'px';
+    });
+    const bottomNav = document.getElementById('bottom-nav');
+    if (bottomNav && window.innerWidth > 700) bottomNav.style.top = (52 + bannerH) + 'px';
     }
     currentTrial = trial;
     currentPlan = trial.plan;
