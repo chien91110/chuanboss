@@ -24,7 +24,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .nav-brand{color:rgba(255,255,255,0.5);font-size:12px;flex:1;}
 .nav-brand em{color:var(--accent-light);font-style:normal;font-weight:600;}
 
-.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:fixed;top:52px;left:72px;right:0;z-index:50;overflow-x:auto;scrollbar-width:none;}
+.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:fixed;top:93px;left:72px;right:0;z-index:50;overflow-x:auto;scrollbar-width:none;}
 .admin-tabs::-webkit-scrollbar{display:none;}
 @media(max-width:700px){.admin-tabs{left:0;}}
 .admin-tab{padding:14px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
@@ -33,11 +33,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 /* tab-content 需讓出 navbar(52px) + tabs列(49px) = 101px */
 .tab-content{display:none;padding:0;margin-top:101px;}
 .tab-content.active{display:block;}
-.tab-inner{padding:16px;}
+.tab-inner{padding:42px 16px;}
 
 /* 商品搜尋 sticky */
 .product-search-bar{
-  position:sticky;top:101px;z-index:40;
+  position:sticky;top:142px;z-index:40;
   background:var(--gray-50);
   padding:10px 16px;
   border-bottom:1px solid var(--gray-200);
@@ -234,7 +234,7 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 
 /* 凍結橫幅 */
 #frozen-banner {
-  position: fixed; top: 52px; left: 0; right: 0; z-index: 90;
+  position: fixed; top: 52px; left: 72px; right: 0; z-index: 90;
   background: #fdecea; border-bottom: 2px solid #e57373;
   padding: 10px 16px; font-size: 13px; color: #7a1f1f;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
