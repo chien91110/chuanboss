@@ -223,8 +223,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   position: fixed; top: 52px; left: 0; right: 0; z-index: 95;
   background: #fdecea; border-bottom: 2px solid #e57373;
   padding: 10px 16px; font-size: 13px; color: #7a1f1f;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  min-height: 44px;
+  display: none; align-items: center; justify-content: space-between; gap: 12px;
 }
 #frozen-banner a { color: #c0392b; font-weight: 700; text-decoration: none; }
 /* 凍結模式：固定元素往下推 44px（banner 高度） */
@@ -268,13 +267,10 @@ body.frozen-mode .btn-edit-order {
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 </head>
 <body>
-
-<div id="frozen-banner" style="display:none">
+<div id="frozen-banner">
   <span>🔒 <strong>試用期已結束</strong>｜目前為唯讀模式，所有操作已停用。如需繼續使用，請聯繫購買正式版。</span>
   <a href="https://line.me" target="_blank">LINE 聯繫 →</a>
 </div>
-
-
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
 <div id="top-nav">
