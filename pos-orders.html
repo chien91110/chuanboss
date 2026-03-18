@@ -410,7 +410,7 @@ async function init() {
       document.body.classList.add('frozen-mode');
     }
     currentTrial = trial;
-    canDelete = true;                        // 所有版本都可刪除
+    canDelete = true;                        // 所有版本都可刪除（凍結時由 CSS 停用）
     canEdit = trial.plan !== 'basic';        // 基本版不可編輯
 
     if (profile?.brand_name) {
