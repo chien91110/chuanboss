@@ -87,7 +87,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 #cart-panel {
   width: var(--cart-w); flex-shrink: 0;
   background: var(--white); border-left: 1px solid var(--gray-200);
-  display: flex; flex-direction: column; overflow: hidden; padding-bottom: 45px;
+  display: flex; flex-direction: column; overflow: hidden;
 }
 #cart-header {
   padding: 14px 16px 10px; border-bottom: 1px solid var(--gray-100);
@@ -104,7 +104,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 /* CART FOOTER */
 #cart-footer {
   border-top: 1px solid var(--gray-200);
-  padding: 12px 16px 16px 16px;
+  padding: 12px 16px;
   overflow-y: auto;
   flex-shrink: 0;
   /* 桌機版：最多佔 cart-panel 的 60%，超過就捲動 */
@@ -451,14 +451,21 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 
 /* 凍結橫幅 */
 #frozen-banner {
-  position: fixed; top: 52px; left: 72px; right: 0; z-index: 90;
+  position: fixed; top: 52px; left: 0; right: 0; z-index: 95;
   background: #fdecea; border-bottom: 2px solid #e57373;
   padding: 10px 16px; font-size: 13px; color: #7a1f1f;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 44px;
 }
 #frozen-banner a { color: #c0392b; font-weight: 700; text-decoration: none; }
-body.frozen-mode #frozen-banner ~ main,
-body.frozen-mode #frozen-banner ~ #app { margin-top: 41px; }
+/* 凍結模式：固定元素往下推 44px（banner 高度） */
+body.frozen-mode nav { top: 96px !important; }
+body.frozen-mode .admin-tabs { top: 96px !important; }
+body.frozen-mode #bottom-nav { top: 96px !important; }
+body.frozen-mode #app { padding-top: 44px; }
+body.frozen-mode main { padding-top: calc(52px + 44px + 16px) !important; }
+body.frozen-mode .tab-content { margin-top: calc(101px + 44px) !important; }
+
 /* 凍結模式：停用所有操作按鈕 */
 body.frozen-mode .btn-checkout,
 body.frozen-mode .btn-save,

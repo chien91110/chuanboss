@@ -28,7 +28,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
 /* STICKY HEADER WRAPPER */
 #sticky-header{
-  position:sticky;top:93px;z-index:50;
+  position:sticky;top:52px;z-index:50;
   background:var(--white);
   border-bottom:1px solid var(--gray-200);
 }
@@ -49,7 +49,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .date-input:focus{border-color:var(--accent);}
 .btn-apply{padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;}
 
-.content{padding:61px 16px 16px;}
+.content{padding:20px 16px 16px;}
 
 /* KPI 卡 — 改為 2x2，上方兩個大一點 */
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
@@ -220,14 +220,21 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
 /* 凍結橫幅 */
 #frozen-banner {
-  position: fixed; top: 52px; left: 72px; right: 0; z-index: 90;
+  position: fixed; top: 52px; left: 0; right: 0; z-index: 95;
   background: #fdecea; border-bottom: 2px solid #e57373;
   padding: 10px 16px; font-size: 13px; color: #7a1f1f;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 44px;
 }
 #frozen-banner a { color: #c0392b; font-weight: 700; text-decoration: none; }
-body.frozen-mode #frozen-banner ~ main,
-body.frozen-mode #frozen-banner ~ #app { margin-top: 44px; }
+/* 凍結模式：固定元素往下推 44px（banner 高度） */
+body.frozen-mode nav { top: 96px !important; }
+body.frozen-mode .admin-tabs { top: 96px !important; }
+body.frozen-mode #bottom-nav { top: 96px !important; }
+body.frozen-mode #app { padding-top: 44px; }
+body.frozen-mode main { padding-top: calc(52px + 44px + 16px) !important; }
+body.frozen-mode .tab-content { margin-top: calc(101px + 44px) !important; }
+
 /* 凍結模式：停用所有操作按鈕 */
 body.frozen-mode .btn-checkout,
 body.frozen-mode .btn-save,
