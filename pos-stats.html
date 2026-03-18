@@ -15,11 +15,11 @@
   --accent:#c17f3e;--accent-light:#e8c99a;--green:#3d7a5c;--red:#c0392b;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-top:52px;padding-bottom:16px;padding-left:72px;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(--black);min-height:100vh;padding-top:calc(52px + var(--banner-h));padding-bottom:16px;padding-left:72px;}
 @media(max-width:700px){body{padding-left:0;padding-bottom:72px;}}
 
 /* NAV */
-#top-nav{position:fixed;top:0;left:72px;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
+#top-nav{position:fixed;top:var(--banner-h);left:72px;right:0;z-index:100;height:52px;background:var(--black);display:flex;align-items:center;padding:0 16px;gap:12px;}
 @media(max-width:700px){#top-nav{left:0;}}
 .nav-logo-small{color:white;font-weight:700;font-size:15px;}
 .nav-logo-small span{color:var(--accent-light);}
@@ -219,20 +219,40 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 
 
 /* 凍結橫幅 */
+:root { --banner-h: 0px; }
 #frozen-banner {
-  position: fixed; top: 52px; left: 0; right: 0; z-index: 95;
+  position: fixed; top: var(--nav-h, 52px); left: 0; right: 0; z-index: 95;
   background: #fdecea; border-bottom: 2px solid #e57373;
   padding: 10px 16px; font-size: 13px; color: #7a1f1f;
   display: none; align-items: center; justify-content: space-between; gap: 12px;
 }
 #frozen-banner a { color: #c0392b; font-weight: 700; text-decoration: none; }
-/* 凍結模式：固定元素往下推 44px（banner 高度） */
-body.frozen-mode nav { top: 96px !important; }
-body.frozen-mode .admin-tabs { top: 96px !important; }
-body.frozen-mode #bottom-nav { top: 96px !important; }
-body.frozen-mode #app { padding-top: 44px; }
-body.frozen-mode main { padding-top: calc(52px + 44px + 16px) !important; }
-body.frozen-mode .tab-content { margin-top: calc(101px + 44px) !important; }
+/* 凍結模式：停用所有操作按鈕 */
+body.frozen-mode .btn-checkout,
+body.frozen-mode #btn-checkout,
+body.frozen-mode .btn-save,
+body.frozen-mode .btn-add,
+body.frozen-mode .btn-confirm-import,
+body.frozen-mode .btn-sm.danger,
+body.frozen-mode .btn-sm:not(.view-only),
+body.frozen-mode .btn-delete-order,
+body.frozen-mode .btn-edit-order,
+body.frozen-mode button[onclick*="checkout"],
+body.frozen-mode button[onclick*="save"],
+body.frozen-mode button[onclick*="Save"],
+body.frozen-mode button[onclick*="delete"],
+body.frozen-mode button[onclick*="Delete"],
+body.frozen-mode button[onclick*="openProductModal"],
+body.frozen-mode button[onclick*="openCategoryModal"],
+body.frozen-mode button[onclick*="openPaymentModal"],
+body.frozen-mode button[onclick*="saveOT"],
+body.frozen-mode button[onclick*="saveThanks"],
+body.frozen-mode button[onclick*="addThanks"],
+body.frozen-mode button[onclick*="addOTRow"],
+body.frozen-mode button[onclick*="toggleBatchMode"],
+body.frozen-mode button[onclick*="batchDelete"] {
+  opacity: 0.35 !important; pointer-events: none !important; cursor: not-allowed !important;
+}
 
 /* 凍結模式：停用所有操作按鈕 */
 body.frozen-mode .btn-checkout,
@@ -426,12 +446,7 @@ async function init() {
 
     document.getElementById('frozen-banner').style.display = 'flex';
     document.body.classList.add('frozen-mode');
-    const bannerH = 44;
-    document.body.style.paddingTop = (52 + bannerH) + 'px';
-    const nav = document.getElementById('top-nav') || document.querySelector('nav');
-    if (nav) nav.style.top = (52 + bannerH) + 'px';
-    const bottomNav = document.getElementById('bottom-nav');
-    if (bottomNav && window.innerWidth > 700) bottomNav.style.top = (52 + bannerH) + 'px';
+    document.documentElement.style.setProperty('--banner-h', '44px');
     }
     currentTrial = trial;
     currentPlan = trial.plan;

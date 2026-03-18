@@ -24,20 +24,20 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .nav-brand{color:rgba(255,255,255,0.5);font-size:12px;flex:1;}
 .nav-brand em{color:var(--accent-light);font-style:normal;font-weight:600;}
 
-.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:fixed;top:52px;left:72px;right:0;z-index:50;overflow-x:auto;scrollbar-width:none;}
+.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:fixed;top:calc(52px + var(--banner-h));left:72px;right:0;z-index:50;overflow-x:auto;scrollbar-width:none;}
 .admin-tabs::-webkit-scrollbar{display:none;}
 @media(max-width:700px){.admin-tabs{left:0;}}
 .admin-tab{padding:14px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
 .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
 /* tab-content 需讓出 navbar(52px) + tabs列(49px) = 101px */
-.tab-content{display:none;padding:0;margin-top:101px;}
+.tab-content{display:none;padding:0;margin-top:calc(101px + var(--banner-h));}
 .tab-content.active{display:block;}
 .tab-inner{padding:16px;}
 
 /* 商品搜尋 sticky */
 .product-search-bar{
-  position:sticky;top:101px;z-index:40;
+  position:sticky;top:calc(101px + var(--banner-h));z-index:40;
   background:var(--gray-50);
   padding:10px 16px;
   border-bottom:1px solid var(--gray-200);
@@ -233,20 +233,40 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 
 
 /* 凍結橫幅 */
+:root { --banner-h: 0px; }
 #frozen-banner {
-  position: fixed; top: 52px; left: 0; right: 0; z-index: 95;
+  position: fixed; top: var(--nav-h, 52px); left: 0; right: 0; z-index: 95;
   background: #fdecea; border-bottom: 2px solid #e57373;
   padding: 10px 16px; font-size: 13px; color: #7a1f1f;
   display: none; align-items: center; justify-content: space-between; gap: 12px;
 }
 #frozen-banner a { color: #c0392b; font-weight: 700; text-decoration: none; }
-/* 凍結模式：固定元素往下推 44px（banner 高度） */
-body.frozen-mode nav { top: 96px !important; }
-body.frozen-mode .admin-tabs { top: 96px !important; }
-body.frozen-mode #bottom-nav { top: 96px !important; }
-body.frozen-mode #app { padding-top: 44px; }
-body.frozen-mode main { padding-top: calc(52px + 44px + 16px) !important; }
-body.frozen-mode .tab-content { margin-top: calc(101px + 44px) !important; }
+/* 凍結模式：停用所有操作按鈕 */
+body.frozen-mode .btn-checkout,
+body.frozen-mode #btn-checkout,
+body.frozen-mode .btn-save,
+body.frozen-mode .btn-add,
+body.frozen-mode .btn-confirm-import,
+body.frozen-mode .btn-sm.danger,
+body.frozen-mode .btn-sm:not(.view-only),
+body.frozen-mode .btn-delete-order,
+body.frozen-mode .btn-edit-order,
+body.frozen-mode button[onclick*="checkout"],
+body.frozen-mode button[onclick*="save"],
+body.frozen-mode button[onclick*="Save"],
+body.frozen-mode button[onclick*="delete"],
+body.frozen-mode button[onclick*="Delete"],
+body.frozen-mode button[onclick*="openProductModal"],
+body.frozen-mode button[onclick*="openCategoryModal"],
+body.frozen-mode button[onclick*="openPaymentModal"],
+body.frozen-mode button[onclick*="saveOT"],
+body.frozen-mode button[onclick*="saveThanks"],
+body.frozen-mode button[onclick*="addThanks"],
+body.frozen-mode button[onclick*="addOTRow"],
+body.frozen-mode button[onclick*="toggleBatchMode"],
+body.frozen-mode button[onclick*="batchDelete"] {
+  opacity: 0.35 !important; pointer-events: none !important; cursor: not-allowed !important;
+}
 
 /* 凍結模式：停用所有操作按鈕 */
 body.frozen-mode .btn-checkout,
@@ -575,16 +595,7 @@ async function init() {
 
     document.getElementById('frozen-banner').style.display = 'flex';
     document.body.classList.add('frozen-mode');
-    const bannerH = 44;
-    const nav = document.getElementById('top-nav') || document.querySelector('nav');
-    if (nav) nav.style.top = (52 + bannerH) + 'px';
-    const tabs = document.querySelector('.admin-tabs');
-    if (tabs) tabs.style.top = (52 + bannerH) + 'px';
-    document.querySelectorAll('.tab-content').forEach(el => {
-      el.style.marginTop = (101 + bannerH) + 'px';
-    });
-    const bottomNav = document.getElementById('bottom-nav');
-    if (bottomNav && window.innerWidth > 700) bottomNav.style.top = (52 + bannerH) + 'px';
+    document.documentElement.style.setProperty('--banner-h', '44px');
     }
     currentTrial = trial;
     currentPlan = trial.plan;
