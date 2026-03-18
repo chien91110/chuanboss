@@ -296,7 +296,7 @@ body {
   left: 0;
   right: 0;
   z-index: 101;
-  height: var(--banner-h);
+  min-height: var(--banner-h);
   background: #fdecea;
   border-bottom: 2px solid #e57373;
   font-size: 13px;
@@ -304,9 +304,19 @@ body {
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 8px 16px;
   gap: 12px;
-  overflow: hidden;
+  flex-wrap: wrap;
+}
+@media (max-width: 700px) {
+  #frozen-banner {
+    font-size: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 10px 14px;
+  }
+  #frozen-banner a { align-self: flex-end; }
 }
 #frozen-banner a { color: #c0392b; font-weight: 700; text-decoration: none; }
 /* 凍結模式：停用所有操作按鈕 */
@@ -530,7 +540,14 @@ async function init() {
 
     document.getElementById('frozen-banner').style.display = 'flex';
     document.body.classList.add('frozen-mode');
-    document.documentElement.style.setProperty('--banner-h', '44px');
+    // 手機版文字會換行，需要更多高度
+    const bannerEl = document.getElementById('frozen-banner');
+    // 先設為 auto 讓瀏覽器計算實際高度
+    bannerEl.style.height = 'auto';
+    bannerEl.style.display = 'flex';
+    const bannerH = bannerEl.offsetHeight || (window.innerWidth < 700 ? 72 : 44);
+    bannerEl.style.height = bannerH + 'px';
+    document.documentElement.style.setProperty('--banner-h', bannerH + 'px');
     }
     currentTrial = trial;
     currentPlan = trial.plan;
