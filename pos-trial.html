@@ -48,7 +48,7 @@
 
     /* TOP NAV */
     #top-nav {
-      /* position: fixed; */
+      position: fixed;
       top: 41px;
       left: 72px;
       right: 0;
@@ -1677,16 +1677,16 @@
           const banner = document.getElementById('frozen-banner');
           banner.style.display = 'flex';
           document.body.classList.add('frozen-mode');
-          const bannerH = 44;
+          const bannerH = 41;
           // nav 往下推
           const nav = document.getElementById('top-nav') || document.querySelector('nav');
-          if (nav) nav.style.top = (52 + bannerH) + 'px';
+          if (nav) nav.style.top = (bannerH) + 'px';
           // app 往下推
           const app = document.getElementById('app');
-          if (app) app.style.paddingTop = (52 + bannerH) + 'px';
+          if (app) app.style.paddingTop = (bannerH) + 'px';
           // 手機版 bottom-nav（側邊欄）往下推
           const bottomNav = document.getElementById('bottom-nav');
-          if (bottomNav && window.innerWidth > 700) bottomNav.style.top = (52 + bannerH) + 'px';
+          if (bottomNav && window.innerWidth > 700) bottomNav.style.top = (bannerH) + 'px';
         }
         currentTrial = trial;
 
