@@ -260,6 +260,33 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
   </div>
 </div>
 
+<!-- 匯出 Modal -->
+<div class="modal-overlay" id="modal-export" style="display:none" onclick="if(event.target===this)closeExportModal()">
+  <div class="modal-box" style="max-width:360px;text-align:center">
+    <div style="font-size:28px;margin-bottom:12px">📊</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px">匯出報表</div>
+    <div style="font-size:13px;color:var(--gray-400);margin-bottom:20px" id="export-range-label"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <button onclick="exportReport('daily')"
+        style="padding:14px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;text-align:left;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+        📅 每日報表
+        <div style="font-size:12px;color:var(--gray-400);font-weight:400;margin-top:4px">每天一行，含日期、營業額、訂單數、平均客單價、折扣</div>
+      </button>
+      <button id="btn-export-orders" onclick="exportReport('orders')"
+        style="padding:14px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;text-align:left;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+        🧾 逐筆訂單
+        <div style="font-size:12px;color:var(--gray-400);font-weight:400;margin-top:4px">每筆訂單一行，含訂單號、時間、金額、付款方式、訂單類型、商品明細</div>
+      </button>
+    </div>
+    <button onclick="closeExportModal()"
+      style="padding:10px 24px;background:none;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">
+      取消
+    </button>
+  </div>
+</div>
+
 <div class="content" id="main-content" style="display:none">
 
   <!-- KPI -->
@@ -467,13 +494,20 @@ async function loadStats() {
 let _lastOrders = []; // loadStats 後快取資料供匯出用
 
 function showExportModal() {
-  const range = getRange();
-  if (!range || !_lastOrders.length) {
-    showToast('請先查詢後再匯出'); return;
+  if (!_lastOrders.length) {
+    showToast('請先點擊「查詢」載入資料後再匯出'); return;
   }
-  const from = document.getElementById('date-from').value || range.from.slice(0,10);
-  const to = document.getElementById('date-to').value || range.to.slice(0,10);
+  const range = getRange();
+  const from = document.getElementById('date-from').value || (range ? range.from.slice(0,10) : '');
+  const to = document.getElementById('date-to').value || (range ? range.to.slice(0,10) : '');
   document.getElementById('export-range-label').textContent = `日期區間：${from} ～ ${to}`;
+
+  // 基本版只顯示每日，進階/高級顯示兩種
+  const btnOrders = document.getElementById('btn-export-orders');
+  if (btnOrders) {
+    btnOrders.style.display = currentPlan === 'basic' ? 'none' : 'block';
+  }
+
   document.getElementById('modal-export').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
