@@ -553,6 +553,15 @@ function renderTable() {
 
     const deleteBtn = `<button class="btn-action danger" onclick="deleteAccount('${p.id}', '${p.email}', '${p.brand_name}')">刪除帳號</button>`;
 
+    // 解鎖基本資料（正式版才顯示）
+    const canEdit = p.profile_edit_unlocked_at &&
+      (new Date() - new Date(p.profile_edit_unlocked_at)) / 86400000 <= 7;
+    const unlockBtn = p.is_paid
+      ? canEdit
+        ? `<button class="btn-action success" onclick="unlockProfile('${p.id}', '${p.brand_name}', true)">🔓 解鎖中</button>`
+        : `<button class="btn-action" onclick="unlockProfile('${p.id}', '${p.brand_name}', false)">🔑 解鎖資料</button>`
+      : '';
+
     return `<tr>
       <td>
         <div style="font-weight:600">${p.brand_name || '—'}${p.is_admin ? ' <span style="font-size:10px;color:var(--red)">ADMIN</span>' : ''}</div>
@@ -568,7 +577,7 @@ function renderTable() {
       <td style="font-size:12px;color:var(--gray-600)">${p.city || '—'} / ${p.industry || '—'}</td>
       <td>
         <div class="action-row">
-          ${editBtn}${freezeBtn}${emailBtn}${deleteBtn}
+          ${editBtn}${freezeBtn}${emailBtn}${unlockBtn}${deleteBtn}
         </div>
       </td>
     </tr>`;
@@ -801,6 +810,20 @@ document.getElementById('modal-edit').addEventListener('click', e => {
 document.getElementById('modal-email').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-email')) closeEmailModal();
 });
+
+async function unlockProfile(profileId, brandName, isCurrentlyUnlocked) {
+  if (isCurrentlyUnlocked) {
+    if (!confirm(`「${brandName}」目前解鎖中（7天內）。\n要重新計算7天（從今天起）嗎？`)) return;
+  } else {
+    if (!confirm(`確定解鎖「${brandName}」的基本資料修改權限？\n客戶將有 7 天內可自由修改。`)) return;
+  }
+  const { error } = await sb.from('profiles').update({
+    profile_edit_unlocked_at: new Date().toISOString()
+  }).eq('id', profileId);
+  if (error) { showToast('❌ 解鎖失敗：' + error.message); return; }
+  await loadData();
+  showToast(`✅ 已解鎖「${brandName}」的資料修改權限（7天）`);
+}
 
 async function deleteAccount(profileId, email, brandName) {
   if (!confirm(`⚠️ 確定要永久刪除「${brandName}」的帳號嗎？\n\nEmail：${email}\n\n此操作無法復原，該帳號的所有資料（商品、訂單、試用紀錄）將一併刪除。`)) return;

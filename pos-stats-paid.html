@@ -251,7 +251,12 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
     <input class="date-input" type="date" id="date-from">
     <span style="color:var(--gray-400);font-size:13px">到</span>
     <input class="date-input" type="date" id="date-to">
-    <button class="btn-apply" onclick="loadStats()">查詢</button>
+<button class="btn-apply" onclick="loadStats()">查詢</button>
+    <button class="btn-apply" id="btn-export"
+      onclick="showExportModal()"
+      style="background:var(--white);color:var(--black);border:1.5px solid var(--gray-200)">
+      ↓ 匯出
+    </button>
   </div>
 </div>
 
@@ -448,6 +453,7 @@ async function loadStats() {
     .order('created_at');
 
   const data = orders || [];
+  _lastOrders = data; // 快取供匯出使用
   renderKPI(data);
   renderTrend(data, range);
   renderOrderTypes(data);
@@ -455,6 +461,81 @@ async function loadStats() {
   renderRankSection(data);
   await renderDailyLog(data);
   await renderBusinessDay();
+}
+
+// ── 匯出報表 ──
+let _lastOrders = []; // loadStats 後快取資料供匯出用
+
+function showExportModal() {
+  const range = getRange();
+  if (!range || !_lastOrders.length) {
+    showToast('請先查詢後再匯出'); return;
+  }
+  const from = document.getElementById('date-from').value || range.from.slice(0,10);
+  const to = document.getElementById('date-to').value || range.to.slice(0,10);
+  document.getElementById('export-range-label').textContent = `日期區間：${from} ～ ${to}`;
+  document.getElementById('modal-export').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeExportModal() {
+  document.getElementById('modal-export').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function exportReport(type) {
+  const orders = _lastOrders;
+  const brandName = document.title.replace('川收 ChuanPOS｜', '') || 'report';
+  const from = document.getElementById('date-from').value;
+  const to = document.getElementById('date-to').value;
+  const filename = `ChuanPOS_${type === 'daily' ? '每日報表' : '訂單明細'}_${from}_${to}.csv`;
+
+  let csv = '';
+
+  if (type === 'daily') {
+    // 每日報表
+    csv = '\uFEFF日期,營業額,訂單數,平均客單價,折扣金額\n';
+    const map = {};
+    orders.forEach(o => {
+      const d = o.created_at.slice(0,10);
+      if (!map[d]) map[d] = { revenue:0, count:0, discount:0 };
+      map[d].revenue += o.total || 0;
+      map[d].count += 1;
+      map[d].discount += o.discount || 0;
+    });
+    Object.entries(map).sort().forEach(([date, v]) => {
+      const avg = v.count ? Math.round(v.revenue / v.count) : 0;
+      csv += `${date},${v.revenue},${v.count},${avg},${v.discount}\n`;
+    });
+    // 合計行
+    const total = orders.reduce((s,o) => s + (o.total||0), 0);
+    const totalDiscount = orders.reduce((s,o) => s + (o.discount||0), 0);
+    const totalAvg = orders.length ? Math.round(total / orders.length) : 0;
+    csv += `合計,${total},${orders.length},${totalAvg},${totalDiscount}\n`;
+
+  } else {
+    // 逐筆訂單
+    csv = '\uFEFF訂單號,日期,時間,訂單類型,付款方式,小計,折扣,總計,商品明細\n';
+    orders.forEach(o => {
+      const dt = new Date(o.created_at);
+      const date = dt.toLocaleDateString('zh-TW');
+      const time = dt.toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+      const items = (o.order_items || [])
+        .map(i => `${i.product_name}×${i.quantity}`)
+        .join('、');
+      csv += `${o.order_number},${date},${time},${o.order_type||''},${o.payment_method||''},${o.subtotal||o.total||0},${o.discount||0},${o.total||0},"${items}"\n`;
+    });
+  }
+
+  // 下載
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  closeExportModal();
+  showToast('✅ 報表已下載');
 }
 
 // ── KPI ──
