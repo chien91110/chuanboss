@@ -643,14 +643,22 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 
 <!-- 基本資料 Modal -->
 <div class="modal-overlay" id="modal-profile" style="display:none" onclick="if(event.target===this)closeProfileModal()">
-  <div class="modal" style="max-width:420px;width:90%;padding:28px 24px">
+  <div class="modal" style="max-width:420px;width:90%;padding:28px 24px;max-height:90vh;overflow-y:auto">
     <div style="font-size:20px;font-weight:700;margin-bottom:6px">基本資料</div>
     <div id="profile-edit-status" style="font-size:12px;margin-bottom:20px"></div>
 
     <div style="display:flex;flex-direction:column;gap:12px">
       <div>
-        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">品牌 / 店鋪名稱</label>
+        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">品牌 / 店鋪名稱 <span style="color:var(--red)">*</span></label>
         <input type="text" id="pf-brand" class="form-input" placeholder="例：川咖啡">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">公司名稱 <span style="color:var(--red)">*</span></label>
+        <input type="text" id="pf-company" class="form-input" placeholder="例：川咖啡有限公司">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">統一編號 <span style="color:var(--red)">*</span></label>
+        <input type="text" id="pf-tax-id" class="form-input" placeholder="例：12345678" maxlength="8">
       </div>
       <div>
         <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">聯絡電話 <span style="color:var(--red)">*</span></label>
@@ -658,16 +666,16 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
-          <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">縣市</label>
+          <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">縣市 <span style="color:var(--red)">*</span></label>
           <input type="text" id="pf-city" class="form-input" placeholder="例：台中市">
         </div>
         <div>
-          <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">產業類別</label>
+          <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">產業類別 <span style="color:var(--red)">*</span></label>
           <input type="text" id="pf-industry" class="form-input" placeholder="例：咖啡廳">
         </div>
       </div>
       <div>
-        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">創立年份</label>
+        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">創立年份 <span style="color:var(--red)">*</span></label>
         <input type="number" id="pf-year" class="form-input" placeholder="例：2020" min="1900" max="2099">
       </div>
     </div>
@@ -811,6 +819,8 @@ function isProfileEditAllowed(profile) {
 function openProfileModal() {
   const p = currentProfile;
   document.getElementById('pf-brand').value = p.brand_name || '';
+  document.getElementById('pf-company').value = p.company_name || '';
+  document.getElementById('pf-tax-id').value = p.tax_id || '';
   document.getElementById('pf-phone').value = p.phone || '';
   document.getElementById('pf-city').value = p.city || '';
   document.getElementById('pf-industry').value = p.industry || '';
@@ -847,32 +857,57 @@ function closeProfileModal() {
 }
 
 async function saveProfile() {
+  const brand = document.getElementById('pf-brand').value.trim();
+  const company = document.getElementById('pf-company').value.trim();
+  const taxId = document.getElementById('pf-tax-id').value.trim();
   const phone = document.getElementById('pf-phone').value.trim();
-  if (!phone) { alert('請填寫聯絡電話'); return; }
+  const city = document.getElementById('pf-city').value.trim();
+  const industry = document.getElementById('pf-industry').value.trim();
+  const year = document.getElementById('pf-year').value.trim();
+
+  // 所有欄位必填驗證
+  const missing = [];
+  if (!brand) missing.push('品牌 / 店鋪名稱');
+  if (!company) missing.push('公司名稱');
+  if (!taxId) missing.push('統一編號');
+  if (!phone) missing.push('聯絡電話');
+  if (!city) missing.push('縣市');
+  if (!industry) missing.push('產業類別');
+  if (!year) missing.push('創立年份');
+  if (missing.length) {
+    showToast('請填寫：' + missing.join('、'));
+    return;
+  }
+  // 統編格式驗證（8位數字）
+  if (!/^\d{8}$/.test(taxId)) {
+    showToast('統一編號須為 8 位數字');
+    return;
+  }
 
   const btn = document.getElementById('btn-save-profile');
   btn.disabled = true; btn.textContent = '儲存中...';
 
   const updates = {
-    brand_name: document.getElementById('pf-brand').value.trim(),
+    brand_name: brand,
+    company_name: company,
+    tax_id: taxId,
     phone,
-    city: document.getElementById('pf-city').value.trim(),
-    industry: document.getElementById('pf-industry').value.trim(),
-    founded_year: parseInt(document.getElementById('pf-year').value) || null,
+    city,
+    industry,
+    founded_year: parseInt(year) || null,
     profile_edit_count: (currentProfile.profile_edit_count || 0) + 1
   };
 
   const { error } = await sb.from('profiles').update(updates).eq('id', currentUser.id);
   if (error) {
-    alert('儲存失敗：' + error.message);
+    showToast('儲存失敗：' + error.message);
     btn.disabled = false; btn.textContent = '儲存';
     return;
   }
 
-  // 更新本地 profile
   Object.assign(currentProfile, updates);
-  document.getElementById('paid-brand-name').textContent = updates.brand_name || '歡迎回來';
-  document.getElementById('nav-brand').textContent = updates.brand_name || '';
+  document.getElementById('paid-brand-name').textContent = brand;
+  document.getElementById('nav-brand').textContent = brand;
   closeProfileModal();
   showToast('✅ 資料已儲存');
   btn.disabled = false; btn.textContent = '儲存';
