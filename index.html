@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>川收 ChuanPOS｜小店專屬 POS 系統，一次買斷不收月租</title>
-<meta name="description" content="專為咖啡廳、甜點店、選物店設計的 POS 店鋪營運系統。收款、商品管理、營業統計一套搞定。一次買斷永久使用，基本版 $4,800 起。全台自行安裝，台中可到府服務。">
-<meta name="keywords" content="POS系統,點餐系統,收銀系統,小店POS,咖啡廳系統,甜點店系統,選物店,台中POS,買斷POS,無月租POS,營業統計,川收ChuanPOS">
+<title>川收 ChuanPOS｜雲端 POS，輕鬆擁有開店助手</title>
+<meta name="description" content="專為咖啡廳、甜點店、選物店設計的雲端 POS 系統。收款、商品管理、營業統計一套搞定。系統建置費 $3,000 起，年費僅 $1,000。免費試用 20 天。">
+<meta name="keywords" content="POS系統,點餐系統,收銀系統,小店POS,咖啡廳系統,甜點店系統,選物店,雲端POS,低費用POS,營業統計,川收ChuanPOS">
 <meta name="author" content="川收 ChuanPOS">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#0a0a0a">
-<meta property="og:title" content="川收 ChuanPOS｜小店專屬 POS 系統，一次買斷不收月租">
-<meta property="og:description" content="專為咖啡廳、甜點店、選物店設計。收款、商品管理、營業統計一套搞定。基本版 $4,800 起，一次買斷永久使用。">
+<meta property="og:title" content="川收 ChuanPOS｜雲端 POS，輕鬆擁有開店助手">
+<meta property="og:description" content="專為小店設計的雲端 POS 系統。系統建置費 $3,000 起，年費僅 $1,000。收款、商品管理、營業統計一套搞定。免費試用 20 天。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://chuanboss.vercel.app/">
 <meta property="og:locale" content="zh_TW">
@@ -573,6 +573,13 @@ footer {
   .stat-num { font-size: 22px; }
 }
 </style>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#c17f3e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ChuanPOS">
 </head>
 <body>
 
@@ -587,22 +594,22 @@ footer {
   </ul>
   <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
     <a href="auth.html" style="font-size:13px;color:var(--gray-600);text-decoration:none;padding:7px 14px;border:1.5px solid var(--gray-200);border-radius:8px;font-weight:500;transition:all 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-600)'">登入 / 試用</a>
-    <a href="#cta" class="nav-cta">LINE 洽詢 →</a>
+    <a href="https://lin.ee/tkD2n5W" target="_blank" class="nav-cta">LINE 洽詢 →</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <section id="hero">
   <div class="hero-content">
-    <div class="hero-tag">台中在地服務 · 到府安裝與教學</div>
+    <div class="hero-tag">最懂新品牌的開店助手</div>
     <h1 class="hero-title">
       小店專屬的<br>
-      <em>POS 店鋪</em><br>營運系統
+      <em>雲端 POS系統，</em><br>店鋪營運系統
     </h1>
     <p class="hero-subtitle">
       收款、商品管理、營業統計，<strong>一套系統全部搞定</strong>。<br>
       雲端架構，電腦、平板、手機都能用。<br>
-      不收月租，一次買斷永久使用。<br>
+      低建置費起步，年費僅 $1,000 持續享有完整服務。<br>
       所有版本提供 20 天免費試用。
     </p>
     <div class="hero-actions">
@@ -611,16 +618,16 @@ footer {
     </div>
     <div class="hero-stats">
       <div class="stat-item">
-        <span class="stat-num">$4,800</span>
-        <span class="stat-label">基本版起</span>
+        <span class="stat-num">$3,000</span>
+        <span class="stat-label">建置費起</span>
       </div>
       <div class="stat-item">
-        <span class="stat-num">$0</span>
-        <span class="stat-label">月租費用</span>
+        <span class="stat-num">$1,000</span>
+        <span class="stat-label">年費 / 年</span>
       </div>
       <div class="stat-item">
-        <span class="stat-num">買斷</span>
-        <span class="stat-label">永久使用</span>
+        <span class="stat-num">20天</span>
+        <span class="stat-label">免費試用</span>
       </div>
     </div>
   </div>
@@ -718,13 +725,13 @@ footer {
     </div>
     <div class="pain-item fade-in">
       <span class="pain-icon">💸</span>
-      <div class="pain-q">POS 每個月都在扣錢？</div>
-      <div class="pain-a">很多 POS 系統月租制，每個月 $500、$1,000、甚至 $2,000，一年就要 $6,000–$24,000。<strong>川收一次買斷，不用再付月費。</strong></div>
+      <div class="pain-q">市面 POS 費用太高，回不了本？</div>
+      <div class="pain-a">很多 POS 系統月租制，每個月 $500–$2,000，每年都要 $6,000–$24,000，新品牌根本撐不住。<strong>川收只需低建置費起步，之後年費僅 $1,000，讓你把錢花在刀口上。</strong></div>
     </div>
     <div class="pain-item fade-in">
       <span class="pain-icon">😰</span>
       <div class="pain-q">系統太複雜，員工學不會？</div>
-      <div class="pain-a">很多 POS 功能很多，操作反而更慢。<strong>川收只保留小店最常用的功能</strong>，介面簡單，員工幾分鐘就能上手。</div>
+      <div class="pain-a">很多 POS 功能很多，操作反而更慢。<strong>川收只保留小店最常用、最需要的功能</strong>，介面簡單，幾分鐘就能上手。</div>
     </div>
   </div>
 </section>
@@ -736,7 +743,7 @@ footer {
       <div class="section-eyebrow">Pricing Plans</div>
       <h2 class="section-title" style="margin-bottom:0">選擇適合你的方案</h2>
     </div>
-    <p style="font-size:14px;color:var(--gray-400);max-width:240px;text-align:right">一次買斷，永久使用<br>不收任何月租或年費</p>
+    <p style="font-size:14px;color:var(--gray-400);max-width:280px;text-align:right">系統建置費（一次性）<br>+ 年費 $1,000 / 年（含功能更新）<br><span style="color:var(--green);font-weight:600">首年加贈 2 個月</span></p>
   </div>
   <div class="plans-grid fade-in">
 
@@ -744,8 +751,8 @@ footer {
     <div class="plan-card">
       <div class="plan-header">
         <div class="plan-name">Basic · 基本版</div>
-        <div class="plan-price">$4,800<span> 元</span></div>
-        <div class="plan-desc">剛起步的小店，快速上線收款統計</div>
+        <div class="plan-price">$3,000<span> 元建置費</span></div>
+        <div class="plan-desc">剛起步的小店，快速上線收款統計<br><span style="color:var(--green);font-size:12px">＋年費 $2,000／年（首年贈 2 個月）</span></div>
       </div>
       <div class="plan-divider"></div>
       <div class="plan-features">
@@ -756,8 +763,7 @@ footer {
         <div class="plan-feature"><span class="check">✓</span>訂單紀錄查詢</div>
         <div class="plan-feature"><span class="check">✓</span>今日 / 本週 / 本月 / 自訂統計</div>
         <div class="plan-feature"><span class="check">✓</span>付款方式統計</div>
-        <div class="plan-feature"><span class="dash">—</span>商品圖片、CSV 上傳</div>
-        <div class="plan-feature"><span class="dash">—</span>訂單修改 / 刪除</div>
+        <div class="plan-feature"><span class="dash">—</span>連接熱感應出單機(開發中)</div>
       </div>
       <a href="auth.html" class="plan-cta">免費試用 20 天</a>
     </div>
@@ -767,13 +773,14 @@ footer {
       <div class="plan-badge">⭐ 最多人選擇</div>
       <div class="plan-header">
         <div class="plan-name">Advanced · 進階版</div>
-        <div class="plan-price">$8,800<span> 元</span></div>
-        <div class="plan-desc">功能完整，適合大多數小店</div>
+        <div class="plan-price">$5,800<span> 元建置費</span></div>
+        <div class="plan-desc">功能完整，適合大多數小店<br><span style="color:var(--accent-light);font-size:12px">＋年費 $2,000／年（首年贈 3 個月）</span></div>
       </div>
       <div class="plan-divider"></div>
       <div class="plan-features">
-        <div class="plan-feature highlight"><span class="check">✓</span>基本版全功能</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>基本版所有功能</div>
         <div class="plan-feature highlight"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">20 個</strong></div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">50 個</strong></div>
         <div class="plan-feature highlight"><span class="check">✓</span>商品規格 <strong style="color:var(--accent)">2 種</strong>（各 3 選項）</div>
         <div class="plan-feature"><span class="check">✓</span>商品圖片上傳</div>
         <div class="plan-feature"><span class="check">✓</span>CSV 批量上傳（含規格）</div>
@@ -783,6 +790,8 @@ footer {
         <div class="plan-feature"><span class="check">✓</span>每日結帳 / 營業日誌</div>
         <div class="plan-feature"><span class="check">✓</span>打卡營業日管理</div>
         <div class="plan-feature"><span class="check">✓</span>商品拖曳排序</div>
+        <div class="plan-feature"><span class="check">✓</span>報表匯出（每日 + 逐筆）</div>
+        <div class="plan-feature"><span class="dash">—</span>連接熱感應出單機(開發中)</div>
       </div>
       <a href="auth.html" class="plan-cta">免費試用 20 天</a>
     </div>
@@ -791,19 +800,21 @@ footer {
     <div class="plan-card">
       <div class="plan-header">
         <div class="plan-name">Premium · 高級版</div>
-        <div class="plan-price">$15,000<span> 元</span></div>
-        <div class="plan-desc">無限商品，完整功能全開放</div>
+        <div class="plan-price">$8,800<span> 元建置費</span></div>
+        <div class="plan-desc">無限商品，完整功能全開放<br><span style="color:var(--green);font-size:12px">＋年費 $1,000／年（首年贈 3 個月）</span></div>
       </div>
       <div class="plan-divider"></div>
       <div class="plan-features">
-        <div class="plan-feature highlight"><span class="check">✓</span>進階版全功能</div>
-        <div class="plan-feature highlight"><span class="check">✓</span>商品分類 / 數量 <strong style="color:var(--accent)">無限</strong></div>
-        <div class="plan-feature highlight"><span class="check">✓</span>商品規格 <strong style="color:var(--accent)">3 種</strong>（各 5 選項）</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>進階版所有功能</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">20 個</strong></div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">120 個</strong></div>
+        <div class="plan-feature highlight"><span class="check">✓</span>商品規格 <strong style="color:var(--accent)">無限</strong>（各 5 選項）</div>
         <div class="plan-feature"><span class="check">✓</span>感謝語設定（10 則）</div>
+        <div class="plan-feature"><span class="check">✓</span>適合多人多裝置使用</div>
+        <div class="plan-feature"><span class="check">✓</span>後台密碼保護</div>
         <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
-        <div class="plan-feature"><span class="check">✓</span>桌號點餐（開發中）</div>
-        <div class="plan-feature"><span class="check">✓</span>每月報表 Email 自動寄送</div>
-        <div class="plan-feature"><span class="check">✓</span>多人帳號（開發中）</div>
+        <div class="plan-feature"><span class="check">✓</span>報表匯出（每日 + 逐筆）</div>
+        <div class="plan-feature"><span class="dash">—</span>連接熱感應出單機(開發中)</div>
       </div>
       <a href="auth.html" class="plan-cta">免費試用 20 天</a>
     </div>
@@ -817,16 +828,16 @@ footer {
       </div>
       <div class="plan-divider" style="background:rgba(255,255,255,0.08)"></div>
       <div class="plan-features">
-        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>客製化功能開發</div>
-        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>客製化介面排版</div>
-        <div class="plan-feature" style="color:rgba(255,255,255,0.9)"><span class="check" style="color:#e8c99a">✓</span>專屬需求討論</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>客製化功能開發</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>客製化介面排版</div>
+        <div class="plan-feature highlight"><span class="check">✓</span>專屬需求討論</div>
       </div>
-      <a href="#cta" class="plan-cta">聯絡洽詢</a>
+      <a href="https://lin.ee/tkD2n5W" target="_blank" class="plan-cta">LINE 聯繫洽詢</a>
     </div>
 
   </div>
   <p style="text-align:center;margin-top:24px;font-size:12px;color:var(--gray-400)">
-    ※ 所有版本均提供 20 天免費試用，體驗後再決定購買。正式版為雲端架構，電腦、平板、手機均可使用。
+    ※ 所有版本均提供 20 天免費試用，體驗後再決定購買。首年加贈 3 個月，到期後每年僅需 $1,000 即可續用。年費到期未續費將凍結帳號。
   </p>
 </section>
 
@@ -840,7 +851,7 @@ footer {
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:960px;margin:0 auto" class="fade-in">
     <div style="padding:32px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--gray-50)">
       <div style="font-size:32px;margin-bottom:14px">💳</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:10px">快速收款</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px">快速結帳</div>
       <div style="font-size:14px;color:var(--gray-600);line-height:1.7">輸入商品或點選商品，即可快速建立訂單。支援多種付款方式，方便結帳收款。</div>
     </div>
     <div style="padding:32px;border-radius:20px;border:1.5px solid var(--gray-200);background:var(--gray-50)">
@@ -885,7 +896,7 @@ footer {
         <li>冰 / 熱 / 升級套組 彈性設定</li>
         <li>多語言感謝語，輕鬆接待外國客人</li>
         <li>桌號點餐，輕鬆管理外帶內用</li>
-        <li>每月報表自動寄信，老闆輕鬆掌握</li>
+        <li>每月報表統整，輕鬆掌握原料消耗</li>
       </ul>
     </div>
     <div class="industry-demo">
@@ -899,10 +910,10 @@ footer {
       </div>
       <div class="demo-body">
         <div class="demo-cats">
-          <div class="demo-cat active">台灣單品</div>
-          <div class="demo-cat">黃金60</div>
+          <div class="demo-cat active">台灣手沖單品</div>
           <div class="demo-cat">拿鐵系列</div>
           <div class="demo-cat">其他飲品</div>
+          <div class="demo-cat">甜品</div>
         </div>
         <div class="demo-items">
           <div class="demo-item">
@@ -917,13 +928,13 @@ footer {
           </div>
           <div class="demo-item">
             <div class="demo-item-img">🥛</div>
-            <div class="demo-item-name">玫瑰鹽拿鐵</div>
-            <div class="demo-item-price">$190</div>
+            <div class="demo-item-name">焦糖拿鐵</div>
+            <div class="demo-item-price">$160</div>
           </div>
           <div class="demo-item">
-            <div class="demo-item-img">☕</div>
-            <div class="demo-item-name">嘉義 光華村 日曬</div>
-            <div class="demo-item-price">$230</div>
+            <div class="demo-item-img">🍰</div>
+            <div class="demo-item-name">巴斯克蛋糕</div>
+            <div class="demo-item-price">$90</div>
           </div>
         </div>
       </div>
@@ -933,12 +944,12 @@ footer {
   <div id="ind-drink" class="industry-content fade-in">
     <div class="industry-info">
       <div class="industry-badge badge-advanced">推薦 進階版</div>
-      <h3 class="industry-name">手搖飲料店</h3>
-      <p class="industry-desc">快速點餐、多種甜度冰量選項、外帶為主。進階版讓你輕鬆管理每日出杯數與熱銷品項。</p>
+      <h3 class="industry-name">文青小吃店</h3>
+      <p class="industry-desc">快速點餐、多種口味選項、外帶為主。進階版讓你輕鬆管理每日熱銷品項。</p>
       <ul class="industry-features">
-        <li>甜度 / 冰量規格自由設定</li>
+        <li>口味 / 規格自由設定</li>
         <li>外帶快速點餐模式</li>
-        <li>感謝語自訂，增加回客率</li>
+        <li>感謝語自訂，增加回客率(連接出單機開發中)</li>
         <li>每日結帳報表，快速對帳</li>
         <li>多種收款方式管理</li>
       </ul>
@@ -954,30 +965,30 @@ footer {
       </div>
       <div class="demo-body">
         <div class="demo-cats">
-          <div class="demo-cat active">台灣茶</div>
-          <div class="demo-cat">奶茶系列</div>
-          <div class="demo-cat">果茶</div>
+          <div class="demo-cat active">招牌美食</div>
+          <div class="demo-cat">串燒</div>
+          <div class="demo-cat">熟食</div>
         </div>
         <div class="demo-items">
           <div class="demo-item">
-            <div class="demo-item-img">🧋</div>
-            <div class="demo-item-name">珍珠奶茶</div>
-            <div class="demo-item-price">$65</div>
+            <div class="demo-item-img">🥟</div>
+            <div class="demo-item-name">日式煎餃</div>
+            <div class="demo-item-price">$80</div>
           </div>
           <div class="demo-item">
-            <div class="demo-item-img">🍵</div>
-            <div class="demo-item-name">四季春茶</div>
+            <div class="demo-item-img">🍢</div>
+            <div class="demo-item-name">關東煮</div>
             <div class="demo-item-price">$45</div>
           </div>
           <div class="demo-item">
-            <div class="demo-item-img">🧋</div>
-            <div class="demo-item-name">烏龍拿鐵</div>
-            <div class="demo-item-price">$75</div>
+            <div class="demo-item-img">🥘</div>
+            <div class="demo-item-name">日式燉飯</div>
+            <div class="demo-item-price">$160</div>
           </div>
           <div class="demo-item">
-            <div class="demo-item-img">🍓</div>
-            <div class="demo-item-name">草莓果茶</div>
-            <div class="demo-item-price">$80</div>
+            <div class="demo-item-img">🍤</div>
+            <div class="demo-item-name">天婦羅</div>
+            <div class="demo-item-price">$130</div>
           </div>
         </div>
       </div>
@@ -990,7 +1001,7 @@ footer {
       <h3 class="industry-name">手作甜點店</h3>
       <p class="industry-desc">商品圖片讓客人一眼選擇、感謝語增加品牌溫度，進階版就能滿足甜點店的所有需求。</p>
       <ul class="industry-features">
-        <li>商品圖片上傳，讓甜點更誘人</li>
+        <li>商品圖片上傳，點餐更快速</li>
         <li>規格設定（口味 / 尺寸 / 數量）</li>
         <li>感謝語設定，附上社群帳號</li>
         <li>商品銷售統計，掌握人氣品項</li>
@@ -1008,9 +1019,9 @@ footer {
       </div>
       <div class="demo-body">
         <div class="demo-cats">
-          <div class="demo-cat active">蛋糕</div>
+          <div class="demo-cat active">達克瓦茲</div>
           <div class="demo-cat">塔類</div>
-          <div class="demo-cat">餅乾禮盒</div>
+          <div class="demo-cat">馬卡龍</div>
         </div>
         <div class="demo-items">
           <div class="demo-item">
@@ -1045,9 +1056,10 @@ footer {
       <p class="industry-desc">實體商品有多種規格，商品圖片讓選購更直覺。進階版的規格設定讓香氛、蠟燭管理輕鬆無比。</p>
       <ul class="industry-features">
         <li>商品規格設定（容量 / 香味 / 顏色）</li>
-        <li>商品圖片，讓選物更有感</li>
+        <li>同香味多種產品 / 同產品多種香味</li>
         <li>購買商品模式，不需要內用外帶</li>
-        <li>收據作為購買憑證</li>
+        <li>熱銷香味一目瞭然</li>
+        <li>免用統一發票，收據作為購買憑證(連接出單機開發中)</li>
         <li>每日銷售統計快速對帳</li>
       </ul>
     </div>
@@ -1101,8 +1113,8 @@ footer {
         <li>快速點餐收款，不拖延排隊</li>
         <li>現金、LINE Pay 等多種收款</li>
         <li>當日統計，即時掌握銷售</li>
-        <li>熱感應收據列印</li>
-        <li>輕量化，筆電即可運行</li>
+        <li>熱感應收據列印(連接出單機開發中)</li>
+        <li>輕量化，筆電手機即可運行</li>
       </ul>
     </div>
     <div class="industry-demo">
@@ -1165,33 +1177,33 @@ footer {
     <tbody>
       <tr>
         <td>費用模式</td>
-        <td class="us compare-yes">一次買斷</td>
+        <td class="us compare-yes">建置費 + 年費</td>
         <td class="compare-no">月租 $800–1,500</td>
         <td class="compare-no">月租 $500–2,000</td>
       </tr>
       <tr>
-        <td>一年總費用（進階功能）</td>
-        <td class="us compare-yes">$8,800 永久</td>
+        <td>第一年總費用（進階功能）</td>
+        <td class="us compare-yes">$5,800 建置 + $2,000 年費</td>
         <td class="compare-no">$9,600–18,000</td>
         <td class="compare-no">$6,000–24,000</td>
       </tr>
       <tr>
-        <td>安裝模式</td>
-        <td class="us compare-yes">授權碼安裝 OR 到府安裝</td>
-        <td class="compare-no">需自行設定</td>
-        <td class="compare-partial">加價服務</td>
+        <td>免費試用</td>
+        <td class="us compare-yes">✓ 20 天完整試用</td>
+        <td class="compare-partial">7–14 天</td>
+        <td class="compare-no">不提供</td>
       </tr>
       <tr>
-        <td>台中在地支援</td>
-        <td class="us compare-yes">✓ 可面對面</td>
-        <td class="compare-no">線上客服</td>
-        <td class="compare-no">線上客服</td>
-      </tr>
-      <tr>
-        <td>網路斷線仍可使用</td>
-        <td class="us compare-yes">✓ 本地端運行</td>
-        <td class="compare-no">需要網路</td>
+        <td>雲端資料同步</td>
+        <td class="us compare-yes">✓ 多裝置同步</td>
+        <td class="compare-yes">✓</td>
         <td class="compare-partial">部分功能</td>
+      </tr>
+      <tr>
+        <td>功能持續升級</td>
+        <td class="us compare-yes">✓ 年費涵蓋更新</td>
+        <td class="compare-partial">部分需加購</td>
+        <td class="compare-no">另外收費</td>
       </tr>
       <tr>
         <td>客製化開發</td>
@@ -1200,27 +1212,28 @@ footer {
         <td class="compare-no">固定功能</td>
       </tr>
       <tr>
-        <td>資料安全（本機儲存）</td>
-        <td class="us compare-yes">✓ 資料在你手上</td>
-        <td class="compare-partial">雲端儲存</td>
-        <td class="compare-partial">雲端儲存</td>
+        <td>LINE 即時客服</td>
+        <td class="us compare-yes">✓ 直接聯繫</td>
+        <td class="compare-no">Email / 工單</td>
+        <td class="compare-no">Email / 工單</td>
       </tr>
     </tbody>
   </table>
 </section>
 
-<!-- WHY BUYOUT -->
+<!-- WHY CLOUD -->
 <section style="padding:80px 5%;background:var(--black);color:var(--white)">
   <div class="fade-in" style="max-width:640px;margin:0 auto;text-align:center">
-    <div class="section-eyebrow">Why No Subscription</div>
-    <h2 class="section-title" style="color:var(--white);margin-bottom:20px">為什麼不做<br>月租 POS？</h2>
+    <div class="section-eyebrow">Why ChuanPOS</div>
+    <h2 class="section-title" style="color:var(--white);margin-bottom:20px">為什麼川收<br>是新品牌最好的選擇？</h2>
     <p style="font-size:16px;color:rgba(255,255,255,0.55);line-height:1.9;margin-bottom:32px">
-      很多 POS 系統採用訂閱制，因為這樣每個月都可以持續收費。<br>
-      但對小店來說，其實負擔很重。<br><br>
-      所以川收選擇：<strong style="color:var(--accent-light);font-size:20px">一次買斷</strong><br>
-      買了之後，就可以一直使用。<br>
-      不用再擔心每個月被系統扣錢。<br><br>
-      而且在決定購買前，你可以先<strong style="color:var(--accent-light)">免費試用 20 天</strong>，<br>
+      剛開店，最重要的是省錢、省時間，把資源花在真正的地方。<br><br>
+      川收的設計理念很簡單：<br>
+      <strong style="color:var(--accent-light);font-size:18px">低門檻進入，長期陪你成長</strong><br><br>
+      一次性建置費讓你輕鬆起步，<br>
+      每年只要 $2,000 的雲端年費，<br>
+      涵蓋系統維護、功能更新、多裝置同步與資料備份。<br><br>
+      而且在決定之前，你可以先<strong style="color:var(--accent-light)">免費試用 20 天</strong>，<br>
       確認適合自己的店再出手。
     </p>
     <a href="auth.html" class="btn-primary" style="display:inline-flex">免費試用 20 天 →</a>
@@ -1235,32 +1248,36 @@ footer {
   </div>
   <div class="faq-grid fade-in">
     <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">費用怎麼計算？<div class="faq-icon">+</div></div>
+      <div class="faq-a">分為兩個部分：一次性的系統建置費（基本版 $3,000 / 進階版 $5,800 / 高級版 $8,800），以及每年 $2,000 的雲端年費。首次購買會加贈 2 個月，也就是第一年實際享有 14 個月的服務。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">年費包含什麼？<div class="faq-icon">+</div></div>
+      <div class="faq-a">雲端年費（$2,000/年）涵蓋：系統持續維護與穩定運行、功能持續升級（新功能自動更新）、多裝置登入與資料同步、雲端資料備份。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">年費到期不續費會怎樣？<div class="faq-icon">+</div></div>
+      <div class="faq-a">年費到期後未續費，帳號將自動凍結，資料不予保留。如需重新開通，須支付開通費 $2,000 + 新一年年費 $2,000，資料無法恢復，需重新設定。建議在到期前提早續費以免中斷。</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">需要什麼設備？<div class="faq-icon">+</div></div>
-      <div class="faq-a">川收 POS 為雲端架構，只需要有瀏覽器的設備即可使用，包含電腦、平板、手機。不需要下載安裝任何軟體，直接開啟網址就能操作。</div>
+      <div class="faq-a">川收 POS 為雲端架構，只需要有瀏覽器的設備即可，包含電腦、平板、手機。不需要下載安裝任何軟體，直接開啟網址就能操作。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">需要網路才能用嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">是的，川收為雲端 POS，需要網路連線。資料即時同步，可在多台裝置上同時查看訂單與統計。</div>
+      <div class="faq-a">是的，川收為雲端POS系統，需要網路連線。資料即時同步至雲端，可在多台裝置上同時查看訂單與統計數據，更換設備不影響使用。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">資料安全嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">資料儲存在安全的雲端資料庫（Supabase），每位帳號的資料完全隔離，只有本人才能存取。如需匯出資料，可隨時下載備份。</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">外縣市也可以使用嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">可以，全台灣都能使用。雲端架構不受地區限制，只要有網路都可以正常操作。</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">不會用怎麼辦？<div class="faq-icon">+</div></div>
-      <div class="faq-a">介面設計簡單直觀，大多數店家幾分鐘就能上手。如有操作問題，可透過 LINE 聯繫客服，提供遠端協助。</div>
+      <div class="faq-a">資料儲存在安全的雲端資料庫，每位帳號的資料完全隔離，只有本人才能存取。可隨時從統計頁匯出 CSV 報表，自行備份保存。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">可以先試用再決定嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">可以！所有版本均提供 20 天免費試用，不需要信用卡，只需要免費註冊帳號即可開始體驗完整功能，試用後再決定是否購買。</div>
+      <div class="faq-a">可以！所有版本均提供 20 天免費試用，不需要信用卡，只需免費註冊帳號即可體驗完整功能，試用後再決定是否購買。</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">買斷之後還有費用嗎？<div class="faq-icon">+</div></div>
-      <div class="faq-a">買斷後基本使用不收任何費用。若日後需要進階雲端同步服務（如跨裝置同步、資料備份保障），可選購年費方案；早期購買者享有永久免年費優惠。</div>
+      <div class="faq-q">訂單資料可保存多久？<div class="faq-icon">+</div></div>
+      <div class="faq-a">6 個月，建議每個月結束時，先下載該月報表做備份。</div>
     </div>
   </div>
 </section>
@@ -1273,7 +1290,7 @@ footer {
     <p class="cta-desc">免費試用 20 天，不需要信用卡。體驗完整功能後再決定購買。<br>有任何問題，也歡迎 LINE 直接詢問。</p>
     <div class="cta-actions">
       <a href="auth.html" class="btn-primary" style="background:var(--accent);border-color:var(--accent)">免費試用 20 天 →</a>
-      <a href="https://line.me" class="btn-line">
+      <a href="https://lin.ee/tkD2n5W" target="_blank" class="btn-line">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
         LINE 免費諮詢
       </a>
@@ -1316,5 +1333,13 @@ function toggleFaq(el) {
 }
 </script>
 
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW 註冊失敗:', err));
+  });
+}
+</script>
 </body>
 </html>
