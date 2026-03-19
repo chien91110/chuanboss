@@ -247,6 +247,13 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 <link rel="prefetch" href="pos-orders-paid.html">
 <link rel="prefetch" href="pos-stats-paid.html">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#c17f3e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ChuanPOS">
 </head>
 <body>
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
@@ -1390,5 +1397,14 @@ async function verifyAdminPassword() {
   }
 }
 </script>
+
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+  </script>
 </body>
 </html>

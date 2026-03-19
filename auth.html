@@ -277,6 +277,13 @@ input::placeholder { color: var(--gray-400); }
   .form-row { grid-template-columns: 1fr; }
 }
 </style>
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#c17f3e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ChuanPOS">
 </head>
 <body>
 
@@ -690,5 +697,14 @@ async function sendResetEmail() {
   }
 }
 </script>
+
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+  </script>
 </body>
 </html>

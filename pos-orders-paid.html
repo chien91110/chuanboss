@@ -205,6 +205,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 <link rel="prefetch" href="pos-stats-paid.html">
 <link rel="prefetch" href="pos-admin-paid.html">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#c17f3e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ChuanPOS">
 </head>
 <body>
 
@@ -335,6 +342,7 @@ let currentUser = null, currentTrial = null;
 let orders = [];
 let currentFilter = 'today';
 let canDelete = false;
+let canEdit = false;
 let otSettings = { enabled: false, types: [] };
 
 function showInitError(e) {
@@ -357,7 +365,8 @@ async function init() {
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
     if (!profile || !profile.is_paid) { window.location.href = 'not-activated.html'; return; }
     currentPlan = profile.plan || 'basic';
-    canDelete = currentPlan !== 'basic';
+    canDelete = true;              // 所有版本都可刪除
+    canEdit = currentPlan !== 'basic'; // 基本版不可編輯
 
     if (profile.brand_name) {
       document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 訂單紀錄`;
@@ -537,10 +546,10 @@ function renderOrderCard(o) {
         </div>`).join('')}
       ${more}
     </div>
-    ${canDelete ? `
+    ${(canDelete || canEdit) ? `
     <div class="order-card-footer">
-      <button class="btn-edit-order" onclick="event.stopPropagation();openEditModal('${o.id}')">編輯</button>
-      <button class="btn-delete-order" onclick="event.stopPropagation();deleteOrder('${o.id}')">刪除訂單</button>
+      ${canEdit ? `<button class="btn-edit-order" onclick="event.stopPropagation();openEditModal('${o.id}')">編輯</button>` : ''}
+      ${canDelete ? `<button class="btn-delete-order" onclick="event.stopPropagation();deleteOrder('${o.id}')">刪除訂單</button>` : ''}
     </div>` : ''}
   </div>`;
 }
@@ -709,5 +718,14 @@ function go(url) {
 
 init();
 </script>
+
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+  </script>
 </body>
 </html>

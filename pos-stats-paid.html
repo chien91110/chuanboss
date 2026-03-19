@@ -222,6 +222,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 <link rel="prefetch" href="pos-orders-paid.html">
 <link rel="prefetch" href="pos-admin-paid.html">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#c17f3e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ChuanPOS">
 </head>
 <body>
 
@@ -937,5 +944,14 @@ function go(url) {
 
 init();
 </script>
+
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+  </script>
 </body>
 </html>

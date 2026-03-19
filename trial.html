@@ -80,7 +80,7 @@ nav {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* SCREENS */
-.screen { display: none; padding: 65px 5% 60px; }
+.screen { display: none; padding: 88px 5% 60px; }
 .screen.active { display: block; }
 
 /* ── 選擇版本畫面 ── */
@@ -400,6 +400,13 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 .btn-start-trial:active { transform: scale(0.97) translateY(0) !important; }
 .btn-confirm:active { transform: scale(0.97) !important; }
 </style>
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#c17f3e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ChuanPOS">
 </head>
 <body>
 
@@ -875,5 +882,14 @@ async function handleLogout() {
 
 init();
 </script>
+
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+      });
+    }
+  </script>
 </body>
 </html>
