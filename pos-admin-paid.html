@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>川收 ChuanPOS｜後台管理</title>
+<title>川店長 ChuanPOS｜後台管理</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -259,7 +259,7 @@ label.form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-6
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
 <div id="top-nav">
-  <div class="nav-logo-small">川收 <span>Chuan</span>POS</div>
+  <div class="nav-logo-small">川店長 <span>Chuan</span>POS</div>
   <div class="nav-brand" id="nav-brand">後台管理</div>
 </div>
 
@@ -1205,7 +1205,7 @@ function downloadTemplate() {
   const csv = [header, ...rows].join('\n');
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = '川收商品範本.csv'; a.click();
+  a.download = '川店長商品範本.csv'; a.click();
 }
 
 function parseCSVLine(line) {

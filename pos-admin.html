@@ -425,7 +425,7 @@ body.frozen-mode .btn-edit-order {
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
 <div id="top-nav">
-  <div class="nav-logo-small">川收 <span>Chuan</span>POS</div>
+  <div class="nav-logo-small">川店長 <span>Chuan</span>POS</div>
   <div class="nav-brand" id="nav-brand">後台管理</div>
 </div>
 
@@ -1378,7 +1378,7 @@ function downloadTemplate() {
   const csv = [header, ...rows].join('\n');
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = '川收商品範本.csv'; a.click();
+  a.download = '川店長商品範本.csv'; a.click();
 }
 
 function parseCSVLine(line) {

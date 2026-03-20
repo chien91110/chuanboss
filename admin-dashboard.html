@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>川收 ChuanPOS｜管理員後台</title>
+<title>川店長 ChuanPOS｜管理員後台</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -130,7 +130,7 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
 </div>
 
 <nav>
-  <div class="nav-logo">川收 <span>Chuan</span>POS</div>
+  <div class="nav-logo">川店長 <span>Chuan</span>POS</div>
   <div class="nav-admin-badge">ADMIN</div>
   <div class="nav-spacer"></div>
   <div class="nav-user" id="nav-user"></div>
@@ -735,14 +735,14 @@ function openEmailModal(trialId) {
 
   document.getElementById('email-modal-sub').textContent = `收件人：${u.profile.email}`;
   document.getElementById('email-preview').innerHTML = `
-    <strong>主旨：</strong>川收 ChuanPOS｜你的試用即將結束（剩 ${daysLeft} 天）<br><br>
+    <strong>主旨：</strong>川店長 ChuanPOS｜你的試用即將結束（剩 ${daysLeft} 天）<br><br>
     <strong>內容：</strong><br>
     Hi ${u.profile.brand_name}，<br><br>
-    你的川收 ChuanPOS 試用即將於 <strong>${expiresStr}</strong> 結束（剩 ${daysLeft} 天）。<br><br>
+    你的川店長 ChuanPOS 試用即將於 <strong>${expiresStr}</strong> 結束（剩 ${daysLeft} 天）。<br><br>
     試用結束後帳號將自動凍結，你在試用期間建立的商品和訂單資料仍會保留。<br><br>
     如果試用滿意，歡迎 LINE 聯繫購買正式版：<br>
     → https://line.me<br><br>
-    川收 ChuanPOS 團隊
+    川店長 ChuanPOS 團隊
   `;
   document.getElementById('modal-email').classList.add('show');
   document.body.style.overflow = 'hidden';
@@ -766,16 +766,16 @@ async function sendEmail() {
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: `川收 ChuanPOS <${FROM_EMAIL}>`,
+        from: `川店長 ChuanPOS <${FROM_EMAIL}>`,
         to: [emailTarget.profile.email],
-        subject: `川收 ChuanPOS｜你的試用即將結束（剩 ${daysLeft} 天）`,
+        subject: `川店長 ChuanPOS｜你的試用即將結束（剩 ${daysLeft} 天）`,
         html: `
           <p>Hi ${emailTarget.profile.brand_name}，</p>
-          <p>你的川收 ChuanPOS 試用即將於 <strong>${expiresStr}</strong> 結束（剩 <strong>${daysLeft} 天</strong>）。</p>
+          <p>你的川店長 ChuanPOS 試用即將於 <strong>${expiresStr}</strong> 結束（剩 <strong>${daysLeft} 天</strong>）。</p>
           <p>試用結束後帳號將自動凍結，你在試用期間建立的商品和訂單資料仍會保留。</p>
           <p>如果試用滿意，歡迎 LINE 聯繫購買正式版：<br>
           <a href="https://line.me">https://line.me</a></p>
-          <p>川收 ChuanPOS 團隊</p>
+          <p>川店長 ChuanPOS 團隊</p>
         `
       })
     });
