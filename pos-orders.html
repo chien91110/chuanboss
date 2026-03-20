@@ -681,7 +681,7 @@ function renderOrders() {
   // 按日期分組
   const groups = {};
   orders.forEach(o => {
-    const d = new Date(o.created_at).toLocaleDateString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', weekday:'short' });
+    const d = new Date(o.created_at).toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year:'numeric', month:'2-digit', day:'2-digit', weekday:'short' });
     if (!groups[d]) groups[d] = [];
     groups[d].push(o);
   });
@@ -695,7 +695,7 @@ function renderOrders() {
 }
 
 function renderOrderCard(o) {
-  const time = new Date(o.created_at).toLocaleTimeString('zh-TW', { hour:'2-digit', minute:'2-digit' });
+  const time = new Date(o.created_at).toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour:'2-digit', minute:'2-digit' });
   const items = o.order_items || [];
   const topItems = items.slice(0, 3);
   const more = items.length > 3 ? `<div class="order-item-row" style="color:var(--gray-400)">還有 ${items.length - 3} 項...</div>` : '';
@@ -734,7 +734,7 @@ function openDetail(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
   const items = o.order_items || [];
-  const time = new Date(o.created_at).toLocaleString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const time = new Date(o.created_at).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
 
   document.getElementById('detail-num').textContent = `訂單 #${o.order_number}`;
   document.getElementById('detail-total').textContent = `$${(o.total||0).toLocaleString()}`;

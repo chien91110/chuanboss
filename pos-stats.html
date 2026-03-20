@@ -672,6 +672,9 @@ async function loadStats() {
 let _lastOrders = []; // loadStats 後快取資料供匯出用
 
 function showExportModal() {
+  // 試用版不開放匯出
+  showToast('匯出功能僅限正式版使用');
+  return;
   if (!_lastOrders.length) {
     showToast('請先點擊「查詢」載入資料後再匯出'); return;
   }
@@ -709,7 +712,9 @@ function exportReport(type) {
     csv = '\uFEFF日期,營業額,訂單數,平均客單價,折扣金額\n';
     const map = {};
     orders.forEach(o => {
-      const d = o.created_at.slice(0,10);
+      const d = new Date(o.created_at).toLocaleDateString('zh-TW', {
+        timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).replace(/\//g, '-');
       if (!map[d]) map[d] = { revenue:0, count:0, discount:0 };
       map[d].revenue += o.total || 0;
       map[d].count += 1;
@@ -730,8 +735,8 @@ function exportReport(type) {
     csv = '\uFEFF訂單號,日期,時間,訂單類型,付款方式,小計,折扣,總計,商品明細\n';
     orders.forEach(o => {
       const dt = new Date(o.created_at);
-      const date = dt.toLocaleDateString('zh-TW');
-      const time = dt.toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+      const date = dt.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
+      const time = dt.toLocaleTimeString('zh-TW', { timeZone: 'Asia/Taipei', hour:'2-digit', minute:'2-digit' });
       const items = (o.order_items || [])
         .map(i => `${i.product_name}×${i.quantity}`)
         .join('、');
