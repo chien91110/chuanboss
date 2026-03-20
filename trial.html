@@ -843,6 +843,15 @@ async function enforceDowngradeOnLogin(plan) {
     .order('sort_order');
   const products = prods || [];
 
+  // 基本版圖片清除
+  if (plan === 'basic') {
+    const withImg = products.filter(p => p.image_url);
+    for (const p of withImg) {
+      tasks.push(sb.from('products').update({ image_url: null }).eq('id', p.id));
+    }
+    if (withImg.length) console.log(`降版清除：已清除 ${withImg.length} 個商品圖片`);
+  }
+
   // 商品數超額
   if (products.length > lim.products) {
     const excess = products.slice(lim.products);

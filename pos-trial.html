@@ -852,7 +852,7 @@ function renderProducts() {
     }
     return `
     <div class="product-card${outOfStock ? ' out-of-stock' : ''}" onclick="addToCart('${p.id}')">
-      ${p.image_url
+      ${(p.image_url && currentPlan !== 'basic')
         ? `<img class="product-img" src="${p.image_url}" alt="${p.name}">`
         : `<div class="product-img-placeholder">🛍</div>`}
       <div class="product-name">${p.name}</div>

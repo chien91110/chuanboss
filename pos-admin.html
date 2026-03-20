@@ -787,6 +787,18 @@ async function enforceDowngrade() {
     products = products.slice(0, lim.products);
   }
 
+  // 1b. 基本版圖片清除（高級/進階→基本時，清除所有商品圖片）
+  if (currentPlan === 'basic') {
+    const withImg = products.filter(p => p.image_url);
+    for (const p of withImg) {
+      tasks.push(sb.from('products').update({ image_url: null }).eq('id', p.id));
+    }
+    if (withImg.length) {
+      msg.push(`基本版不支援圖片，已清除 ${withImg.length} 個商品圖片`);
+      products = products.map(p => ({ ...p, image_url: null }));
+    }
+  }
+
   // 2. 分類數超額（高級版無限，不需處理）
   if (lim.categories !== Infinity && categories.length > lim.categories) {
     const excess = categories.slice(lim.categories);
@@ -925,17 +937,17 @@ function renderProductList(keyword = '', catId = '') {
     const cat = categories.find(c => c.id === p.category_id);
     const groups = new Set((p.product_variants || []).map(v => v.name.split('|')[0]));
     const isChecked = batchSelected.has(p.id);
-    return `<div class="item-card${isChecked ? ' batch-selected' : ''}" draggable="${!batchMode}"
-        ondragstart="${!batchMode ? `dragStart(${idx})` : ''}"
-        ondragover="${!batchMode ? `dragOver(event,${idx})` : ''}"
-        ondrop="${!batchMode ? `dragDrop(event,${idx})` : ''}"
-        ondragend="${!batchMode ? 'dragEnd()' : ''}"
-        ondragleave="${!batchMode ? 'dragLeave(event)' : ''}">
+    return `<div class="item-card${isChecked ? ' batch-selected' : ''}" draggable="${!batchMode && currentPlan !== 'basic'}"
+        ondragstart="${(!batchMode && currentPlan !== 'basic') ? `dragStart(${idx})` : ''}"
+        ondragover="${(!batchMode && currentPlan !== 'basic') ? `dragOver(event,${idx})` : ''}"
+        ondrop="${(!batchMode && currentPlan !== 'basic') ? `dragDrop(event,${idx})` : ''}"
+        ondragend="${(!batchMode && currentPlan !== 'basic') ? 'dragEnd()' : ''}"
+        ondragleave="${(!batchMode && currentPlan !== 'basic') ? 'dragLeave(event)' : ''}">
       ${batchMode
         ? `<input type="checkbox" class="batch-checkbox" ${isChecked ? 'checked' : ''}
             onchange="toggleBatchSelect('${p.id}', this)">`
-        : `<div class="drag-handle" title="拖曳排序">⠿</div>`}
-      <div class="item-card-img">${p.image_url ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}</div>
+        : currentPlan !== 'basic' ? `<div class="drag-handle" title="拖曳排序">⠿</div>` : `<div style="width:20px"></div>`}
+      <div class="item-card-img">${(p.image_url && currentPlan !== 'basic') ? `<img src="${p.image_url}" style="width:48px;height:48px;border-radius:8px;object-fit:cover">` : '🛍'}</div>
       <div class="item-card-info">
         <div class="item-card-name">${p.name}</div>
         <div class="item-card-sub">${cat ? cat.name : '未分類'}${groups.size > 0 ? ` · ${groups.size} 種規格` : ''} · ${p.unit || '份'}${p.stock_qty != null ? ` · 庫存 ${p.stock_qty}` : ''}${p.is_available === false ? ' · <span style="color:var(--gray-400)">已下架</span>' : ''}</div>
