@@ -764,9 +764,98 @@ async function loadAll() {
   categories = cats || [];
   products = prods || [];
   payments = pays || [];
+  await enforceDowngrade();
   renderProducts();
   renderCategories();
   renderPayments();
+}
+
+// ── 降版後自動清除超額資料 ──
+async function enforceDowngrade() {
+  const lim = PLAN_LIMITS[currentPlan];
+  const tasks = [];
+  let msg = [];
+
+  // 1. 商品數超額 → 刪除最後新增的商品（sort_order最大）
+  if (products.length > lim.products) {
+    const excess = products.slice(lim.products); // sort_order排序，刪後面的
+    for (const p of excess) {
+      tasks.push(sb.from('product_variants').delete().eq('product_id', p.id));
+      tasks.push(sb.from('products').delete().eq('id', p.id));
+    }
+    msg.push(`商品數超額，已刪除最後 ${excess.length} 個商品`);
+    products = products.slice(0, lim.products);
+  }
+
+  // 2. 分類數超額（高級版無限，不需處理）
+  if (lim.categories !== Infinity && categories.length > lim.categories) {
+    const excess = categories.slice(lim.categories);
+    for (const c of excess) {
+      // 將超額分類的商品移到未分類
+      tasks.push(sb.from('products').update({ category_id: null }).eq('category_id', c.id).eq('user_id', currentUser.id));
+      tasks.push(sb.from('categories').delete().eq('id', c.id));
+    }
+    msg.push(`分類數超額，已刪除最後 ${excess.length} 個分類（商品移至未分類）`);
+    categories = categories.slice(0, lim.categories);
+  }
+
+  // 3. 商品規格超額（每個商品的規格群組數）
+  const variantDeletes = [];
+  for (const p of products) {
+    const variants = p.product_variants || [];
+    // 解析群組
+    const groups = {};
+    variants.forEach(v => {
+      const gName = v.name.includes('|') ? v.name.split('|')[0] : '規格';
+      if (!groups[gName]) groups[gName] = [];
+      groups[gName].push(v);
+    });
+    const groupNames = Object.keys(groups);
+    if (groupNames.length > lim.specGroups) {
+      const excessGroups = groupNames.slice(lim.specGroups);
+      for (const gName of excessGroups) {
+        for (const v of groups[gName]) {
+          variantDeletes.push(sb.from('product_variants').delete().eq('id', v.id));
+        }
+      }
+    }
+  }
+  if (variantDeletes.length) {
+    tasks.push(...variantDeletes);
+    msg.push(`商品規格超額，已刪除超出 ${lim.specGroups} 種規格的選項`);
+  }
+
+  // 4. 感謝語超額
+  if (lim.thanks === 0) {
+    // 基本版：全部刪除
+    const { data: allThanks } = await sb.from('receipt_messages').select('id').eq('user_id', currentUser.id);
+    if (allThanks && allThanks.length > 0) {
+      tasks.push(sb.from('receipt_messages').delete().eq('user_id', currentUser.id));
+      msg.push(`基本版不支援感謝語，已全部刪除`);
+    }
+  } else {
+    const { data: allThanks } = await sb.from('receipt_messages')
+      .select('id').eq('user_id', currentUser.id).order('sort_order');
+    if (allThanks && allThanks.length > lim.thanks) {
+      const excessIds = allThanks.slice(lim.thanks).map(t => t.id);
+      tasks.push(sb.from('receipt_messages').delete().in('id', excessIds));
+      msg.push(`感謝語超額，已刪除超出 ${lim.thanks} 則的部分`);
+    }
+  }
+
+  if (tasks.length) {
+    await Promise.all(tasks);
+    if (msg.length) {
+      showToast('⚠️ 版本降級：' + msg.join('；'), 5000);
+    }
+    // 重新載入確保資料同步
+    const [{ data: cats }, { data: prods }] = await Promise.all([
+      sb.from('categories').select('*').eq('user_id', currentUser.id).order('sort_order'),
+      sb.from('products').select('*, product_variants(*)').eq('user_id', currentUser.id).order('sort_order')
+    ]);
+    categories = cats || [];
+    products = prods || [];
+  }
 }
 
 function switchTab(tab) {
@@ -1004,14 +1093,50 @@ function removeSpecOpt(gi, oi) { editingSpecGroups[gi].options.splice(oi, 1); re
 
 function previewImg(e) {
   const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    document.getElementById('p-img-preview').src = ev.target.result;
+
+  const MAX_BYTES = 300 * 1024;
+  const img = new Image();
+  const objectUrl = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(objectUrl);
+    const canvas = document.createElement('canvas');
+    let w = img.width, h = img.height;
+    const MAX_DIM = 1200;
+    if (w > MAX_DIM || h > MAX_DIM) {
+      if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
+      else { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
+    }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    let quality = 0.85;
+    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+    while (dataUrl.length * 0.75 > MAX_BYTES && quality > 0.1) {
+      quality = Math.round((quality - 0.1) * 10) / 10;
+      dataUrl = canvas.toDataURL('image/jpeg', quality);
+    }
+    if (dataUrl.length * 0.75 > MAX_BYTES) {
+      showToast('圖片太大，無法壓縮至 300K 以下，請使用較小的圖片');
+      document.getElementById('p-img-file').value = '';
+      return;
+    }
+    document.getElementById('p-img-preview').src = dataUrl;
     document.getElementById('p-img-preview').style.display = 'block';
     document.getElementById('p-img-hint').style.display = 'none';
-    document.getElementById('p-img-url').value = ev.target.result;
+    document.getElementById('p-img-url').value = dataUrl;
+    document.getElementById('btn-delete-img').style.display = 'block';
+    const kb = Math.round(dataUrl.length * 0.75 / 1024);
+    showToast('圖片已壓縮至 ' + kb + 'K');
   };
-  reader.readAsDataURL(file);
+  img.src = objectUrl;
+}
+
+function deleteImg() {
+  document.getElementById('p-img-preview').src = '';
+  document.getElementById('p-img-preview').style.display = 'none';
+  document.getElementById('p-img-hint').style.display = 'block';
+  document.getElementById('p-img-url').value = '';
+  document.getElementById('p-img-file').value = '';
+  document.getElementById('btn-delete-img').style.display = 'none';
 }
 
 async function saveProduct() {
@@ -1510,10 +1635,10 @@ function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 document.querySelectorAll('.modal-overlay').forEach(m =>
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); }));
-function showToast(msg) {
+function showToast(msg, duration = 2500) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), duration);
 }
 function go(url) {
   const pt = document.getElementById('page-transition');
