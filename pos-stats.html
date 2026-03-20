@@ -570,7 +570,7 @@ async function init() {
 
     const [{ data: trial }, { data: profile }] = await Promise.all([
       sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
-      sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
+      sb.from('profiles').select('brand_name, is_paid, plan').eq('id', currentUser.id).single()
     ]);
     if (!trial) {
       window.location.href = 'trial.html'; return;
@@ -589,7 +589,8 @@ async function init() {
     document.documentElement.style.setProperty('--banner-h', bannerH + 'px');
     }
     currentTrial = trial;
-    currentPlan = trial.plan;
+    // 若已購買正式版，以 profile.plan 為準（避免試用降版後功能不符）
+    currentPlan = (profile?.is_paid && profile?.plan) ? profile.plan : trial.plan;
 
     if (profile?.brand_name) {
       document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 營業統計 &nbsp;·&nbsp; 試用版`;

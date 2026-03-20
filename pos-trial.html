@@ -675,7 +675,8 @@ async function init() {
       document.documentElement.style.setProperty('--banner-h', '44px');
     }
     currentTrial = trial;
-    currentPlan = trial.plan || 'basic';
+    // 若已購買正式版，以 profile.plan 為準（避免試用版升降後功能不符）
+    currentPlan = (profile?.is_paid && profile?.plan) ? profile.plan : (trial.plan || 'basic');
 
     if (profile?.brand_name) {
       document.getElementById('nav-brand-name').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 試用版`;
@@ -784,7 +785,7 @@ async function loadOrderNumber() {
 
 // ── 開店打卡 ──
 async function checkDailyCheckin() {
-  const plan = currentTrial.plan;
+  const plan = currentPlan;
   if (plan === 'basic') return; // 基本版沒有打卡功能
 
   const today = new Date().toISOString().slice(0, 10);
@@ -1171,7 +1172,7 @@ let thankMessages = [];
 let selectedThankIdx = null;
 
 async function loadThankMessages() {
-  const plan = currentTrial?.plan;
+  const plan = currentPlan;
   if (plan === 'basic') return;
   const { data } = await sb.from('receipt_messages').select('*')
     .eq('user_id', currentUser.id).eq('is_active', true).order('sort_order');

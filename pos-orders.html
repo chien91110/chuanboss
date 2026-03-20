@@ -523,7 +523,7 @@ async function init() {
 
     const [{ data: trial }, { data: profile }] = await Promise.all([
       sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
-      sb.from('profiles').select('brand_name').eq('id', currentUser.id).single()
+      sb.from('profiles').select('brand_name, is_paid, plan').eq('id', currentUser.id).single()
     ]);
     if (!trial) {
       window.location.href = 'trial.html'; return;
@@ -542,8 +542,10 @@ async function init() {
     document.documentElement.style.setProperty('--banner-h', bannerH + 'px');
     }
     currentTrial = trial;
+    // 若已購買正式版，以 profile.plan 為準（避免試用降版後功能不符）
+    const effectivePlan = (profile?.is_paid && profile?.plan) ? profile.plan : trial.plan;
     canDelete = true;                        // 所有版本都可刪除（凍結時由 CSS 停用）
-    canEdit = trial.plan !== 'basic';        // 基本版不可編輯
+    canEdit = effectivePlan !== 'basic';     // 基本版不可編輯
 
     if (profile?.brand_name) {
       document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 訂單紀錄 &nbsp;·&nbsp; 試用版`;
