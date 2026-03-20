@@ -840,10 +840,18 @@ async function init() {
 
   // ── 正式版判斷（優先）──
   if (profile.is_paid && profile.plan) {
-    // 年費到期凍結：subscription_active 為 false 且非早期支持者
-    if (!profile.subscription_active && !profile.is_early_adopter) {
-      showScreen('screen-paid-frozen');
-      return;
+    // 年費到期凍結：非早期支持者 且（subscription_active=false 或 到期日已過）
+    if (!profile.is_early_adopter) {
+      const isExpired = profile.subscription_expires_at
+        && new Date(profile.subscription_expires_at) < new Date();
+      if (!profile.subscription_active || isExpired) {
+        // 自動寫回 subscription_active=false（確保資料庫同步）
+        if (profile.subscription_active) {
+          await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
+        }
+        showScreen('screen-paid-frozen');
+        return;
+      }
     }
     renderPaidDashboard(profile);
     showScreen('screen-paid');
