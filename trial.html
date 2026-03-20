@@ -755,6 +755,12 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 </div>
 
 <script>
+const PLAN_LIMITS = {
+  basic:    { products: 10, categories: 5,        specGroups: 1, thanks: 0 },
+  advanced: { products: 20, categories: 20,       specGroups: 2, thanks: 5 },
+  premium:  { products: 50, categories: Infinity, specGroups: 3, thanks: 10 }
+};
+
 const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
 const { createClient } = supabase;
@@ -786,6 +792,20 @@ async function init() {
 
   // ── 正式版判斷（優先）──
   if (profile.is_paid && profile.plan) {
+    // 年費到期凍結：非早期支持者 且（subscription_active=false 或 到期日已過）
+    if (!profile.is_early_adopter) {
+      const isExpired = profile.subscription_expires_at
+        && new Date(profile.subscription_expires_at) < new Date();
+      if (!profile.subscription_active || isExpired) {
+        if (profile.subscription_active) {
+          await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
+        }
+        showScreen('screen-paid-frozen');
+        return;
+      }
+    }
+    // 登入時執行降版清除
+    await enforceDowngradeOnLogin(profile.plan);
     renderPaidDashboard(profile);
     showScreen('screen-paid');
     return;
@@ -802,8 +822,92 @@ async function init() {
     }
     showScreen('screen-frozen');
   } else {
+    // 試用版也執行降版清除
+    await enforceDowngradeOnLogin(trial.plan);
     renderTrialDashboard(trial, profile);
     showScreen('screen-trial');
+  }
+}
+
+// ── 登入時降版清除（輕量版）──
+async function enforceDowngradeOnLogin(plan) {
+  const lim = PLAN_LIMITS[plan];
+  if (!lim) return;
+  const tasks = [];
+  const msg = [];
+
+  // 1. 查商品（含規格）
+  const { data: prods } = await sb.from('products')
+    .select('id, product_variants(id, name)')
+    .eq('user_id', currentUser.id)
+    .order('sort_order');
+  const products = prods || [];
+
+  // 商品數超額
+  if (products.length > lim.products) {
+    const excess = products.slice(lim.products);
+    for (const p of excess) {
+      tasks.push(sb.from('product_variants').delete().eq('product_id', p.id));
+      tasks.push(sb.from('products').delete().eq('id', p.id));
+    }
+    msg.push(`商品超額已刪除 ${excess.length} 個`);
+  }
+
+  // 規格超額（剩餘商品）
+  const remaining = products.slice(0, lim.products);
+  const variantDeletes = [];
+  for (const p of remaining) {
+    const groups = {};
+    (p.product_variants || []).forEach(v => {
+      const gName = v.name.includes('|') ? v.name.split('|')[0] : '規格';
+      if (!groups[gName]) groups[gName] = [];
+      groups[gName].push(v);
+    });
+    const groupNames = Object.keys(groups);
+    if (groupNames.length > lim.specGroups) {
+      groupNames.slice(lim.specGroups).forEach(gName => {
+        groups[gName].forEach(v => variantDeletes.push(
+          sb.from('product_variants').delete().eq('id', v.id)
+        ));
+      });
+    }
+  }
+  if (variantDeletes.length) {
+    tasks.push(...variantDeletes);
+    msg.push('規格超額已清除');
+  }
+
+  // 2. 分類數超額
+  if (lim.categories !== Infinity) {
+    const { data: cats } = await sb.from('categories')
+      .select('id').eq('user_id', currentUser.id).order('sort_order');
+    const categories = cats || [];
+    if (categories.length > lim.categories) {
+      const excess = categories.slice(lim.categories);
+      for (const c of excess) {
+        tasks.push(sb.from('products').update({ category_id: null }).eq('category_id', c.id).eq('user_id', currentUser.id));
+        tasks.push(sb.from('categories').delete().eq('id', c.id));
+      }
+      msg.push(`分類超額已刪除 ${excess.length} 個`);
+    }
+  }
+
+  // 3. 感謝語超額
+  const { data: allThanks } = await sb.from('receipt_messages')
+    .select('id').eq('user_id', currentUser.id).order('sort_order');
+  const thanks = allThanks || [];
+  if (lim.thanks === 0 && thanks.length > 0) {
+    tasks.push(sb.from('receipt_messages').delete().eq('user_id', currentUser.id));
+    msg.push('基本版感謝語已清除');
+  } else if (lim.thanks > 0 && thanks.length > lim.thanks) {
+    const excessIds = thanks.slice(lim.thanks).map(t => t.id);
+    tasks.push(sb.from('receipt_messages').delete().in('id', excessIds));
+    msg.push(`感謝語超額已刪除 ${excessIds.length} 則`);
+  }
+
+  if (tasks.length) {
+    await Promise.all(tasks);
+    console.log('降版清除完成：', msg.join('；'));
   }
 }
 
