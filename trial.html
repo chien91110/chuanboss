@@ -435,7 +435,7 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 
     <div class="plan-card" onclick="selectPlan('basic')">
       <div class="plan-name">BASIC · 基本版</div>
-      <div class="plan-price">$4,800<span> 元</span></div>
+      <div class="plan-price">$3,000<span> 元</span></div>
       <div class="plan-subtitle">剛起步的小店，協助店鋪基本統計</div>
       <hr class="plan-divider">
       <div class="plan-feature"><span class="check">✓</span>商品分類 5 個</div>
@@ -465,7 +465,7 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
     <div class="plan-card featured" onclick="selectPlan('advanced')">
       <div class="plan-badge">⭐ 最多人選擇</div>
       <div class="plan-name">ADVANCED · 進階版</div>
-      <div class="plan-price">$8,800<span> 元</span></div>
+      <div class="plan-price">$5,800<span> 元</span></div>
       <div class="plan-subtitle">功能完整，適合大多數小店</div>
       <hr class="plan-divider">
       <div class="plan-feature highlight"><span class="check">✓</span>基本版全功能</div>
@@ -490,7 +490,7 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 
     <div class="plan-card" onclick="selectPlan('premium')">
       <div class="plan-name">PREMIUM · 高級版</div>
-      <div class="plan-price">$15,000<span> 元</span></div>
+      <div class="plan-price">$8,800<span> 元</span></div>
       <div class="plan-subtitle">完整功能，適合商品數有一定規模的店</div>
       <hr class="plan-divider">
       <div class="plan-feature highlight"><span class="check">✓</span>進階版全功能</div>
@@ -1113,8 +1113,8 @@ function renderTrialDashboard(trial, profile) {
   document.getElementById('status-plan-label').textContent = PLAN_LABELS[trial.plan];
   document.getElementById('status-plan-name').textContent = PLAN_NAMES[trial.plan] + ' 試用中';
   document.getElementById('days-left').textContent = daysLeft;
-  document.getElementById('date-start').textContent = `開始：${start.toLocaleDateString('zh-TW')}`;
-  document.getElementById('date-end').textContent = `到期：${end.toLocaleDateString('zh-TW')}`;
+  document.getElementById('date-start').textContent = `開始：${start.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' })}`;
+  document.getElementById('date-end').textContent = `到期：${end.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' })}`;
 
   // 版本限制說明
   const limitsMap = {

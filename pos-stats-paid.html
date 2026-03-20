@@ -416,17 +416,6 @@ async function init() {
 
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
     if (!profile || !profile.is_paid) { window.location.href = 'not-activated.html'; return; }
-    // 年費到期檢查（非早期支持者）
-    if (!profile.is_early_adopter) {
-      const isExpired = profile.subscription_expires_at
-        && new Date(profile.subscription_expires_at) < new Date();
-      if (!profile.subscription_active || isExpired) {
-        if (profile.subscription_active) {
-          await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
-        }
-        window.location.href = 'trial.html'; return;
-      }
-    }
     currentPlan = profile.plan || 'basic';
 
     if (profile.brand_name) {
@@ -569,8 +558,8 @@ function exportReport(type) {
     csv = '\uFEFF訂單號,日期,時間,訂單類型,付款方式,小計,折扣,總計,商品明細\n';
     orders.forEach(o => {
       const dt = new Date(o.created_at);
-      const date = dt.toLocaleDateString('zh-TW');
-      const time = dt.toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+      const date = dt.toLocaleDateString('zh-TW', { timeZone:'Asia/Taipei' });
+      const time = dt.toLocaleTimeString('zh-TW', { timeZone:'Asia/Taipei', hour:'2-digit', minute:'2-digit' });
       const items = (o.order_items || [])
         .map(i => `${i.product_name}×${i.quantity}`)
         .join('、');
