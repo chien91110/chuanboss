@@ -322,6 +322,16 @@ main { padding: 68px 20px 40px; max-width: 1200px; margin: 0 auto; }
       </div>
     </div>
     <div class="modal-form-row">
+      <label class="modal-label">
+        年費狀態
+        <span style="font-size:11px;color:var(--gray-400);font-weight:400">（到期後改成「已凍結」）</span>
+      </label>
+      <select class="modal-select" id="edit-sub-active">
+        <option value="true">✅ 使用中（正常）</option>
+        <option value="false">🔒 已凍結（年費到期）</option>
+      </select>
+    </div>
+    <div class="modal-form-row">
       <label class="modal-label">早期支持者（永久免年費）</label>
       <select class="modal-select" id="edit-early">
         <option value="false">否</option>
@@ -810,6 +820,7 @@ function _openEditModalCore(u) {
   document.getElementById('edit-paid-plan').value = p.plan || '';
   document.getElementById('edit-sub-expires').value = p.subscription_expires_at
     ? new Date(p.subscription_expires_at).toISOString().slice(0, 10) : '';
+  document.getElementById('edit-sub-active').value = String(p.subscription_active !== false ? true : false);
   document.getElementById('edit-early').value = String(p.is_early_adopter || false);
   // 帳號管理
   document.getElementById('edit-new-email').value = '';
@@ -841,6 +852,7 @@ async function saveEdit() {
   const isPaid = document.getElementById('edit-paid').value === 'true';
   const paidPlan = document.getElementById('edit-paid-plan').value || null;
   const subExpires = document.getElementById('edit-sub-expires').value;
+  const subActive = document.getElementById('edit-sub-active').value === 'true';
   const isEarly = document.getElementById('edit-early').value === 'true';
   const adminNote = document.getElementById('edit-admin-note').value.trim();
   const newEmail = document.getElementById('edit-new-email').value.trim();
@@ -868,7 +880,7 @@ async function saveEdit() {
       is_paid: isPaid,
       plan: isPaid ? paidPlan : null,
       is_early_adopter: isEarly,
-      subscription_active: isPaid && (isEarly || !!subExpires),
+      subscription_active: isPaid && (isEarly || subActive),
       subscription_expires_at: subExpires ? new Date(subExpires + 'T23:59:59+08:00').toISOString() : null,
       paid_at: isPaid && !u?.profile?.paid_at ? new Date().toISOString() : u?.profile?.paid_at || null,
       admin_note: adminNote || null
