@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>川收 ChuanPOS｜試用系統</title>
+<title>川店長 ChuanPOS｜試用系統</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -470,7 +470,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 
 <!-- TOP NAV -->
 <div id="top-nav">
-  <div class="nav-logo-small">川收 <span>Chuan</span>POS</div>
+  <div class="nav-logo-small">川店長 <span>Chuan</span>POS</div>
   <div class="nav-spacer"></div>
   <div class="nav-brand-name" id="nav-brand-name"></div>
   <div class="nav-trial-badge" id="nav-days-left"></div>
@@ -764,12 +764,14 @@ async function loadOrderNumber() {
   const d = String(twNow.getDate()).padStart(2,'0');
   const todayKey = `${y}${m}${d}`;
 
-  // 查今日台灣時間的訂單數（order_number 前8碼 = 今日 todayKey）
-  // 用 like 查詢當日前綴，避免時區問題
+  // 查今日訂單數：用數字範圍查詢（今日第一號 ~ 今日最後號）
+  const dayStart = parseInt(`${todayKey}101`);
+  const dayEnd   = parseInt(`${todayKey}999`);
   const { count } = await sb.from('orders')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', currentUser.id)
-    .like('order_number::text', `${todayKey}%`);
+    .gte('order_number', dayStart)
+    .lte('order_number', dayEnd);
 
   const seq = 101 + (count || 0);
   orderNumber = parseInt(`${todayKey}${seq}`);
