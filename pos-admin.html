@@ -600,6 +600,10 @@ body.frozen-mode .btn-edit-order {
       </div>
       <input type="file" id="p-img-file" accept="image/*" style="display:none" onchange="previewImg(event)">
       <input type="hidden" id="p-img-url">
+      <button type="button" id="btn-delete-img" onclick="deleteImg()"
+        style="display:none;margin-top:8px;width:100%;padding:8px;background:none;border:1.5px solid #f5c6cb;border-radius:8px;color:#c0392b;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">
+        🗑 刪除圖片
+      </button>
     </div>
     <!-- 規格 -->
     <div class="form-group">
@@ -907,6 +911,7 @@ function openProductModal(productId = null, copyFromId = null) {
   document.getElementById('p-img-preview').style.display = 'none';
   document.getElementById('p-img-hint').style.display = 'block';
   document.getElementById('p-img-url').value = '';
+  document.getElementById('btn-delete-img').style.display = 'none';
   document.getElementById('spec-hint').textContent =
     `此版本可設定 ${lim.specGroups} 種規格，每種最多 ${lim.specOptions} 個選項`;
 
@@ -926,6 +931,7 @@ function openProductModal(productId = null, copyFromId = null) {
       document.getElementById('p-img-preview').src = p.image_url;
       document.getElementById('p-img-preview').style.display = 'block';
       document.getElementById('p-img-hint').style.display = 'none';
+      document.getElementById('btn-delete-img').style.display = 'block';
     }
     // 還原規格（groupName|optionName 格式）
     const byGroup = {};
@@ -1009,8 +1015,18 @@ function previewImg(e) {
     document.getElementById('p-img-preview').style.display = 'block';
     document.getElementById('p-img-hint').style.display = 'none';
     document.getElementById('p-img-url').value = ev.target.result;
+    document.getElementById('btn-delete-img').style.display = 'block';
   };
   reader.readAsDataURL(file);
+}
+
+function deleteImg() {
+  document.getElementById('p-img-preview').src = '';
+  document.getElementById('p-img-preview').style.display = 'none';
+  document.getElementById('p-img-hint').style.display = 'block';
+  document.getElementById('p-img-url').value = '';
+  document.getElementById('p-img-file').value = '';
+  document.getElementById('btn-delete-img').style.display = 'none';
 }
 
 async function saveProduct() {

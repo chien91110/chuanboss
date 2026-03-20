@@ -80,6 +80,10 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 .product-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; line-height: 1.3; }
 .product-price { font-size: 14px; font-weight: 700; color: var(--accent); font-family: 'Space Mono', monospace; }
 .product-unit { font-size: 11px; color: var(--gray-400); }
+.product-stock { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+.product-stock.low { color: var(--orange, #e67e22); font-weight: 700; }
+.product-stock.out { color: var(--red, #c0392b); font-weight: 700; }
+.product-card.out-of-stock { opacity: 0.5; pointer-events: none; }
 .empty-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--gray-400); }
 .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
 
@@ -764,7 +768,7 @@ async function loadOrderNumber() {
   const d = String(twNow.getDate()).padStart(2,'0');
   const todayKey = `${y}${m}${d}`;
 
-  // 查今日訂單數：用數字範圍查詢（今日第一號 ~ 今日最後號）
+  // 查今日訂單數：用數字範圍查詢
   const dayStart = parseInt(`${todayKey}101`);
   const dayEnd   = parseInt(`${todayKey}999`);
   const { count } = await sb.from('orders')
@@ -836,20 +840,36 @@ function renderProducts() {
     grid.innerHTML = `<div class="empty-state"><div class="icon">📦</div><p>這個分類還沒有商品<br>請先到後台新增商品</p></div>`;
     return;
   }
-  grid.innerHTML = filtered.map(p => `
-    <div class="product-card" onclick="addToCart('${p.id}')">
+  grid.innerHTML = filtered.map(p => {
+    const outOfStock = p.stock_qty != null && p.stock_qty <= 0;
+    const isPremium = currentTrial && currentTrial.plan === 'premium';
+    let stockHtml = '';
+    if (isPremium && p.stock_qty != null) {
+      const cls = p.stock_qty <= 0 ? 'out' : p.stock_qty <= 5 ? 'low' : '';
+      const label = p.stock_qty <= 0 ? '已售完' : `庫存 ${p.stock_qty}`;
+      stockHtml = `<div class="product-stock ${cls}">${label}</div>`;
+    }
+    return `
+    <div class="product-card${outOfStock ? ' out-of-stock' : ''}" onclick="addToCart('${p.id}')">
       ${p.image_url
         ? `<img class="product-img" src="${p.image_url}" alt="${p.name}">`
         : `<div class="product-img-placeholder">🛍</div>`}
       <div class="product-name">${p.name}</div>
       <div class="product-price">$${p.price}<span class="product-unit"> /${p.unit||'份'}</span></div>
-    </div>`).join('');
+      ${stockHtml}
+    </div>`;
+  }).join('');
 }
 
 // ── 加入購物車 ──
 function addToCart(productId) {
   const p = products.find(x => x.id === productId);
   if (!p) return;
+
+  // 庫存為 0 時不可點
+  if (p.stock_qty != null && p.stock_qty <= 0) {
+    showToast('此商品庫存不足'); return;
+  }
 
   // 解析規格群組（groupName|optionName 格式）
   const groups = {};
@@ -1242,6 +1262,19 @@ async function checkout() {
       unit_price: item.price,
       subtotal: item.price * item.qty
     })));
+
+    // 扣庫存（只扣有設定 stock_qty 的商品）
+    const stockUpdates = [];
+    for (const item of cart) {
+      const p = products.find(x => x.id === item.product_id);
+      if (p && p.stock_qty != null) {
+        const newQty = Math.max(0, p.stock_qty - item.qty);
+        stockUpdates.push(sb.from('products').update({ stock_qty: newQty }).eq('id', p.id));
+        p.stock_qty = newQty; // 同步更新本地端
+      }
+    }
+    if (stockUpdates.length) await Promise.all(stockUpdates);
+
     await sb.from('feature_logs').insert({ user_id: currentUser.id, feature: 'checkout' });
 
     document.getElementById('success-total').textContent = `$${total}`;
@@ -1255,6 +1288,8 @@ async function checkout() {
     }
     showThankMessage();
     document.getElementById('success-overlay').classList.add('show');
+    // 重新渲染商品（更新庫存顯示）
+    renderProducts();
     // 直接遞增，不重查資料庫（避免快取導致重複）
     const cur = String(orderNumber);
     const prefix = cur.slice(0, 8); // YYYYMMDD
