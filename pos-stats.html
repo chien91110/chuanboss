@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>川店長 ChuanPOS｜營業統計</title>
-<link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -391,7 +390,7 @@ body.frozen-mode .btn-edit-order {
 <body>
 <div id="frozen-banner">
   <span>🔒 <strong>試用期已結束</strong>｜目前為唯讀模式，所有操作已停用。如需繼續使用，請聯繫購買正式版。</span>
-  <a href="https://line.me" target="_blank">LINE 聯繫 →</a>
+  <a href="https://lin.ee/tkD2n5W" target="_blank">LINE 聯繫 →</a>
 </div>
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
@@ -597,7 +596,8 @@ async function init() {
       document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 營業統計 &nbsp;·&nbsp; 試用版`;
     }
 
-    const today = new Date().toISOString().slice(0,10);
+    const twInit = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+    const today = `${twInit.getFullYear()}-${String(twInit.getMonth()+1).padStart(2,'0')}-${String(twInit.getDate()).padStart(2,'0')}`;
     document.getElementById('date-from').value = today;
     document.getElementById('date-to').value = today;
 
@@ -625,24 +625,37 @@ async function loadOTSettings() {
 }
 
 function getRange() {
-  const now = new Date();
-  const today = now.toISOString().slice(0,10);
-  if (currentPeriod === 'today') return { from:`${today}T00:00:00`, to:`${today}T23:59:59` };
-  if (currentPeriod === 'week') {
-    const day = now.getDay() || 7;
-    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-    return { from:`${mon.toISOString().slice(0,10)}T00:00:00`, to:`${today}T23:59:59` };
+  const twNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  const y = twNow.getFullYear();
+  const m = String(twNow.getMonth() + 1).padStart(2, '0');
+  const d = String(twNow.getDate()).padStart(2, '0');
+  const today = `${y}-${m}-${d}`;
+  const toISO = (dateStr, time) => `${dateStr}T${time}+08:00`;
+
+  if (currentPeriod === 'today') {
+    return { from: toISO(today, '00:00:00'), to: toISO(today, '23:59:59') };
   }
-  if (currentPeriod === 'month') return { from:`${today.slice(0,7)}-01T00:00:00`, to:`${today}T23:59:59` };
+  if (currentPeriod === 'week') {
+    const day = twNow.getDay() || 7;
+    const mon = new Date(twNow);
+    mon.setDate(twNow.getDate() - day + 1);
+    const monY = mon.getFullYear();
+    const monM = String(mon.getMonth() + 1).padStart(2, '0');
+    const monD = String(mon.getDate()).padStart(2, '0');
+    const monday = `${monY}-${monM}-${monD}`;
+    return { from: toISO(monday, '00:00:00'), to: toISO(today, '23:59:59') };
+  }
+  if (currentPeriod === 'month') {
+    return { from: toISO(`${y}-${m}-01`, '00:00:00'), to: toISO(today, '23:59:59') };
+  }
   if (currentPeriod === 'custom') {
     const f = document.getElementById('date-from').value;
     const t = document.getElementById('date-to').value;
     if (!f || !t) return null;
-    return { from:`${f}T00:00:00`, to:`${t}T23:59:59` };
+    return { from: toISO(f, '00:00:00'), to: toISO(t, '23:59:59') };
   }
   return null;
 }
-
 async function loadStats() {
   // KPI 顯示 skeleton
   ['kpi-revenue','kpi-orders','kpi-avg','kpi-discount'].forEach(id => {
@@ -1043,7 +1056,7 @@ async function renderBusinessDay() {
     return;
   }
 
-  const today = new Date().toISOString().slice(0,10);
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
   const monthStart = `${today.slice(0,7)}-01`;
 
   const [{ data: logs }, { data: monthOrders }] = await Promise.all([
@@ -1092,7 +1105,7 @@ let checkinModalYM = ''; // "2026-03"
 let calChecked = new Set(); // 本月勾選的日期 Set
 
 function openCheckinModal() {
-  const today = new Date().toISOString().slice(0,10);
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
   checkinModalYM = today.slice(0,7);
   renderCheckinCalendar();
   document.getElementById('modal-checkin').classList.add('show');
@@ -1124,7 +1137,7 @@ async function renderCheckinCalendar() {
   // 儲存 id 對應，方便後續刪除
   window._calCheckinMap = Object.fromEntries(dbCheckins.map(c => [c.date, c.id]));
 
-  const today = new Date().toISOString().slice(0,10);
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
   const checkedCount = calChecked.size;
   document.getElementById('checkin-modal-count').textContent = `共 ${checkedCount} 個營業日`;
 
@@ -1200,7 +1213,7 @@ async function saveCheckinMonth() {
   await Promise.all(tasks);
 
   // 清除今日 localStorage（如果今日被取消打卡）
-  const today = new Date().toISOString().slice(0,10);
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
   if (toDelete.includes(today)) localStorage.removeItem(`checkin_${currentUser.id}`);
 
   closeCheckinModal();
