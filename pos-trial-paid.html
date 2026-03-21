@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
+  --banner-h: 0px;
   --black: #0a0a0a; --white: #ffffff; --gray-50: #f8f8f6; --gray-100: #f0efec;
   --gray-200: #e2e0da; --gray-400: #9c9890; --gray-600: #5a5750;
   --accent: #c17f3e; --accent-light: #e8c99a; --green: #3d7a5c; --red: #c0392b;
@@ -21,7 +22,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 
 /* TOP NAV */
 #top-nav {
-  position: fixed; top: 0; left: 72px; right: 0; z-index: 100;
+  position: fixed; top: var(--banner-h); left: 72px; right: 0; z-index: 100;
   height: var(--nav-h); background: var(--black);
   display: flex; align-items: center; padding: 0 16px; gap: 12px;
 }
@@ -227,7 +228,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 
 /* SIDE NAV */
 #bottom-nav {
-  position: fixed; top: var(--nav-h); left: 0; bottom: 0; z-index: 100;
+  position: fixed; top: calc(var(--banner-h) + var(--nav-h)); left: 0; bottom: 0; z-index: 100;
   width: 72px; background: var(--white); border-right: 1px solid var(--gray-200);
   display: flex; flex-direction: column; padding: 8px 0;
 }
@@ -461,8 +462,8 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   display: none; align-items: center; justify-content: space-between;
   padding: 10px 20px; gap: 12px;
 }
-body.frozen-mode { padding-top: calc(44px + var(--nav-h, 52px)) !important; }
-body.frozen-mode button:not(.view-only),
+/* frozen-mode：bottom-nav 導覽按鈕保持可用，操作按鈕禁用 */
+body.frozen-mode button:not(.view-only):not(.bottom-nav-btn),
 body.frozen-mode input[type="submit"] { pointer-events: none; opacity: 0.4; }
 
 </style>
@@ -689,7 +690,12 @@ async function init() {
         if (profile.subscription_active) {
           await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
         }
-        document.getElementById('frozen-banner').style.display = 'flex';
+        const _banner = document.getElementById('frozen-banner');
+        _banner.style.height = 'auto';
+        _banner.style.display = 'flex';
+        const _bh = _banner.offsetHeight || (window.innerWidth < 700 ? 72 : 44);
+        _banner.style.height = _bh + 'px';
+        document.documentElement.style.setProperty('--banner-h', _bh + 'px');
         document.body.classList.add('frozen-mode');
       }
     }
