@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>川店長 ChuanPOS｜訂單紀錄</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -200,6 +201,18 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .skeleton-kpi .sk-label{height:11px;width:50%;}
 .skeleton-kpi .sk-val{height:28px;width:70%;}
 
+
+#frozen-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  background: #fdecea; border-bottom: 2px solid #e57373;
+  font-size: 13px; color: #7a1f1f;
+  display: none; align-items: center; justify-content: space-between;
+  padding: 10px 20px; gap: 12px;
+}
+body.frozen-mode { padding-top: calc(44px + var(--nav-h, 52px)) !important; }
+body.frozen-mode button:not(.view-only),
+body.frozen-mode input[type="submit"] { pointer-events: none; opacity: 0.4; }
+
 </style>
 <link rel="prefetch" href="pos-trial-paid.html">
 <link rel="prefetch" href="pos-stats-paid.html">
@@ -215,6 +228,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 </head>
 <body>
 
+<div id="frozen-banner">
+  <span>💳 <strong>年費已到期</strong>｜目前為唯讀模式，所有操作已停用。如需續費，請聯繫我們。</span>
+  <a href="https://lin.ee/tkD2n5W" target="_blank" style="color:#7a1f1f;font-weight:700;white-space:nowrap">LINE 聯繫 →</a>
+</div>
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
 <div id="top-nav">
@@ -364,6 +381,18 @@ async function init() {
 
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
     if (!profile || !profile.is_paid) { window.location.href = 'not-activated.html'; return; }
+    // 年費到期檢查（非早期支持者）
+    if (!profile.is_early_adopter) {
+      const isExpired = profile.subscription_expires_at
+        && new Date(profile.subscription_expires_at) < new Date();
+      if (!profile.subscription_active || isExpired) {
+        if (profile.subscription_active) {
+          await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
+        }
+        document.getElementById('frozen-banner').style.display = 'flex';
+        document.body.classList.add('frozen-mode');
+      }
+    }
     currentPlan = profile.plan || 'basic';
     canDelete = true;              // 所有版本都可刪除
     canEdit = currentPlan !== 'basic'; // 基本版不可編輯

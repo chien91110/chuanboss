@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>川店長 ChuanPOS｜訂單紀錄</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -553,8 +554,7 @@ async function init() {
 
     await loadOTSettings();
     await loadPaymentMethods();
-    const twInit = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-    const today = `${twInit.getFullYear()}-${String(twInit.getMonth()+1).padStart(2,'0')}-${String(twInit.getDate()).padStart(2,'0')}`;
+    const today = new Date().toISOString().slice(0,10);
     document.getElementById('range-from').value = today;
     document.getElementById('range-to').value = today;
 
@@ -611,27 +611,19 @@ function applyRange() {
 }
 
 function getDateRange() {
-  // 台灣時間（UTC+8）
-  const twNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-  const y = twNow.getFullYear();
-  const m = String(twNow.getMonth() + 1).padStart(2, '0');
-  const d = String(twNow.getDate()).padStart(2, '0');
-  const todayStr = `${y}-${m}-${d}`;
-  const toISO = (dateStr, time) => `${dateStr}T${time}+08:00`;
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
 
   if (currentFilter === 'today') {
-    return { from: toISO(todayStr, '00:00:00'), to: toISO(todayStr, '23:59:59'), label: '今日' };
+    return { from: `${todayStr}T00:00:00`, to: `${todayStr}T23:59:59`, label: '今日' };
   } else if (currentFilter === 'week') {
-    const day = twNow.getDay() || 7;
-    const mon = new Date(twNow); mon.setDate(twNow.getDate() - day + 1);
-    const monY = mon.getFullYear();
-    const monM = String(mon.getMonth() + 1).padStart(2, '0');
-    const monD = String(mon.getDate()).padStart(2, '0');
-    const monStr = `${monY}-${monM}-${monD}`;
-    return { from: toISO(monStr, '00:00:00'), to: toISO(todayStr, '23:59:59'), label: `本週（${monStr} ～ ${todayStr}）` };
+    const day = now.getDay() || 7;
+    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+    const monStr = mon.toISOString().slice(0,10);
+    return { from: `${monStr}T00:00:00`, to: `${todayStr}T23:59:59`, label: `本週（${monStr} ～ ${todayStr}）` };
   } else if (currentFilter === 'month') {
-    const monthStart = `${y}-${m}-01`;
-    return { from: toISO(monthStart, '00:00:00'), to: toISO(todayStr, '23:59:59'), label: `本月（${monthStart} ～ ${todayStr}）` };
+    const monthStart = `${todayStr.slice(0,7)}-01`;
+    return { from: `${monthStart}T00:00:00`, to: `${todayStr}T23:59:59`, label: `本月（${monthStart} ～ ${todayStr}）` };
   } else if (currentFilter === 'range') {
     const from = document.getElementById('range-from').value;
     const to = document.getElementById('range-to').value;
