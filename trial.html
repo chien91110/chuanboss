@@ -435,28 +435,29 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 
     <div class="plan-card" onclick="selectPlan('basic')">
       <div class="plan-name">BASIC · 基本版</div>
-      <div class="plan-price">$3,000<span> 元</span></div>
+      <div class="plan-price">$3,000<span> 元建置費</span></div>
       <div class="plan-subtitle">剛起步的小店，協助店鋪基本統計</div>
       <hr class="plan-divider">
-      <div class="plan-feature"><span class="check">✓</span>商品分類 5 個</div>
-      <div class="plan-feature"><span class="check">✓</span>商品數量 20 個</div>
-      <div class="plan-feature"><span class="check">✓</span>商品規格 1 種（3 選項）</div>
+      <div class="plan-feature"><span class="check">✓</span>商品分類 5 個 / 商品 20 個</div>
+      <div class="plan-feature"><span class="check">✓</span>商品規格設定（1 種 3 選項）</div>
+      <div class="plan-feature"><span class="check">✓</span>自訂付款方式</div>
       <div class="plan-feature"><span class="check">✓</span>收款 + 找零計算</div>
       <div class="plan-feature"><span class="check">✓</span>訂單紀錄查詢</div>
-      <div class="plan-feature"><span class="check">✓</span>今日 / 本月統計</div>
-      <div class="plan-feature"><span class="check">✓</span>自訂日期區間統計</div>
-      <div class="plan-feature"><span class="check">✓</span>付款方式設定</div>
-      <div class="plan-feature"><span class="check">✓</span>訂單備註</div>
+      <div class="plan-feature"><span class="check">✓</span>今日 / 本週 / 本月 / 自訂統計</div>      
+      <div class="plan-feature"><span class="check">✓</span>付款方式統計</div>
       <div style="margin-top:12px;padding:10px;background:var(--gray-50);border-radius:8px">
         <div style="font-size:11px;font-weight:700;color:var(--gray-600);margin-bottom:6px">⚠️ 試用版限制</div>
         <div style="font-size:11px;color:var(--gray-400);line-height:1.6">
           商品數量上限：10 個<br>
+          商品規格：1 種（3 選項）<br>
+          匯出功能僅限正式版使用<br>
           商品圖片：不支援<br>
           CSV 批量上傳：不支援<br>
-          訂單修改／刪除：不支援<br>
+          訂單修改：不支援<br>
           商品銷售排行：不支援<br>
           感謝語設定：不支援<br>
-          營業日誌：不支援
+          每日結帳日誌：不支援<br>
+          營業日打卡：不支援
         </div>
       </div>
       <button class="btn-start-trial">試用基本版</button>
@@ -468,20 +469,24 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
       <div class="plan-price">$5,800<span> 元</span></div>
       <div class="plan-subtitle">功能完整，適合大多數小店</div>
       <hr class="plan-divider">
-      <div class="plan-feature highlight"><span class="check">✓</span>基本版全功能</div>
-      <div class="plan-feature"><span class="check">✓</span>商品分類 20 個</div>
-      <div class="plan-feature"><span class="check">✓</span>商品規格 2 種（各 3 選項）</div>
+      <div class="plan-feature highlight"><span class="check">✓</span>基本版所有功能</div>
+      <div class="plan-feature"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">20 個</strong></div>
+      <div class="plan-feature"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">50 個</strong></div>
+      <div class="plan-feature"><span class="check">✓</span>商品規格 <strong style="color:var(--accent)">2 種</strong>（各 3 選項）</div>
       <div class="plan-feature"><span class="check">✓</span>商品圖片上傳</div>
       <div class="plan-feature"><span class="check">✓</span>CSV 批量上傳（含規格）</div>
       <div class="plan-feature"><span class="check">✓</span>訂單修改 / 刪除</div>
       <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
       <div class="plan-feature"><span class="check">✓</span>感謝語設定（5 則）</div>
       <div class="plan-feature"><span class="check">✓</span>每日結帳 / 營業日誌</div>
-      <div class="plan-feature"><span class="check">✓</span>打卡營業日管理</div>
+      <div class="plan-feature"><span class="check">✓</span>打卡營業日管理</div>      
+        <div class="plan-feature"><span class="check">✓</span>商品拖曳排序</div>
+        <div class="plan-feature"><span class="check">✓</span>報表匯出（每日 + 逐筆）</div>
       <div style="margin-top:12px;padding:10px;background:rgba(193,127,62,0.06);border-radius:8px">
         <div style="font-size:11px;font-weight:700;color:var(--gray-600);margin-bottom:6px">⚠️ 試用版限制</div>
         <div style="font-size:11px;color:var(--gray-400);line-height:1.6">
           商品數量上限：20 個<br>
+          匯出功能僅限正式版使用<br>
           桌號點餐：不支援
         </div>
       </div>
@@ -490,21 +495,24 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 
     <div class="plan-card" onclick="selectPlan('premium')">
       <div class="plan-name">PREMIUM · 高級版</div>
-      <div class="plan-price">$8,800<span> 元</span></div>
+      <div class="plan-price">$8,800<span> 元建置費</span></div>
       <div class="plan-subtitle">完整功能，適合商品數有一定規模的店</div>
       <hr class="plan-divider">
-      <div class="plan-feature highlight"><span class="check">✓</span>進階版全功能</div>
-      <div class="plan-feature"><span class="check">✓</span>商品分類 / 數量無限制</div>
-      <div class="plan-feature"><span class="check">✓</span>商品規格 3 種（各 5 選項）</div>
-      <div class="plan-feature"><span class="check">✓</span>感謝語設定（10 則）</div>
-      <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
-      <div class="plan-feature"><span class="check">✓</span>每月報表 Email</div>
+      <div class="plan-feature highlight"><span class="check">✓</span>進階版所有功能</div>
+      <div class="plan-feature"><span class="check">✓</span>商品分類 <strong style="color:var(--accent)">20 個</strong></div>
+      <div class="plan-feature"><span class="check">✓</span>商品數量 <strong style="color:var(--accent)">120 個</strong></div>  
+      <div class="plan-feature"><span class="check">✓</span>商品規格 <strong style="color:var(--accent)">3種</strong>（各 5 選項）</div>
+        <div class="plan-feature"><span class="check">✓</span>感謝語設定（10 則）</div>
+        <div class="plan-feature"><span class="check">✓</span>適合多人多裝置使用</div>
+        <div class="plan-feature"><span class="check">✓</span>後台密碼保護</div>
+        <div class="plan-feature"><span class="check">✓</span>商品銷售排行</div>
+        <div class="plan-feature"><span class="check">✓</span>報表匯出（每日 + 逐筆）</div>
       <div style="margin-top:12px;padding:10px;background:var(--gray-50);border-radius:8px">
         <div style="font-size:11px;font-weight:700;color:var(--gray-600);margin-bottom:6px">⚠️ 試用版限制</div>
         <div style="font-size:11px;color:var(--gray-400);line-height:1.6">
           商品數量上限：50 個<br>
-          桌號點餐：不支援（開發中）<br>
-          多人帳號：不支援（開發中）
+          匯出功能僅限正式版使用<br>
+          後臺密碼保護功能僅限正式版使用
         </div>
       </div>
       <button class="btn-start-trial">試用高級版</button>
