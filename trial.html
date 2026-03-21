@@ -404,6 +404,7 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#c17f3e">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ChuanPOS">
@@ -775,6 +776,52 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
       聯絡購買正式版
     </a>
+  </div>
+</div>
+
+<!-- 年費到期凍結畫面 -->
+<div class="screen" id="screen-paid-frozen">
+  <div class="frozen-screen">
+    <div class="frozen-icon">💳</div>
+    <div class="frozen-title">年費已到期</div>
+    <div class="frozen-desc">
+      你的川店長 ChuanPOS 年費已到期，帳號功能已暫停。<br>
+      續費後即可立即恢復使用，資料完整保留。
+    </div>
+    <div class="frozen-data-note">
+      📁 你的商品設定、訂單與統計資料仍然完整保存。<br>
+      完成續費後，所有功能將立即恢復，無需重新設定。
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <button onclick="window.location.href='pos-trial-paid.html'"
+        style="padding:10px;background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+        🧾 瀏覽點餐頁
+      </button>
+      <button onclick="window.location.href='pos-orders-paid.html'"
+        style="padding:10px;background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+        📋 查看訂單
+      </button>
+      <button onclick="window.location.href='pos-stats-paid.html'"
+        style="padding:10px;background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+        📊 查看統計
+      </button>
+      <button onclick="window.location.href='pos-admin-paid.html'"
+        style="padding:10px;background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+        ⚙️ 查看後台
+      </button>
+    </div>
+    <a href="https://lin.ee/tkD2n5W" class="btn-line">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+      聯絡續費
+    </a>
+    <div style="margin-top:16px;font-size:12px;color:var(--gray-400)">
+      使用本服務即表示同意
+      <a href="terms.html" target="_blank" style="color:var(--accent);text-decoration:underline">服務條款</a>
+    </div>
   </div>
 </div>
 
@@ -1233,10 +1280,9 @@ function renderTrialDashboard(trial, profile) {
     basic: [
       '商品數量上限：10 個',
       '商品規格：1 種（3 選項）',
-      '匯出功能僅限正式版使用',
       '商品圖片：不支援',
       'CSV 批量上傳：不支援',
-      '訂單修改：不支援',
+      '訂單修改／刪除：不支援',
       '商品銷售排行：不支援',
       '感謝語設定：不支援',
       '每日結帳日誌：不支援',
@@ -1244,13 +1290,16 @@ function renderTrialDashboard(trial, profile) {
     ],
     advanced: [
       '商品數量上限：20 個',
-      '匯出功能僅限正式版使用',
-      '後臺密碼保護功能：不支援',
+      '商品規格：2 種（各 3 選項）',
+      '感謝語：最多 5 則',
+      '桌號點餐：不支援（開發中）',
     ],
     premium: [
       '商品數量上限：50 個',
-      '匯出功能僅限正式版使用',
-      '後臺密碼保護功能僅限正式版使用',
+      '商品規格：3 種（各 5 選項）',
+      '感謝語：最多 10 則',
+      '桌號點餐：不支援（開發中）',
+      '多人帳號：不支援（開發中）',
     ]
   };
   const limits = limitsMap[trial.plan] || [];
