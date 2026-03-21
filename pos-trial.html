@@ -21,7 +21,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 
 /* TOP NAV */
 #top-nav {
-  position: fixed; top: 0; left: 72px; right: 0; z-index: 100;
+  position: fixed; top: var(--banner-h); left: 72px; right: 0; z-index: 100;
   height: var(--nav-h); background: var(--black);
   display: flex; align-items: center; padding: 0 16px; gap: 12px;
 }
@@ -39,7 +39,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 /* LAYOUT */
 #app {
   display: flex; height: 100vh;
-  padding-top: var(--nav-h); padding-left: 72px;
+  padding-top: calc(var(--banner-h) + var(--nav-h)); padding-left: 72px;
 }
 @media (max-width: 700px) { #app { padding-left: 0; } }
 
@@ -227,7 +227,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 
 /* SIDE NAV */
 #bottom-nav {
-  position: fixed; top: var(--nav-h); left: 0; bottom: 0; z-index: 100;
+  position: fixed; top: calc(var(--banner-h) + var(--nav-h)); left: 0; bottom: 0; z-index: 100;
   width: 72px; background: var(--white); border-right: 1px solid var(--gray-200);
   display: flex; flex-direction: column; padding: 8px 0;
 }
@@ -677,9 +677,13 @@ async function init() {
     }
     // 凍結或到期：進入唯讀模式
     if (trial.is_frozen || new Date(trial.expires_at) < new Date()) {
-      document.getElementById('frozen-banner').style.display = 'flex';
+      const _fb = document.getElementById('frozen-banner');
+      _fb.style.height = 'auto';
+      _fb.style.display = 'flex';
+      const _fbh = _fb.offsetHeight || (window.innerWidth < 700 ? 72 : 44);
+      _fb.style.height = _fbh + 'px';
       document.body.classList.add('frozen-mode');
-      document.documentElement.style.setProperty('--banner-h', '44px');
+      document.documentElement.style.setProperty('--banner-h', _fbh + 'px');
     }
     currentTrial = trial;
     // 若已購買正式版，以 profile.plan 為準（避免試用版升降後功能不符）
