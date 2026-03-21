@@ -462,11 +462,17 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#c17f3e">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ChuanPOS">
 </head>
 <body>
+
+<div id="frozen-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:200;background:#fdecea;border-bottom:2px solid #e57373;font-size:13px;color:#7a1f1f;align-items:center;justify-content:space-between;padding:10px 16px;gap:12px;flex-wrap:wrap">
+  <span>🔒 <strong>試用期已結束</strong>｜目前為唯讀模式，所有操作已停用。如需繼續使用，請聯繫購買正式版。</span>
+  <a href="https://lin.ee/tkD2n5W" target="_blank" style="color:#7a1f1f;font-weight:700;white-space:nowrap">LINE 聯繫 →</a>
+</div>
 
 <div class="full-spinner" id="spinner">
   <div class="spinner"></div>
