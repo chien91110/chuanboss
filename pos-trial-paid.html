@@ -794,7 +794,7 @@ async function checkDailyCheckin() {
   const plan = currentTrial.plan;
   if (plan === 'basic') return; // 基本版沒有打卡功能
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
   const lastCheckin = localStorage.getItem(`checkin_${currentUser.id}`);
   if (lastCheckin === today) return; // 今天已打卡或已跳過
 
@@ -810,14 +810,14 @@ async function checkDailyCheckin() {
 }
 
 async function doCheckin() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
   await sb.from('business_days').upsert({ user_id: currentUser.id, date: today }, { onConflict: 'user_id,date' });
   localStorage.setItem(`checkin_${currentUser.id}`, today);
   document.getElementById('checkin-overlay').classList.remove('show');
 }
 
 function skipCheckin() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
   localStorage.setItem(`checkin_${currentUser.id}`, today);
   document.getElementById('checkin-overlay').classList.remove('show');
 }
