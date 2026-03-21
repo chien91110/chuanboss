@@ -416,6 +416,17 @@ async function init() {
 
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
     if (!profile || !profile.is_paid) { window.location.href = 'not-activated.html'; return; }
+    // 年費到期檢查（非早期支持者）
+    if (!profile.is_early_adopter) {
+      const isExpired = profile.subscription_expires_at
+        && new Date(profile.subscription_expires_at) < new Date();
+      if (!profile.subscription_active || isExpired) {
+        if (profile.subscription_active) {
+          await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
+        }
+        window.location.href = 'trial.html'; return;
+      }
+    }
     currentPlan = profile.plan || 'basic';
 
     if (profile.brand_name) {
