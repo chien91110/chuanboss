@@ -26,14 +26,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--gray-50);color:var(-
 .nav-brand{color:rgba(255,255,255,0.5);font-size:12px;flex:1;}
 .nav-brand em{color:var(--accent-light);font-style:normal;font-weight:600;}
 
-.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:fixed;top:52px;left:72px;right:0;z-index:50;overflow-x:auto;scrollbar-width:none;}
+.admin-tabs{display:flex;background:var(--white);border-bottom:1px solid var(--gray-200);position:fixed;top:calc(var(--banner-h) + 52px);left:72px;right:0;z-index:50;overflow-x:auto;scrollbar-width:none;}
 .admin-tabs::-webkit-scrollbar{display:none;}
 @media(max-width:700px){.admin-tabs{left:0;}}
 .admin-tab{padding:14px 20px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;white-space:nowrap;color:var(--gray-600);border-bottom:2px solid transparent;font-family:'Noto Sans TC',sans-serif;transition:all 0.15s;}
 .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
 /* tab-content 需讓出 navbar(52px) + tabs列(49px) = 101px */
-.tab-content{display:none;padding:0;margin-top:101px;}
+.tab-content{display:none;padding:0;margin-top:calc(var(--banner-h) + 101px);}
 .tab-content.active{display:block;}
 .tab-inner{padding:16px;}
 
