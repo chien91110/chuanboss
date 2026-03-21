@@ -372,7 +372,7 @@ body.frozen-mode .btn-edit-order {
 <body>
 <div id="frozen-banner">
   <span>🔒 <strong>試用期已結束</strong>｜目前為唯讀模式，所有操作已停用。如需繼續使用，請聯繫購買正式版。</span>
-  <a href="https://lin.ee/tkD2n5W" target="_blank">LINE 聯繫 →</a>
+  <a href="https://line.me" target="_blank">LINE 聯繫 →</a>
 </div>
 <div class="full-spinner" id="spinner"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-400)">載入中...</div></div>
 
@@ -553,7 +553,8 @@ async function init() {
 
     await loadOTSettings();
     await loadPaymentMethods();
-    const today = new Date().toISOString().slice(0,10);
+    const twInit = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+    const today = `${twInit.getFullYear()}-${String(twInit.getMonth()+1).padStart(2,'0')}-${String(twInit.getDate()).padStart(2,'0')}`;
     document.getElementById('range-from').value = today;
     document.getElementById('range-to').value = today;
 
@@ -610,19 +611,27 @@ function applyRange() {
 }
 
 function getDateRange() {
-  const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  // 台灣時間（UTC+8）
+  const twNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  const y = twNow.getFullYear();
+  const m = String(twNow.getMonth() + 1).padStart(2, '0');
+  const d = String(twNow.getDate()).padStart(2, '0');
+  const todayStr = `${y}-${m}-${d}`;
+  const toISO = (dateStr, time) => `${dateStr}T${time}+08:00`;
 
   if (currentFilter === 'today') {
-    return { from: `${todayStr}T00:00:00`, to: `${todayStr}T23:59:59`, label: '今日' };
+    return { from: toISO(todayStr, '00:00:00'), to: toISO(todayStr, '23:59:59'), label: '今日' };
   } else if (currentFilter === 'week') {
-    const day = now.getDay() || 7;
-    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-    const monStr = mon.toISOString().slice(0,10);
-    return { from: `${monStr}T00:00:00`, to: `${todayStr}T23:59:59`, label: `本週（${monStr} ～ ${todayStr}）` };
+    const day = twNow.getDay() || 7;
+    const mon = new Date(twNow); mon.setDate(twNow.getDate() - day + 1);
+    const monY = mon.getFullYear();
+    const monM = String(mon.getMonth() + 1).padStart(2, '0');
+    const monD = String(mon.getDate()).padStart(2, '0');
+    const monStr = `${monY}-${monM}-${monD}`;
+    return { from: toISO(monStr, '00:00:00'), to: toISO(todayStr, '23:59:59'), label: `本週（${monStr} ～ ${todayStr}）` };
   } else if (currentFilter === 'month') {
-    const monthStart = `${todayStr.slice(0,7)}-01`;
-    return { from: `${monthStart}T00:00:00`, to: `${todayStr}T23:59:59`, label: `本月（${monthStart} ～ ${todayStr}）` };
+    const monthStart = `${y}-${m}-01`;
+    return { from: toISO(monthStart, '00:00:00'), to: toISO(todayStr, '23:59:59'), label: `本月（${monthStart} ～ ${todayStr}）` };
   } else if (currentFilter === 'range') {
     const from = document.getElementById('range-from').value;
     const to = document.getElementById('range-to').value;
