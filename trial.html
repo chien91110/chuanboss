@@ -642,10 +642,10 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
 </div>
 
 <!-- 基本資料 Modal -->
-<div class="modal-overlay" id="modal-profile" style="display:none" onclick="if(event.target===this)closeProfileModal()">
-  <div class="modal" style="max-width:420px;width:90%;padding:28px 24px;max-height:90vh;overflow-y:auto">
-    <div style="font-size:20px;font-weight:700;margin-bottom:6px">基本資料</div>
-    <div id="profile-edit-status" style="font-size:12px;margin-bottom:20px"></div>
+<div class="modal-overlay" id="modal-profile" style="display:none">
+  <div class="modal" style="max-width:460px;width:90%;padding:28px 24px;max-height:90vh;overflow-y:auto">
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px" id="profile-modal-title">基本資料</div>
+    <div id="profile-edit-status" style="font-size:12px;margin-bottom:16px"></div>
 
     <div style="display:flex;flex-direction:column;gap:12px">
       <div>
@@ -653,30 +653,63 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
         <input type="text" id="pf-brand" class="form-input" placeholder="例：川咖啡">
       </div>
       <div>
-        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">公司名稱 <span style="color:var(--red)">*</span></label>
-        <input type="text" id="pf-company" class="form-input" placeholder="例：川咖啡有限公司">
-      </div>
-      <div>
-        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">統一編號 <span style="color:var(--red)">*</span></label>
-        <input type="text" id="pf-tax-id" class="form-input" placeholder="例：12345678" maxlength="8">
+        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">聯絡人姓名 <span style="color:var(--red)">*</span></label>
+        <input type="text" id="pf-contact" class="form-input" placeholder="例：王小明">
       </div>
       <div>
         <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">聯絡電話 <span style="color:var(--red)">*</span></label>
         <input type="tel" id="pf-phone" class="form-input" placeholder="例：0912345678">
       </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">通訊地址 <span style="color:var(--red)">*</span></label>
+        <input type="text" id="pf-address" class="form-input" placeholder="例：台中市西屯區XX路XX號">
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
           <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">縣市 <span style="color:var(--red)">*</span></label>
-          <input type="text" id="pf-city" class="form-input" placeholder="例：台中市">
+          <select id="pf-city" class="form-input" style="background:var(--white)">
+            <option value="">請選擇</option>
+            <option>台北市</option><option>新北市</option><option>基隆市</option>
+            <option>桃園市</option><option>新竹市</option><option>新竹縣</option>
+            <option>苗栗縣</option><option>台中市</option><option>彰化縣</option>
+            <option>南投縣</option><option>雲林縣</option><option>嘉義市</option>
+            <option>嘉義縣</option><option>台南市</option><option>高雄市</option>
+            <option>屏東縣</option><option>宜蘭縣</option><option>花蓮縣</option>
+            <option>台東縣</option><option>澎湖縣</option><option>金門縣</option>
+            <option>連江縣</option>
+          </select>
         </div>
         <div>
           <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">產業類別 <span style="color:var(--red)">*</span></label>
-          <input type="text" id="pf-industry" class="form-input" placeholder="例：咖啡廳">
+          <select id="pf-industry" class="form-input" style="background:var(--white)" onchange="toggleIndustryOther(this.value)">
+            <option value="">請選擇</option>
+            <option>咖啡廳</option><option>餐廳</option><option>早餐店</option>
+            <option>手搖飲料</option><option>甜點烘焙</option><option>便當小吃</option>
+            <option>夜市攤販</option><option>零售店</option><option>服飾配件</option>
+            <option>美容美髮</option><option>健身運動</option><option>其他</option>
+          </select>
         </div>
+      </div>
+      <div id="pf-industry-other-wrap" style="display:none">
+        <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">請說明產業類別 <span style="color:var(--red)">*</span></label>
+        <input type="text" id="pf-industry-other" class="form-input" placeholder="請輸入你的產業類別">
       </div>
       <div>
         <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">創立年份 <span style="color:var(--red)">*</span></label>
         <input type="number" id="pf-year" class="form-input" placeholder="例：2020" min="1900" max="2099">
+      </div>
+      <div style="border-top:1px solid var(--gray-100);padding-top:12px;margin-top:4px">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:0.05em;margin-bottom:10px">以下為選填</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">公司名稱</label>
+            <input type="text" id="pf-company" class="form-input" placeholder="例：川咖啡有限公司（選填）">
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:4px">統一編號</label>
+            <input type="text" id="pf-tax-id" class="form-input" placeholder="例：12345678（選填）" maxlength="8">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -685,10 +718,11 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
     </div>
 
     <div style="display:flex;gap:10px;margin-top:20px">
-      <button onclick="closeProfileModal()" style="flex:1;padding:11px;background:none;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">關閉</button>
-      <button id="btn-save-profile" onclick="saveProfile()" style="flex:2;padding:11px;background:var(--black);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">儲存</button>
+      <button id="btn-close-profile" onclick="closeProfileModal()" style="flex:1;padding:11px;background:none;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">關閉</button>
+      <button id="btn-save-profile" onclick="saveProfile()" style="flex:2;padding:11px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">儲存</button>
     </div>
   </div>
+</div>
 </div>
 
 <!-- 凍結畫面 -->
@@ -733,10 +767,6 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
       聯絡購買正式版
     </a>
-    <div style="margin-top:16px;font-size:12px;color:var(--gray-400)">
-      使用本服務即表示同意
-      <a href="terms.html" target="_blank" style="color:var(--accent);text-decoration:underline">服務條款</a>
-    </div>
   </div>
 </div>
 
@@ -749,9 +779,7 @@ button:active, .plan-card:active { transform: scale(0.97) !important; }
     <div class="modal-desc">選擇後將立即開始計算 20 天試用期</div>
     <div class="modal-note">
       ⚠️ 注意：一個帳號只能選擇一次版本，選擇後無法更換。<br>
-      試用期結束後帳號將永久凍結，無法繼續使用。<br><br>
-      點擊「確認開始試用」即表示你已閱讀並同意
-      <a href="terms.html" target="_blank" style="color:var(--accent);text-decoration:underline">服務條款</a>。
+      試用期結束後帳號將永久凍結，無法繼續使用。
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
@@ -812,6 +840,13 @@ async function init() {
     }
     // 登入時執行降版清除
     await enforceDowngradeOnLogin(profile.plan);
+    // 檢查必填資料是否已填寫
+    if (!isProfileComplete(profile)) {
+      renderPaidDashboard(profile);
+      showScreen('screen-paid');
+      openProfileModal(true); // 強制填寫模式
+      return;
+    }
     renderPaidDashboard(profile);
     showScreen('screen-paid');
     return;
@@ -927,6 +962,18 @@ async function enforceDowngradeOnLogin(plan) {
 }
 
 // ── 基本資料 Modal ──
+
+// 判斷正式版必填欄位是否已全部填寫
+function isProfileComplete(p) {
+  return !!(p.brand_name && p.contact_name && p.phone && p.address && p.city && p.industry && p.founded_year);
+}
+
+// 產業類別「其他」切換
+function toggleIndustryOther(val) {
+  const wrap = document.getElementById('pf-industry-other-wrap');
+  if (wrap) wrap.style.display = val === '其他' ? 'block' : 'none';
+}
+
 function isProfileEditAllowed(profile) {
   if (!profile.profile_edit_unlocked_at) return false;
   const unlocked = new Date(profile.profile_edit_unlocked_at);
@@ -935,35 +982,66 @@ function isProfileEditAllowed(profile) {
   return diffDays <= 7;
 }
 
-function openProfileModal() {
+function openProfileModal(forceRequired = false) {
   const p = currentProfile;
+  // 帶入現有資料
   document.getElementById('pf-brand').value = p.brand_name || '';
+  document.getElementById('pf-contact').value = p.contact_name || '';
+  document.getElementById('pf-phone').value = p.phone || '';
+  document.getElementById('pf-address').value = p.address || '';
   document.getElementById('pf-company').value = p.company_name || '';
   document.getElementById('pf-tax-id').value = p.tax_id || '';
-  document.getElementById('pf-phone').value = p.phone || '';
-  document.getElementById('pf-city').value = p.city || '';
-  document.getElementById('pf-industry').value = p.industry || '';
   document.getElementById('pf-year').value = p.founded_year || '';
 
-  const canEdit = isProfileEditAllowed(p);
-  const inputs = document.querySelectorAll('#modal-profile input');
-  inputs.forEach(el => el.disabled = !canEdit);
+  // 縣市下拉
+  const cityEl = document.getElementById('pf-city');
+  if (cityEl) cityEl.value = p.city || '';
+
+  // 產業下拉
+  const industryEl = document.getElementById('pf-industry');
+  const knownIndustries = ['咖啡廳','餐廳','早餐店','手搖飲料','甜點烘焙','便當小吃','夜市攤販','零售店','服飾配件','美容美髮','健身運動'];
+  if (p.industry && !knownIndustries.includes(p.industry)) {
+    industryEl.value = '其他';
+    const otherInput = document.getElementById('pf-industry-other');
+    if (otherInput) { otherInput.value = p.industry; document.getElementById('pf-industry-other-wrap').style.display = 'block'; }
+  } else {
+    if (industryEl) industryEl.value = p.industry || '';
+    document.getElementById('pf-industry-other-wrap').style.display = 'none';
+  }
 
   const statusEl = document.getElementById('profile-edit-status');
   const lockedNote = document.getElementById('profile-locked-note');
   const saveBtn = document.getElementById('btn-save-profile');
+  const closeBtn = document.getElementById('btn-close-profile');
+  const titleEl = document.getElementById('profile-modal-title');
 
-  if (canEdit) {
-    const unlocked = new Date(p.profile_edit_unlocked_at);
-    const expiry = new Date(unlocked.getTime() + 7 * 86400000);
-    const daysLeft = Math.ceil((expiry - new Date()) / 86400000);
-    statusEl.innerHTML = `<span style="color:var(--green)">✓ 修改權限開放中（剩 ${daysLeft} 天）</span>`;
+  if (forceRequired) {
+    // 強制填寫模式：不可關閉
+    titleEl.textContent = '請先填寫基本資料';
+    statusEl.innerHTML = '<span style="color:var(--accent)">⚠️ 請填寫以下必填欄位，才能開始使用正式版</span>';
+    if (closeBtn) closeBtn.style.display = 'none';
     lockedNote.style.display = 'none';
     saveBtn.style.display = 'block';
+    const inputs = document.querySelectorAll('#modal-profile input, #modal-profile select');
+    inputs.forEach(el => el.disabled = false);
   } else {
-    statusEl.innerHTML = `<span style="color:var(--gray-400)">🔒 目前為唯讀</span>`;
-    lockedNote.style.display = 'block';
-    saveBtn.style.display = 'none';
+    titleEl.textContent = '基本資料';
+    const canEdit = isProfileEditAllowed(p);
+    const inputs = document.querySelectorAll('#modal-profile input, #modal-profile select');
+    inputs.forEach(el => el.disabled = !canEdit);
+    if (closeBtn) closeBtn.style.display = '';
+    if (canEdit) {
+      const unlocked = new Date(p.profile_edit_unlocked_at);
+      const expiry = new Date(unlocked.getTime() + 7 * 86400000);
+      const daysLeft = Math.ceil((expiry - new Date()) / 86400000);
+      statusEl.innerHTML = `<span style="color:var(--green)">✓ 修改權限開放中（剩 ${daysLeft} 天）</span>`;
+      lockedNote.style.display = 'none';
+      saveBtn.style.display = 'block';
+    } else {
+      statusEl.innerHTML = `<span style="color:var(--gray-400)">🔒 目前為唯讀</span>`;
+      lockedNote.style.display = 'block';
+      saveBtn.style.display = 'none';
+    }
   }
 
   document.getElementById('modal-profile').style.display = 'flex';
@@ -971,34 +1049,44 @@ function openProfileModal() {
 }
 
 function closeProfileModal() {
+  // 正式版且資料未填完：強制模式，不可關閉
+  if (currentProfile?.is_paid && !isProfileComplete(currentProfile)) {
+    showToast('請先填寫必填資料才能繼續使用');
+    return;
+  }
   document.getElementById('modal-profile').style.display = 'none';
   document.body.style.overflow = '';
 }
 
 async function saveProfile() {
-  const brand = document.getElementById('pf-brand').value.trim();
+  const brand   = document.getElementById('pf-brand').value.trim();
+  const contact = document.getElementById('pf-contact').value.trim();
+  const phone   = document.getElementById('pf-phone').value.trim();
+  const address = document.getElementById('pf-address').value.trim();
+  const city    = document.getElementById('pf-city').value;
+  const industryRaw = document.getElementById('pf-industry').value;
+  const industryOther = document.getElementById('pf-industry-other')?.value.trim() || '';
+  const industry = industryRaw === '其他' ? (industryOther || '其他') : industryRaw;
+  const year    = document.getElementById('pf-year').value.trim();
   const company = document.getElementById('pf-company').value.trim();
-  const taxId = document.getElementById('pf-tax-id').value.trim();
-  const phone = document.getElementById('pf-phone').value.trim();
-  const city = document.getElementById('pf-city').value.trim();
-  const industry = document.getElementById('pf-industry').value.trim();
-  const year = document.getElementById('pf-year').value.trim();
+  const taxId   = document.getElementById('pf-tax-id').value.trim();
 
-  // 所有欄位必填驗證
+  // 必填驗證
   const missing = [];
-  if (!brand) missing.push('品牌 / 店鋪名稱');
-  if (!company) missing.push('公司名稱');
-  if (!taxId) missing.push('統一編號');
-  if (!phone) missing.push('聯絡電話');
-  if (!city) missing.push('縣市');
-  if (!industry) missing.push('產業類別');
-  if (!year) missing.push('創立年份');
+  if (!brand)   missing.push('品牌 / 店鋪名稱');
+  if (!contact) missing.push('聯絡人姓名');
+  if (!phone)   missing.push('聯絡電話');
+  if (!address) missing.push('通訊地址');
+  if (!city)    missing.push('縣市');
+  if (!industryRaw) missing.push('產業類別');
+  if (industryRaw === '其他' && !industryOther) missing.push('產業類別說明');
+  if (!year)    missing.push('創立年份');
   if (missing.length) {
     showToast('請填寫：' + missing.join('、'));
     return;
   }
-  // 統編格式驗證（8位數字）
-  if (!/^\d{8}$/.test(taxId)) {
+  // 統編格式驗證（有填才驗證）
+  if (taxId && !/^\d{8}$/.test(taxId)) {
     showToast('統一編號須為 8 位數字');
     return;
   }
@@ -1007,13 +1095,15 @@ async function saveProfile() {
   btn.disabled = true; btn.textContent = '儲存中...';
 
   const updates = {
-    brand_name: brand,
-    company_name: company,
-    tax_id: taxId,
+    brand_name:   brand,
+    contact_name: contact,
     phone,
+    address,
     city,
     industry,
     founded_year: parseInt(year) || null,
+    company_name: company || null,
+    tax_id:       taxId || null,
     profile_edit_count: (currentProfile.profile_edit_count || 0) + 1
   };
 
@@ -1025,10 +1115,18 @@ async function saveProfile() {
   }
 
   Object.assign(currentProfile, updates);
-  document.getElementById('paid-brand-name').textContent = brand;
-  document.getElementById('nav-brand').textContent = brand;
+  // 更新 nav 品牌名
+  const navBrand = document.getElementById('nav-brand');
+  if (navBrand) navBrand.textContent = brand;
+  const paidBrand = document.getElementById('paid-brand-name');
+  if (paidBrand) paidBrand.textContent = brand;
   closeProfileModal();
   showToast('✅ 資料已儲存');
+  // 若是強制填寫後儲存，重新渲染正式版畫面
+  if (currentProfile.is_paid && isProfileComplete(currentProfile)) {
+    renderPaidDashboard(currentProfile);
+    showScreen('screen-paid');
+  }
   btn.disabled = false; btn.textContent = '儲存';
 }
 
