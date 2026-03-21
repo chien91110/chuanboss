@@ -416,24 +416,14 @@ async function init() {
 
     const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
     if (!profile || !profile.is_paid) { window.location.href = 'not-activated.html'; return; }
-    // 年費到期檢查（非早期支持者）
-    if (!profile.is_early_adopter) {
-      const isExpired = profile.subscription_expires_at
-        && new Date(profile.subscription_expires_at) < new Date();
-      if (!profile.subscription_active || isExpired) {
-        if (profile.subscription_active) {
-          await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
-        }
-        window.location.href = 'trial.html'; return;
-      }
-    }
     currentPlan = profile.plan || 'basic';
 
     if (profile.brand_name) {
       document.getElementById('nav-brand').innerHTML = `<em>${profile.brand_name}</em> &nbsp;·&nbsp; 營業統計`;
     }
 
-    const today = new Date().toISOString().slice(0,10);
+    const twNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+    const today = `${twNow.getFullYear()}-${String(twNow.getMonth()+1).padStart(2,'0')}-${String(twNow.getDate()).padStart(2,'0')}`;
     document.getElementById('date-from').value = today;
     document.getElementById('date-to').value = today;
 
@@ -462,20 +452,37 @@ async function loadOTSettings() {
 }
 
 function getRange() {
-  const now = new Date();
-  const today = now.toISOString().slice(0,10);
-  if (currentPeriod === 'today') return { from:`${today}T00:00:00`, to:`${today}T23:59:59` };
-  if (currentPeriod === 'week') {
-    const day = now.getDay() || 7;
-    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-    return { from:`${mon.toISOString().slice(0,10)}T00:00:00`, to:`${today}T23:59:59` };
+  // 台灣時間（UTC+8）
+  const twNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+  const y = twNow.getFullYear();
+  const m = String(twNow.getMonth() + 1).padStart(2, '0');
+  const d = String(twNow.getDate()).padStart(2, '0');
+  const today = `${y}-${m}-${d}`;
+
+  // 轉成 Supabase 可識別的 UTC ISO 字串（+08:00）
+  const toISO = (dateStr, time) => `${dateStr}T${time}+08:00`;
+
+  if (currentPeriod === 'today') {
+    return { from: toISO(today, '00:00:00'), to: toISO(today, '23:59:59') };
   }
-  if (currentPeriod === 'month') return { from:`${today.slice(0,7)}-01T00:00:00`, to:`${today}T23:59:59` };
+  if (currentPeriod === 'week') {
+    const day = twNow.getDay() || 7;
+    const mon = new Date(twNow);
+    mon.setDate(twNow.getDate() - day + 1);
+    const monY = mon.getFullYear();
+    const monM = String(mon.getMonth() + 1).padStart(2, '0');
+    const monD = String(mon.getDate()).padStart(2, '0');
+    const monday = `${monY}-${monM}-${monD}`;
+    return { from: toISO(monday, '00:00:00'), to: toISO(today, '23:59:59') };
+  }
+  if (currentPeriod === 'month') {
+    return { from: toISO(`${y}-${m}-01`, '00:00:00'), to: toISO(today, '23:59:59') };
+  }
   if (currentPeriod === 'custom') {
     const f = document.getElementById('date-from').value;
     const t = document.getElementById('date-to').value;
     if (!f || !t) return null;
-    return { from:`${f}T00:00:00`, to:`${t}T23:59:59` };
+    return { from: toISO(f, '00:00:00'), to: toISO(t, '23:59:59') };
   }
   return null;
 }
