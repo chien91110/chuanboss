@@ -601,6 +601,10 @@ body.frozen-mode .btn-edit-order {
       </div>
       <input type="file" id="p-img-file" accept="image/*" style="display:none" onchange="previewImg(event)">
       <input type="hidden" id="p-img-url">
+      <button type="button" id="btn-delete-img" onclick="deleteImg()"
+        style="display:none;margin-top:8px;width:100%;padding:8px;background:none;border:1.5px solid #f5c6cb;border-radius:8px;color:#c0392b;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif">
+        🗑 刪除圖片
+      </button>
     </div>
     <!-- 規格 -->
     <div class="form-group">
@@ -703,7 +707,7 @@ async function init() {
     // trial 和 profile 並行查詢
     const [{ data: trial }, { data: profile }] = await Promise.all([
       sb.from('trials').select('*').eq('user_id', currentUser.id).single(),
-      sb.from('profiles').select('brand_name, is_paid, plan').eq('id', currentUser.id).single()
+      sb.from('profiles').select('brand_name, is_paid, plan, subscription_active, subscription_expires_at, is_early_adopter').eq('id', currentUser.id).single()
     ]);
     if (!trial) {
       window.location.href = 'trial.html'; return;
@@ -721,6 +725,24 @@ async function init() {
     bannerEl.style.height = bannerH + 'px';
     document.documentElement.style.setProperty('--banner-h', bannerH + 'px');
     }
+    // 正式版年費到期檢查（非早期支持者）
+    if (profile?.is_paid && !profile?.is_early_adopter) {
+      const isExpired = profile.subscription_expires_at
+        && new Date(profile.subscription_expires_at) < new Date();
+      if (!profile.subscription_active || isExpired) {
+        if (profile.subscription_active) {
+          await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
+        }
+        const _banner = document.getElementById('frozen-banner');
+        _banner.style.height = 'auto';
+        _banner.style.display = 'flex';
+        const _bh = _banner.offsetHeight || (window.innerWidth < 700 ? 72 : 44);
+        _banner.style.height = _bh + 'px';
+        document.documentElement.style.setProperty('--banner-h', _bh + 'px');
+        document.body.classList.add('frozen-mode');
+      }
+    }
+
     currentTrial = trial;
     // 若已購買正式版，以 profile.plan 為準（避免試用降版後功能不符）
     currentPlan = (profile?.is_paid && profile?.plan) ? profile.plan : trial.plan;
@@ -1010,6 +1032,7 @@ function openProductModal(productId = null, copyFromId = null) {
   document.getElementById('p-img-preview').style.display = 'none';
   document.getElementById('p-img-hint').style.display = 'block';
   document.getElementById('p-img-url').value = '';
+  document.getElementById('btn-delete-img').style.display = 'none';
   document.getElementById('spec-hint').textContent =
     `此版本可設定 ${lim.specGroups} 種規格，每種最多 ${lim.specOptions} 個選項`;
 
@@ -1029,6 +1052,7 @@ function openProductModal(productId = null, copyFromId = null) {
       document.getElementById('p-img-preview').src = p.image_url;
       document.getElementById('p-img-preview').style.display = 'block';
       document.getElementById('p-img-hint').style.display = 'none';
+      document.getElementById('btn-delete-img').style.display = 'block';
     }
     // 還原規格（groupName|optionName 格式）
     const byGroup = {};
