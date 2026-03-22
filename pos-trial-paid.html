@@ -815,7 +815,7 @@ async function loadOrderNumber() {
 
 // ── 開店打卡 ──
 async function checkDailyCheckin() {
-  const plan = currentTrial.plan;
+  const plan = currentPlan;
   if (plan === 'basic') return; // 基本版沒有打卡功能
 
   const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })).toLocaleDateString('sv').slice(0,10);
@@ -1202,7 +1202,7 @@ let thankMessages = [];
 let selectedThankIdx = null;
 
 async function loadThankMessages() {
-  const plan = currentTrial?.plan;
+  const plan = currentPlan;
   if (plan === 'basic') return;
   const { data } = await sb.from('receipt_messages').select('*')
     .eq('user_id', currentUser.id).eq('is_active', true).order('sort_order');
