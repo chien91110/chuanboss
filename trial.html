@@ -882,10 +882,9 @@ async function init() {
 
   // ── 正式版判斷（優先）──
   if (profile.is_paid && profile.plan) {
-    // 年費到期凍結：非早期支持者 且（subscription_active=false 或 到期日已過）
-    if (!profile.is_early_adopter) {
-      const isExpired = profile.subscription_expires_at
-        && new Date(profile.subscription_expires_at) < new Date();
+    // 年費到期凍結：非早期支持者 且 有設到期日 且（subscription_active=false 或 到期日已過）
+    if (!profile.is_early_adopter && profile.subscription_expires_at) {
+      const isExpired = new Date(profile.subscription_expires_at) < new Date();
       if (!profile.subscription_active || isExpired) {
         if (profile.subscription_active) {
           await sb.from('profiles').update({ subscription_active: false }).eq('id', currentUser.id);
