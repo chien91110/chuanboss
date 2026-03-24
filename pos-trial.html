@@ -453,6 +453,18 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); colo
 .skeleton-kpi .sk-label{height:11px;width:50%;}
 .skeleton-kpi .sk-val{height:28px;width:70%;}
 
+
+/* ── FROZEN MODE：禁用操作按鈕 ── */
+body.frozen-mode .btn-checkout,
+body.frozen-mode #btn-checkout,
+body.frozen-mode button[onclick*="checkout"],
+body.frozen-mode button[onclick*="addToCart"],
+body.frozen-mode button[onclick*="clearCart"] {
+  opacity: 0.35 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
 </style>
 <link rel="prefetch" href="pos-orders.html">
 <link rel="prefetch" href="pos-stats.html">
