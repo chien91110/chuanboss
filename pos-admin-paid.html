@@ -595,8 +595,11 @@ async function init() {
 
     // 高級版後台密碼保護
     if (currentPlan === 'premium') {
-      const verified = sessionStorage.getItem('admin_verified');
-      if (!verified) {
+      const verifiedAt = sessionStorage.getItem('admin_verified_at');
+      const EXPIRE_MS = 20 * 60 * 1000;
+      const isValid = verifiedAt && (Date.now() - parseInt(verifiedAt)) < EXPIRE_MS;
+      if (!isValid) {
+        sessionStorage.removeItem('admin_verified_at');
         showAdminPasswordModal();
         return;
       }
@@ -1555,7 +1558,7 @@ async function verifyAdminPassword() {
     document.getElementById('admin-pw-input').value = '';
     document.getElementById('admin-pw-input').focus();
   } else {
-    sessionStorage.setItem('admin_verified', '1');
+    sessionStorage.setItem('admin_verified_at', Date.now().toString());
     document.getElementById('modal-admin-pw').style.display = 'none';
     document.getElementById('spinner').style.display = 'flex';
     Promise.all([loadOTSettings(), loadAll()]).then(() => {
