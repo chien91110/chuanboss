@@ -850,6 +850,12 @@ const PLAN_LIMITS = {
   advanced: { products: 20, categories: 20,       specGroups: 2, thanks: 5 },
   premium:  { products: 50, categories: Infinity, specGroups: 3, thanks: 10 }
 };
+// 正式版上限（比試用版高）
+const PAID_PLAN_LIMITS = {
+  basic:    { products: 20,  categories: 5,        specGroups: 1, thanks: 0 },
+  advanced: { products: 50,  categories: 20,       specGroups: 2, thanks: 5 },
+  premium:  { products: 120, categories: Infinity, specGroups: 3, thanks: 10 }
+};
 
 const SUPABASE_URL = 'https://siiicdrjpuotapdtlqsu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpaWljZHJqcHVvdGFwZHRscXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODQ5MzUsImV4cCI6MjA4ODk2MDkzNX0.TiVezXuAKuJYja2PUwbo9SLcg-de7_2vrodMsDZhg_Q';
@@ -895,7 +901,7 @@ async function init() {
     }
     // 登入時執行降版清除
     // 登入時執行降版清除（出錯不中斷後續流程）
-    try { await enforceDowngradeOnLogin(profile.plan); } catch(e) { console.warn('enforceDowngrade error:', e); }
+    try { await enforceDowngradeOnLogin(profile.plan, true); } catch(e) { console.warn('enforceDowngrade error:', e); }
     // 檢查必填資料是否已填寫
     if (!isProfileComplete(profile)) {
       renderPaidDashboard(profile);
@@ -920,15 +926,15 @@ async function init() {
     showScreen('screen-frozen');
   } else {
     // 試用版也執行降版清除
-    await enforceDowngradeOnLogin(trial.plan);
+    await enforceDowngradeOnLogin(trial.plan, false);
     renderTrialDashboard(trial, profile);
     showScreen('screen-trial');
   }
 }
 
 // ── 登入時降版清除（輕量版）──
-async function enforceDowngradeOnLogin(plan) {
-  const lim = PLAN_LIMITS[plan];
+async function enforceDowngradeOnLogin(plan, isPaid = false) {
+  const lim = isPaid ? (PAID_PLAN_LIMITS[plan] || PLAN_LIMITS[plan]) : PLAN_LIMITS[plan];
   if (!lim) return;
   const tasks = [];
   const msg = [];
